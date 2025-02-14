@@ -19,7 +19,8 @@ return [
   "ProductCategoryController" => PRODUCT_CONTROLLER_SOURCE_PATH . "/ProductCategoryController.php",
   "ProductOSController" => PRODUCT_CONTROLLER_SOURCE_PATH . "/ProductOSController.php",
   "ProductInstanceController" => PRODUCT_CONTROLLER_SOURCE_PATH . "/ProductInstanceController.php",
-  
+  "OrdersGateway" => __DIR__ . "/gateways/order/OrdersGateway.php",
+  "OrdersController" => __DIR__ . "/controllers/order/OrdersController.php",
   "ErrorHandler" => __DIR__ . "/ErrorHandler.php",
   "Auths" => __DIR__ . "/Auths.php",
   "Utils" => __DIR__ . "/Utils.php"

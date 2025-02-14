@@ -20,9 +20,9 @@ $uri = parse_url($_SERVER["REQUEST_URI"])["path"]; //web2-project/api/...
 
 $usr_email = $_SERVER["PHP_AUTH_USER"] ?? null;
 $usr_pwd = $_SERVER["PHP_AUTH_PW"] ?? null;
-$limit = abs((int) $_GET["limit"]) ?? null;
-$offset = abs((int) $_GET["offset"]) ?? null;
-$id = $_GET["id"] ?? null;  
+$limit = isset($_GET["limit"]) ? abs((int) $_GET["limit"]) : null;
+$offset = isset($_GET["offset"]) ? abs((int) $_GET["offset"]) : null;
+$id = $_GET["id"] ?? null; 
 
 $db = new Database("localhost", "smartwatch_db", "root", "");
 $auths = new Auths($db, $usr_email, $usr_pwd);
@@ -59,6 +59,10 @@ if(str_contains($uri, SOURCE_URI . "/products")) {
   $controller = new ProductVariationController($gateway, $auths, $utils);
   $controller->processRequest($method, $id, $limit, $offset);
 
+} elseif (str_contains($uri, SOURCE_URI . "/orders")) {
+  $gateway = new OrdersGateway($db);
+  $controller = new OrdersController($gateway, $auths);
+  $controller->processRequest($method, $id);
 } else {
   http_response_code(404);
   echo json_encode([
