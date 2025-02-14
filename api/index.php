@@ -66,6 +66,10 @@ try {
             $controller = new OrderDeliveryStateController(new OrderDeliveryStateGateway($db), $auths);
             break;
 
+        case str_contains($uri, SOURCE_URI . "/order_items"):
+          $controller = new OrderItemsController(new OrderItemsGateway($db), $auths);
+          break;
+          
         default:
             http_response_code(404);
             echo json_encode(["success" => false, "message" => "Request not found!"]);

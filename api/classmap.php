@@ -23,6 +23,9 @@ return [
   "OrdersController" => __DIR__ . "/controllers/order/OrdersController.php",
   "OrderDeliveryStateGateway" => __DIR__ . "/gateways/order/OrderDeliveryStateGateway.php",
   "OrderDeliveryStateController" => __DIR__ . "/controllers/order/OrderDeliveryStateController.php",
+  "OrderItemsGateway" => __DIR__ . "/gateways/order/OrderItemsGateway.php",
+  "OrderItemsController" => __DIR__ . "/controllers/order/OrderItemsController.php",
+  
   "ErrorHandler" => __DIR__ . "/ErrorHandler.php",
   "Auths" => __DIR__ . "/Auths.php",
   "Utils" => __DIR__ . "/Utils.php"
