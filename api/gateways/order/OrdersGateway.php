@@ -28,11 +28,22 @@ class OrdersGateway {
     }
 
     public function get(string $id): array|false {
+        error_log("🛠 Querying order with ID: $id"); // Debug log
         $sql = "SELECT * FROM orders WHERE id = ?";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([$id]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+        if (!$result) {
+            error_log("❌ No order found for ID: $id");
+        } else {
+            error_log("✅ Found order: " . json_encode($result));
+        }
+    
+        return $result;
     }
+    
+        
 
     public function create(array $data): array {
         $sql = "INSERT INTO orders (user_id, delivery_address_id, delivery_state_id, is_received, order_date, estimate_received_date, received_date) 

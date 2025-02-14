@@ -21,6 +21,8 @@ return [
   "ProductInstanceController" => PRODUCT_CONTROLLER_SOURCE_PATH . "/ProductInstanceController.php",
   "OrdersGateway" => __DIR__ . "/gateways/order/OrdersGateway.php",
   "OrdersController" => __DIR__ . "/controllers/order/OrdersController.php",
+  "OrderDeliveryStateGateway" => __DIR__ . "/gateways/order/OrderDeliveryStateGateway.php",
+  "OrderDeliveryStateController" => __DIR__ . "/controllers/order/OrderDeliveryStateController.php",
   "ErrorHandler" => __DIR__ . "/ErrorHandler.php",
   "Auths" => __DIR__ . "/Auths.php",
   "Utils" => __DIR__ . "/Utils.php"
