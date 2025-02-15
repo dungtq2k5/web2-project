@@ -8,7 +8,7 @@ class Auths extends ErrorHandler  {
   }
 
   public function verifyAction(string $action_code): void {
-    /*
+    /* Comment for testing
     if(!$this->usr_email || !$this->usr_pwd) {
       $this->sendErrorResponse(403, "Unauthorized");
       die;
@@ -41,4 +41,4 @@ class Auths extends ErrorHandler  {
 
 }
 
-// action_code is about CRUD_products, CRUD_users, CRUD_cart
+// action_code is about CRUD_products, CRUD_users, CRUD_cart, ...

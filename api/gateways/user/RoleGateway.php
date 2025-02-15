@@ -1,6 +1,6 @@
 <?php
 
-class ProductBrandGateway {
+class RoleGateway {
   private PDO $conn;
 
   public function __construct(Database $db) {
@@ -8,7 +8,7 @@ class ProductBrandGateway {
   }
 
   public function create(array $data): array | false {
-    $sql = "INSERT INTO product_brands (name) VALUES (:name)";
+    $sql = "INSERT INTO roles (name) VALUES (:name)";
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":name", $data["name"], PDO::PARAM_STR);
@@ -19,13 +19,13 @@ class ProductBrandGateway {
 
   public function getAll(?int $limit, ?int $offset): array | false {
     if($limit && $offset) {
-      $sql = "SELECT * FROM product_brands LIMIT :limit OFFSET :offset";
+      $sql = "SELECT * FROM roles LIMIT :limit OFFSET :offset";
     } elseif($limit) {
-      $sql = "SELECT * FROM product_brands LIMIT :limit";
+      $sql = "SELECT * FROM roles LIMIT :limit";
     } elseif($offset) {
-      $sql = "SELECT * FROM product_brands OFFSET: offset";
+      $sql = "SELECT * FROM roles OFFSET: offset";
     } else {
-      $sql = "SELECT * FROM product_brands";
+      $sql = "SELECT * FROM roles";
     }
 
     $stmt = $this->conn->prepare($sql);
@@ -37,7 +37,7 @@ class ProductBrandGateway {
   }
 
   public function get(int $id): array | false {
-    $sql = "SELECT * FROM product_brands WHERE id = :id";
+    $sql = "SELECT * FROM roles WHERE id = :id";
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":id", $id, PDO::PARAM_INT);
@@ -47,20 +47,20 @@ class ProductBrandGateway {
   }
 
   public function update(array $current, array $new): array | false {
-    $sql = "UPDATE product_brands SET name = :name WHERE id = :id";
+    $sql = "UPDATE roles SET name = :name WHERE id = :id";
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":name", $new["name"] ?? $current["name"], PDO::PARAM_STR);
     $stmt->bindValue(":id", $current["id"], PDO::PARAM_INT);
     $stmt->execute();
-
+    
     return $this->get($current["id"]);
   }
 
   public function delete(int $id): bool {
     if($this->hasConstrain($id)) return false;
 
-    $sql = "DELETE FROM product_brands WHERE id = :id";
+    $sql = "DELETE FROM roles WHERE id = :id";
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":id", $id, PDO::PARAM_INT);
     $stmt->execute();
@@ -69,14 +69,17 @@ class ProductBrandGateway {
   }
 
   private function hasConstrain(int $id): bool {
-    $sql = "SELECT EXISTS (SELECT 1 FROM products WHERE brand_id = :brand_id)";
+    $sql = "SELECT EXISTS (
+      SELECT 1 FROM user_roles WHERE role_id = :role_id
+      UNION
+      SELECT 1 FROM role_permissions WHERE role_id = :role_id
+    )";
 
     $stmt = $this->conn->prepare($sql);
-    $stmt->bindValue(":brand_id", $id, PDO::PARAM_INT);
+    $stmt->bindValue(":role_id", $id, PDO::PARAM_INT);
     $stmt->execute();
 
     return (bool) $stmt->fetchColumn();
   }
-
 
 }

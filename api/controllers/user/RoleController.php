@@ -1,7 +1,7 @@
 <?php
 
-class ProductController extends ErrorHandler {
-  public function __construct(private ProductGateway $gateway, private Auths $auths) {}
+class RoleController extends ErrorHandler {
+  public function __construct(private RoleGateway $gateway, private Auths $auths) {}
 
   public function processRequest(string $method, ?string $id, ?int $limit, ?int $offset): void {
     if($id) {
@@ -13,9 +13,9 @@ class ProductController extends ErrorHandler {
   }
 
   private function processResourceRequest(string $method, string $id): void {
-    $product = $this->gateway->get($id);
-    if(!$product) {
-      $this->sendErrorResponse(404, "Product with an id $id not found");
+    $role = $this->gateway->get($id);
+    if(!$role) {
+      $this->sendErrorResponse(404, "Role with an id $id not found");
       return;
     }
     
@@ -23,34 +23,42 @@ class ProductController extends ErrorHandler {
       case "GET":
         echo json_encode([
           "success" => true,
-          "data" => $product
+          "data" => $role
         ]);
         break;
 
       case "PUT":
-        $this->auths->verifyAction("UPDATE_PRODUCT");
+        $this->auths->verifyAction("UPDATE_ROLE");
         $data = (array) json_decode(file_get_contents("php://input"));
         $errors = $this->getValidationErrors($data, false);
         if(!empty($errors)) {
           $this->sendErrorResponse(422, $errors);
           break;
         }
-        $data = $this->gateway->update($product, $data);
-
+        $data = $this->gateway->update($role, $data);
+        
         echo json_encode([
           "success" => true,
-          "message" => "Product id $id updated",
+          "message" => "Role id $id updated",
           "data" => $data
         ]);
         break;
 
       case "DELETE":
-        $this->auths->verifyAction("DELETE_PRODUCT");
+        $this->auths->verifyAction("DELETE_ROLE");
         $res = $this->gateway->delete($id);
 
+        if(!$res) {
+          echo json_encode([
+            "success" => false,
+            "message" => "Role id $id can't be deleted because of constrain"
+          ]);
+          break;
+        }
+
         echo json_encode([
-          "success" => $res,
-          "message" => "Product id $id was deleted or stop_selling if there is a constrain"
+          "success" => true,
+          "message" => "Role id $id was deleted"
         ]);
         break;
 
@@ -74,7 +82,7 @@ class ProductController extends ErrorHandler {
         break;
 
       case "POST":
-        $this->auths->verifyAction("CREATE_PRODUCT");
+        $this->auths->verifyAction("CREATE_ROLE");
         $data = (array) json_decode(file_get_contents("php://input"));
         $errors = $this->getValidationErrors($data);
         if(!empty($errors)) {
@@ -86,7 +94,7 @@ class ProductController extends ErrorHandler {
         http_response_code(201);
         echo json_encode([
           "success" => true,
-          "message" => "Product created",
+          "message" => "Role created",
           "data" => $data
         ]);
         break;
@@ -100,21 +108,11 @@ class ProductController extends ErrorHandler {
   private function getValidationErrors(array $data, bool $new=true): array {
     $errors = [];
 
-    if($new) { //check all fields for new product
+    if($new) { //check all fields for new
       if(empty($data["name"])) $errors[] = "name is required";
-      if(empty($data["brand_id"]) || !is_numeric($data["brand_id"])) $errors[] = "brand_id is required with integer value";
-      if(empty($data["model"])) $errors[] = "model is required";
-      if(empty($data["category_id"]) || !is_numeric($data["category_id"])) $errors[] = "category_id is required with integer value";
-      if(empty($data["description"])) $errors[] = "description is required";
     } else { //check fields that exist
       if(array_key_exists("name", $data) && empty($data["name"])) $errors[] = "name is empty";
-      if(array_key_exists("brand_id", $data) && (empty($data["brand_id"]) || !is_numeric($data["brand_id"]))) $errors[] = "brand_id is empty or not an integer";
-      if(array_key_exists("model", $data) && empty($data["model"])) $errors[] = "model is empty";
-      if(array_key_exists("category_id", $data) && (empty($data["category_id"]) || !is_numeric($data["category_id"]))) $errors[] = "category_id is empty or not an integer";
-      if(array_key_exists("description", $data) && empty($data["description"])) $errors[] = "description is empty";
     }
-
-    if(array_key_exists("stop_selling", $data) && !is_bool($data["stop_selling"])) $errors[] = "stop_selling must be a boolean value";
 
     return $errors;
   }

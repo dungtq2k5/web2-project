@@ -7,6 +7,7 @@ require_once "./config/settings.php";
 $classMap = require_once "./classmap.php";
 spl_autoload_register(function ($class) use ($classMap): void {
   if(isset($classMap[$class])) {
+    // echo $classMap[$class] . "\n";
     require_once $classMap[$class];
   }
 });
@@ -54,9 +55,37 @@ if(str_contains($uri, SOURCE_URI . "/products")) {
   $controller->processRequest($method, $sku, $limit, $offset);
 
 } elseif(str_contains($uri, SOURCE_URI . "/product_variations")) {
-  $utils = new Utils();
   $gateway = new ProductVariationGateway($db);
-  $controller = new ProductVariationController($gateway, $auths, $utils);
+  $controller = new ProductVariationController($gateway, $auths);
+  $controller->processRequest($method, $id, $limit, $offset);
+
+} elseif(str_contains($uri, SOURCE_URI . "/users")) {
+  $gateway = new UserGateway($db);
+  $controller = new UserController($gateway, $auths);
+  $controller->processRequest($method, $id, $limit, $offset);
+
+} elseif(str_contains($uri, SOURCE_URI . "/user_roles")) {
+  $user_id = $_GET["user_id"] ?? null;
+  $role_id = $_GET["role_id"] ?? null;
+  $gateway = new UserRoleGateway($db);
+  $controller = new UserRoleController($gateway, $auths);
+  $controller->processRequest($method, $user_id, $role_id, $limit, $offset);
+
+} elseif(str_contains($uri, SOURCE_URI. "/roles")) {
+  $gateway = new RoleGateway($db);
+  $controller = new RoleController($gateway, $auths);
+  $controller->processRequest($method, $id, $limit, $offset);
+
+} elseif(str_contains($uri, SOURCE_URI . "/role_permissions")) {
+  $role_id = $_GET["role_id"] ?? null;
+  $permission_id = $_GET["permission_id"] ?? null;
+  $gateway = new RolePermissionGateway($db);
+  $controller = new RolePermissionController($gateway, $auths);
+  $controller->processRequest($method, $role_id, $permission_id, $limit, $offset);
+
+} elseif(str_contains($uri, SOURCE_URI . "/permissions")) {
+  $gateway = new PermissionGateway($db);
+  $controller = new PermissionController($gateway, $auths);
   $controller->processRequest($method, $id, $limit, $offset);
 
 } else {

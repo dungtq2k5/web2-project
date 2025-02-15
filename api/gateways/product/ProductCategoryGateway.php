@@ -11,7 +11,7 @@ class ProductCategoryGateway {
     $sql = "INSERT INTO product_categories (name) VALUES (:name)";
 
     $stmt = $this->conn->prepare($sql);
-    $stmt->bindParam(":name", $data["name"], PDO::PARAM_STR);
+    $stmt->bindValue(":name", $data["name"], PDO::PARAM_STR);
     $stmt->execute();
 
     return $this->get($this->conn->lastInsertId());

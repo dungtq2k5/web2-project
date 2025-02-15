@@ -1,8 +1,11 @@
 <?php
 
 class ProductVariationController extends ErrorHandler {
+  private Utils $utils;
 
-  public function __construct(private ProductVariationGateway $gateway, private Auths $auths, private Utils $utils) {}
+  public function __construct(private ProductVariationGateway $gateway, private Auths $auths) {
+    $this->utils = new Utils;
+  }
 
   public function processRequest(string $method, ?string $id, ?int $limit, ?int $offset): void {
     if($id) {
@@ -97,10 +100,10 @@ class ProductVariationController extends ErrorHandler {
     }
   }
 
-  private function getValidationErrors(array $data, bool $new_product=true): array {
+  private function getValidationErrors(array $data, bool $new=true): array {
     $errors = [];
 
-    if($new_product) { //check all fields for new product
+    if($new) { //check all fields for new product
       if(empty($data["product_id"]) || !is_numeric($data["product_id"])) $errors[] = "product_id is required";
       if(empty($data["watch_size_mm"]) || !is_numeric($data["watch_size_mm"])) $errors[] = "watch_size_mm is required with integer value";
       if(empty($data["watch_color"])) $errors[] = "watch_color is required";

@@ -101,10 +101,10 @@ class ProductInstanceController extends ErrorHandler {
     }
   }
 
-  private function getValidationErrors(array $data, bool $new_product=true): array {
+  private function getValidationErrors(array $data, bool $new=true): array {
     $errors = [];
 
-    if($new_product) { //check all fields for new product
+    if($new) { //check all fields for new product
       if(empty($data["product_variation_id"]) || !is_numeric($data["product_variation_id"])) $errors[] = "product_variation_id is required with integer value";
     } else { //check fields that exist
       if(
