@@ -38,7 +38,6 @@ class ProductGateway {
       return $data;
     }
 
-
     return false;
   }
 
@@ -64,10 +63,10 @@ class ProductGateway {
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+    $data = $stmt->fetch(PDO::FETCH_ASSOC);
     
-    if($stmt->execute()) {
-      $data = $stmt->fetch(PDO::FETCH_ASSOC);
-
+    if($data) {
       $data["brand"] = $this->brand->get($data["brand_id"]);
       unset($data["brand_id"]);
       $data["category"] = $this->category->get($data["category_id"]);

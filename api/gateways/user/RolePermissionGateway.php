@@ -62,7 +62,7 @@ class RolePermissionGateway {
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":role_id", $role_id, PDO::PARAM_INT);
     if($permission_id) $stmt->bindValue(":permission_id", $permission_id, PDO::PARAM_INT);
-
+    
     if($stmt->execute()) {
       $data = [];
       while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {

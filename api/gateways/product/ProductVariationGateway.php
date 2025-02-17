@@ -133,10 +133,10 @@ class ProductVariationGateway {
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
+    $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if($stmt->execute()) {
-      $data = $stmt->fetch(PDO::FETCH_ASSOC);
-
+    if($data) {
       $data["product"] = $this->product->get($data["product_id"]);
       unset($data["product_id"]);
       $data["os"] = $this->os->get($data["os_id"]);

@@ -77,9 +77,10 @@ class ProductInstanceGateway {
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":sku", $sku, PDO::PARAM_STR);
+    $stmt->execute();
+    $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if($stmt->execute()) {
-      $data = $stmt->fetch(PDO::FETCH_ASSOC);
+    if($data) {
       $data["product_variation"] = $this->variation->get($data["product_variation_id"]);
       unset($data["product_variation_id"]);
 
