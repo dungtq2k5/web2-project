@@ -37,8 +37,6 @@ class ProductGateway {
 
       return $data;
     }
-
-
     return false;
   }
 

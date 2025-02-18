@@ -61,32 +61,31 @@ class OrdersGateway {
         return $this->get($this->conn->lastInsertId());
     }
 
-    public function update(string $id, array $data): array {
-        if (empty($id)) {
-            throw new Exception("ID required");
-        }
-    
-        error_log("Updating order with ID: " . $id); // Debug
-    
-        $fields = [];
-        $values = [];
-    
-        foreach ($data as $key => $value) {
-            $fields[] = "$key = ?";
-            $values[] = $value;
-        }
-    
-        $values[] = $id;
-        $sql = "UPDATE orders SET " . implode(", ", $fields) . " WHERE id = ?";
-    
-        error_log("SQL Query: " . $sql); // Debug
-        error_log("Values: " . json_encode($values)); // Debug
+    public function update(array $current, array $new): array | false {
+        $sql = "UPDATE orders SET
+            user_id = :user_id,
+            delivery_address_id = :delivery_address_id,
+            delivery_state_id = :delivery_state_id,
+            is_received = :is_received,
+            order_date = :order_date,
+            estimate_received_date = :estimate_received_date,
+            received_date = :received_date
+            WHERE id = :id";
     
         $stmt = $this->conn->prepare($sql);
-        $stmt->execute($values);
-        
-        return $this->get($id);
-    }
+        $stmt->bindValue(":user_id", $new["user_id"] ?? $current["user_id"], PDO::PARAM_INT);
+        $stmt->bindValue(":delivery_address_id", $new["delivery_address_id"] ?? $current["delivery_address_id"], PDO::PARAM_INT);
+        $stmt->bindValue(":delivery_state_id", $new["delivery_state_id"] ?? $current["delivery_state_id"], PDO::PARAM_INT);
+        $stmt->bindValue(":is_received", $new["is_received"] ?? $current["is_received"], PDO::PARAM_INT);
+        $stmt->bindValue(":order_date", $new["order_date"] ?? $current["order_date"], PDO::PARAM_STR);
+        $stmt->bindValue(":estimate_received_date", $new["estimate_received_date"] ?? $current["estimate_received_date"], PDO::PARAM_STR);
+        $stmt->bindValue(":received_date", $new["received_date"] ?? $current["received_date"], PDO::PARAM_NULL);
+    
+        $stmt->bindValue(":id", $current["id"], PDO::PARAM_INT);
+        $stmt->execute();
+    
+        return $this->get($current["id"]);
+    }    
     
 
     public function delete(string $id): bool {

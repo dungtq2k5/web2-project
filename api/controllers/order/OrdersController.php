@@ -4,60 +4,12 @@ class OrdersController extends ErrorHandler {
     public function __construct(private OrdersGateway $gateway, private Auths $auths) {}
 
     public function processRequest(string $method, ?string $id, ?int $limit = null, ?int $offset = null): void {
-        ob_clean(); // 🔥 Xóa bộ nhớ đệm trước khi xuất dữ liệu
-        header('Content-Type: application/json'); // Đặt header JSON chính xác
-    
-        error_log("Processing request: Method=$method, ID=" . ($id ?? "NULL") . ", Limit=$limit, Offset=$offset");
-    
-        switch ($method) {
-            case "GET":
-                if ($id !== null) { 
-                    $this->processResourceRequest($method, $id);
-                } else {
-                    $this->processCollectionRequest($method, $limit, $offset);
-                }
-                break;            
-    
-            case "POST":
-                $data = json_decode(file_get_contents("php://input"), true);
-                if (!$data) {
-                    $this->sendErrorResponse(400, "Invalid JSON input");
-                    return;
-                }
-                $createdOrder = $this->gateway->create($data);
-                http_response_code(201);
-                echo json_encode(["success" => true, "message" => "Order created", "data" => $createdOrder]);
-                break;
-    
-            case "PUT":
-                if (!$id) {
-                    $this->sendErrorResponse(400, "ID required for updating order");
-                    return;
-                }
-                $data = json_decode(file_get_contents("php://input"), true);
-                if (!$data) {
-                    $this->sendErrorResponse(400, "Invalid JSON input");
-                    return;
-                }
-                $updatedOrder = $this->gateway->update($id, $data);
-                echo json_encode(["success" => true, "message" => "Order updated", "data" => $updatedOrder]);
-                break;
-    
-            case "DELETE":
-                if (!$id) {
-                    $this->sendErrorResponse(400, "ID required for deleting order");
-                    return;
-                }
-                $deleted = $this->gateway->delete($id);
-                echo json_encode(["success" => $deleted, "message" => $deleted ? "Order deleted" : "Failed to delete order"]);
-                break;
-    
-            default:
-                $this->sendErrorResponse(405, "Method not allowed");
-                header("Allow: GET, POST, PUT, DELETE");
-        }
-    
-        exit; // 🔥 Đảm bảo không có dữ liệu nào bị in ra sau đó
+        if($id) {
+            $this->processResourceRequest($method, $id);
+            return;
+          }
+            
+          $this->processCollectionRequest($method, $limit, $offset);
     }
     
     
@@ -83,7 +35,7 @@ class OrdersController extends ErrorHandler {
                     $this->sendErrorResponse(422, $errors);
                     break;
                 }
-                $updatedOrder = $this->gateway->update($id, $data);
+                $updatedOrder = $this->gateway->update($order, $data);
                 echo json_encode(["success" => true, "message" => "Order updated", "data" => $updatedOrder]);
                 break;
 
