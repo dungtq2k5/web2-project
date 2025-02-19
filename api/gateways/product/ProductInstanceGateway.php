@@ -31,11 +31,22 @@ class ProductInstanceGateway {
       $variation["watch_color"],
       $variation["band_material"]
     );
-    $sql = "INSERT INTO product_instances (sku, product_variation_id, is_sold) VALUES (:sku, :product_variation_id, :is_sold)";
+    $sql = "INSERT INTO product_instances (
+      sku, 
+      product_variation_id, 
+      goods_receipt_note_id, 
+      is_sold
+    ) VALUES (
+      :sku, 
+      :product_variation_id, 
+      :goods_receipt_note_id,
+      :is_sold
+    )";
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":sku", $sku, PDO::PARAM_STR);
     $stmt->bindValue(":product_variation_id", $data["product_variation_id"], PDO::PARAM_INT);
+    $stmt->bindValue(":goods_receipt_note_id", $data["goods_receipt_note_id"], PDO::PARAM_INT);
     $stmt->bindValue(":is_sold", $data["is_sold"] ?? false, PDO::PARAM_BOOL);
     $stmt->execute();
 
@@ -72,9 +83,13 @@ class ProductInstanceGateway {
   }
 
   public function update(array $current, array $new): array | false {
-    $sql = "UPDATE product_instances SET is_sold = :is_sold WHERE sku = :sku";
+    $sql = "UPDATE product_instances SET
+      goods_receipt_note_id = :goods_receipt_note_id,
+      is_sold = :is_sold 
+    WHERE sku = :sku";
 
     $stmt = $this->conn->prepare($sql);
+    $stmt->bindValue(":goods_receipt_note_id", $new["goods_receipt_note_id"] ?? $current["goods_receipt_note_id"], PDO::PARAM_INT);
     $stmt->bindValue(":is_sold", $new["is_sold"] ?? $current["is_sold"], PDO::PARAM_BOOL);
     $stmt->bindValue(":sku", $current["sku"], PDO::PARAM_STR);
     $stmt->execute();

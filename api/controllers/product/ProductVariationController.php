@@ -107,8 +107,12 @@ class ProductVariationController extends ErrorHandler {
       if(empty($data["product_id"]) || !is_numeric($data["product_id"])) $errors[] = "product_id is required";
       if(empty($data["watch_size_mm"]) || !is_numeric($data["watch_size_mm"])) $errors[] = "watch_size_mm is required with integer value";
       if(empty($data["watch_color"])) $errors[] = "watch_color is required";
+      //stock_quantity field: auto calculate in mySQL
+      if(empty($data("price_cents")) || !is_numeric($data["price_cents"])) $errors[] = "price_cents is required with integer value";
+      if(empty($data("base_price_cents")) || !is_numeric($data["base_price_cents"])) $errors[] = "base_price_cents is required with integer value";
       if(empty($data["image_name"])) $errors[] = "image_name is required";
       if(empty($data["display_size_mm"]) || !is_numeric($data["display_size_mm"])) $errors[] = "display_size_mm is required with integer value";
+      if(empty($data["display_type"])) $errors[] = "display_type is required";
       if(empty($data["resolution_h_px"]) || !is_numeric($data["resolution_h_px"])) $errors[] = "resolution_h_px is required with integer value";
       if(empty($data["resolution_w_px"]) || !is_numeric($data["resolution_w_px"])) $errors[] = "resolution_w_px is required with integer value";
       if(empty($data["ram_bytes"]) || !is_numeric($data["ram_bytes"])) $errors[] = "ram_bytes is required with integer value";
@@ -140,6 +144,14 @@ class ProductVariationController extends ErrorHandler {
         (empty($data["watch_color"]))
       ) $errors[] = "watch_color is empty";
       if(
+        array_key_exists("price_cents", $data["price_cents"]) &&
+        (empty($data("price_cents")) || !is_numeric($data["price_cents"]))
+      ) $errors[] = "price_cents is empty or not an integer value";
+      if(
+        array_key_exists("base_price_cents", $data["base_price_cents"]) &&
+        (empty($data("base_price_cents")) || !is_numeric($data["base_price_cents"]))
+      ) $errors[] = "base_price_cents is empty or not an integer value";
+      if(
         array_key_exists("image_name", $data) &&
         (empty($data["image_name"]))
       ) $errors[] = "image_name is empty";
@@ -147,6 +159,9 @@ class ProductVariationController extends ErrorHandler {
         array_key_exists("display_size_mm", $data) &&
         (empty($data["display_size_mm"]) || !is_numeric($data["display_size_mm"]))
       ) $errors[] = "display_size_mm is empty or not an integer";
+      if(
+        array_key_exists("display_type", $data) && empty($data["display_type"])
+      ) $errors[] = "display_type is empty";
       if(
         array_key_exists("resolution_h_px", $data) &&
         (empty($data["resolution_h_px"]) || !is_numeric($data["resolution_h_px"]))

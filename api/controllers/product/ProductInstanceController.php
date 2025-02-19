@@ -106,11 +106,16 @@ class ProductInstanceController extends ErrorHandler {
 
     if($new) { //check all fields for new product
       if(empty($data["product_variation_id"]) || !is_numeric($data["product_variation_id"])) $errors[] = "product_variation_id is required with integer value";
+      if(empty($data["goods_receipt_note_id"]) || !is_numeric($data["goods_receipt_note_id"])) $errors[] = "goods_receipt_note_id is required with integer value";
     } else { //check fields that exist
       if(
         array_key_exists("product_variation_id", $data) &&
         (empty($data["product_variation_id"]) || !is_numeric($data["product_variation_id"]))
       ) $errors[] = "product_variation_id is empty or not an integer";
+      if(
+        array_key_exists("goods_receipt_note_id", $data) &&
+        (empty($data["goods_receipt_note_id"]) || !is_numeric($data["goods_receipt_note_id"]))
+      ) $errors[] = "goods_receipt_note_id is empty or not an integer";
     }
 
     if(array_key_exists("is_sold", $data) && !is_bool($data["is_sold"])) $errors[] = "is_sold must be a boolean value";

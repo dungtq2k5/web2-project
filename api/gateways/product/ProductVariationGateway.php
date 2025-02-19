@@ -12,8 +12,8 @@ class ProductVariationGateway {
       product_id,
       watch_size_mm,
       watch_color,
-      stock_quantity,
       price_cents,
+      base_price_cents,
       image_name,
       display_size_mm,
       display_type,
@@ -38,8 +38,8 @@ class ProductVariationGateway {
       :product_id,
       :watch_size_mm,
       :watch_color,
-      :stock_quantity,
       :price_cents,
+      :base_price_cents,
       :image_name,
       :display_size_mm,
       :display_type,
@@ -66,8 +66,8 @@ class ProductVariationGateway {
     $stmt->bindValue(":product_id", $data["product_id"], PDO::PARAM_INT);
     $stmt->bindValue(":watch_size_mm", $data["watch_size_mm"], PDO::PARAM_INT);
     $stmt->bindValue(":watch_color", $data["watch_color"], PDO::PARAM_STR);
-    $stmt->bindValue(":stock_quantity", $data["stock_quantity"] ?? 0, PDO::PARAM_INT);
     $stmt->bindValue(":price_cents", $data["price_cents"] ?? 0, PDO::PARAM_INT);
+    $stmt->bindValue(":base_price_cents", $data["base_price_cents"] ?? 0, PDO::PARAM_INT);
     $stmt->bindValue(":image_name", $data["image_name"] ?? "default.webp", PDO::PARAM_STR);
     $stmt->bindValue(":display_size_mm", $data["display_size_mm"], PDO::PARAM_INT);
     $stmt->bindValue(":display_type", $data["display_type"], PDO::PARAM_STR);
@@ -127,8 +127,8 @@ class ProductVariationGateway {
       product_id = :product_id,
       watch_size_mm = :watch_size_mm,
       watch_color = :watch_color,
-      stock_quantity = :stock_quantity,
       price_cents = :price_cents,
+      base_price_cents = :base_price_cents,
       image_name = :image_name,
       display_size_mm = :display_size_mm,
       display_type = :display_type,
@@ -156,8 +156,8 @@ class ProductVariationGateway {
     $stmt->bindValue(":product_id", $new["product_id"] ?? $current["product_id"], PDO::PARAM_INT);
     $stmt->bindValue(":watch_size_mm", $new["watch_size_mm"] ?? $current["watch_size_mm"], PDO::PARAM_INT);
     $stmt->bindValue(":watch_color", $new["watch_color"] ?? $current["watch_color"], PDO::PARAM_STR);
-    $stmt->bindValue(":stock_quantity", $new["stock_quantity"] ?? $current["stock_quantity"], PDO::PARAM_INT);
     $stmt->bindValue(":price_cents", $new["price_cents"] ?? $current["price_cents"], PDO::PARAM_INT);
+    $stmt->bindValue(":base_price_cents", $new["base_price_cents"] ?? $current["base_price_cents"], PDO::PARAM_INT);
     $stmt->bindValue(":image_name", $new["image_name"] ?? $current["image_name"], PDO::PARAM_STR);
     $stmt->bindValue(":display_size_mm", $new["display_size_mm"] ?? $current["display_size_mm"], PDO::PARAM_INT);
     $stmt->bindValue(":display_type", $new["display_type"] ?? $current["display_type"], PDO::PARAM_STR);
