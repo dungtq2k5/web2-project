@@ -20,7 +20,13 @@ class Utils {
     $milisecs = (string) $this->getCurrentTime(); //make sure unique
 
     return strtolower(implode('-', [$category, $brand, $model, $watch_size, $watch_color, $band_material, $milisecs]));
+  }
 
+  public function isValidProductSKU(string $sku): bool { //AI gen
+    // Regular expression to match the SKU format
+    $pattern = '/^[a-z]+-[a-z]+-[a-z0-9]+-[0-9]+-[a-z]+-[a-z]+-[0-9]+$/'; // Improved regex
+
+    return preg_match($pattern, $sku);
   }
 
   public function getCurrentTime(): float { // return milisecs

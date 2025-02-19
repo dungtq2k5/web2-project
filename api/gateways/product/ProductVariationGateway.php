@@ -2,12 +2,9 @@
 
 class ProductVariationGateway {
   private PDO $conn;
-  private ProductGateway $product;
-  private ProductOSGateway $os;
+
   public function __construct(Database $db) {
     $this->conn = $db->getConnection();
-    $this->product = new ProductGateway($db);
-    $this->os = new ProductOSGateway($db);
   }
 
   public function create(array $data): array | false { //TODO auto gen product_instances
@@ -110,22 +107,9 @@ class ProductVariationGateway {
     $stmt = $this->conn->prepare($sql);
     if($limit) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
     if($offset) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
+    $stmt->execute();
 
-    if($stmt->execute()) {
-      $data = [];
-      while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $row["product"] = $this->product->get($row["product_id"]);
-        unset($row["product_id"]);
-        $row["os"] = $this->os->get($row["os_id"]);
-        unset($row["os_id"]);
-
-        $data[] = $row;
-      }
-
-      return $data;
-    }
-
-    return false;
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
   }
 
   public function get(int $id): array | false {
@@ -134,18 +118,8 @@ class ProductVariationGateway {
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":id", $id, PDO::PARAM_INT);
     $stmt->execute();
-    $data = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if($data) {
-      $data["product"] = $this->product->get($data["product_id"]);
-      unset($data["product_id"]);
-      $data["os"] = $this->os->get($data["os_id"]);
-      unset($data["os"]);
-
-      return $data;
-    }
-
-    return false;
+    
+    return $stmt->fetch(PDO::FETCH_ASSOC);
   }
 
   public function update(array $current, array $new): array | false {

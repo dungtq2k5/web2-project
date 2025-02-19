@@ -28,6 +28,7 @@ $id = is_numeric(end($uri_parts)) ? end($uri_parts) : null;
 $db = new Database("localhost", "smartwatch_db", "root", "");
 $auths = new Auths($db, $usr_email, $usr_pwd);
 
+$uri = preg_replace('/\/[0-9]+$/', '', $uri); //AI gen: remove :id if exist
 switch(true) {
   case str_contains($uri, SOURCE_URI . "/products"):
     include_once "./routes/product.php";
@@ -37,10 +38,11 @@ switch(true) {
     include_once "./routes/user.php";
     break;
 
+  case str_contains($uri, SOURCE_URI . "/carts"):
+    include_once "./routes/cart.php";
+    break;
+
   default:
-    http_response_code(404);
-    echo json_encode([
-      "success" => false,
-      "message" => "Request not found!"
-    ]);
+    $errorHandler = new ErrorHandler();
+    $errorHandler->sendErrorResponse(404, "Request not found!");
 }

@@ -119,7 +119,7 @@ class UserController extends ErrorHandler {
       if(empty($data["password"]) || !$this->utils->isValidPassword($data["password"])) $errors[] = "valid password is required (hint: password must contain at least one letter and one number with min length = 8)";
 
     } else { //check fields that exist
-      if(array_key_exists("name", $data) && empty($data["name"])) $errors[] = "name is empty";
+      if(array_key_exists("full_name", $data) && empty($data["full_name"])) $errors[] = "full_name is empty";
       if(
         array_key_exists("email", $data) && 
         (empty($data["email"]) || !$this->utils->isValidEmail($data["email"]))

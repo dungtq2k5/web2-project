@@ -2,13 +2,9 @@
 
 class UserRoleGateway {
   private PDO $conn;
-  private UserGateway $user;
-  private RoleGateway $role;
 
   public function __construct(Database $db) {
     $this->conn = $db->getConnection();
-    $this->user = new UserGateway($db);
-    $this->role = new RoleGateway($db);
   }
 
   public function getAll(?int $limit, ?int $offset): array | false {
@@ -25,21 +21,9 @@ class UserRoleGateway {
     $stmt = $this->conn->prepare($sql);
     if($limit) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
     if($offset) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
+    $stmt->execute();
 
-    if($stmt->execute()) {
-      $data = [];
-      while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $row["user"] = $this->user->get($row["user_id"]);
-        unset($row["user_id"]);
-        $row["role"] = $this->role->get($row["role_id"]);
-        unset($row["role_id"]);
-        $data[] = $row;
-      }
-      
-      return $data;
-    }
-    
-    return false;
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
   }
 
   public function create(array $data): array | false {
@@ -62,21 +46,9 @@ class UserRoleGateway {
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":user_id", $user_id, PDO::PARAM_INT);
     if($role_id) $stmt->bindValue(":role_id", $role_id, PDO::PARAM_INT);
+    $stmt->execute();
 
-    if($stmt->execute()) {
-      $data = [];
-      while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $row["user"] = $this->user->get($user_id);
-        unset($row["user_id"]);
-        $row["role"] = $this->role->get($row["role_id"]);
-        unset($row["role_id"]);
-        $data[] = $row;
-      }
-
-      return $data;
-    }
-
-    return false;
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
   }
 
 

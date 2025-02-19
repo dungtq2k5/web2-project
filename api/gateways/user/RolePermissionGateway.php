@@ -2,13 +2,9 @@
 
 class RolePermissionGateway {
   private PDO $conn;
-  private RoleGateway $role;
-  private PermissionGateway $permission;
 
   public function __construct(Database $db) {
     $this->conn = $db->getConnection();
-    $this->role = new RoleGateway($db);
-    $this->permission = new PermissionGateway($db);
   }
 
   public function getAll(?int $limit, ?int $offset): array | false {
@@ -25,21 +21,9 @@ class RolePermissionGateway {
     $stmt = $this->conn->prepare($sql);
     if($limit) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
     if($offset) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
+    $stmt->execute();
 
-    if($stmt->execute()) {
-      $data = [];
-      while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $row["role"] = $this->role->get($row["role_id"]);
-        unset($row["role_id"]);
-        $row["permission"] = $this->permission->get($row["permission_id"]);
-        unset($row["permission_id"]);
-        $data[] = $row;
-      }
-      
-      return $data;
-    }
-    
-    return false;
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
   }
 
   public function create(array $data): array | false {
@@ -62,21 +46,9 @@ class RolePermissionGateway {
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":role_id", $role_id, PDO::PARAM_INT);
     if($permission_id) $stmt->bindValue(":permission_id", $permission_id, PDO::PARAM_INT);
-    
-    if($stmt->execute()) {
-      $data = [];
-      while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $row["role"] = $this->role->get($role_id);
-        unset($row["role_id"]);
-        $row["permission"] = $this->permission->get($row["permission_id"]);
-        unset($row["permission_id"]);
-        $data[] = $row;
-      }
+    $stmt->execute();
 
-      return $data;
-    }
-
-    return false;
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
   }
 
   public function delete(int $role_id, int $permission_id): bool {

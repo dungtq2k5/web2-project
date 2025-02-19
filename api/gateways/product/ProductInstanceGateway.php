@@ -56,20 +56,9 @@ class ProductInstanceGateway {
     $stmt = $this->conn->prepare($sql);
     if($limit) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
     if($offset) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
+    $stmt->execute();
 
-    if($stmt->execute()) {
-      $data = [];
-      while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $row["product_variation"] = $this->variation->get($row["product_variation_id"]);
-        unset($row["product_variation_id"]);
-
-        $data[] = $row;
-      }
-
-      return $data;
-    }
-
-    return false;
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
   }
 
   public function get(string $sku): array | false {
@@ -78,16 +67,8 @@ class ProductInstanceGateway {
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":sku", $sku, PDO::PARAM_STR);
     $stmt->execute();
-    $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if($data) {
-      $data["product_variation"] = $this->variation->get($data["product_variation_id"]);
-      unset($data["product_variation_id"]);
-
-      return $data;
-    }
-
-    return false;
+    return $stmt->fetch(PDO::FETCH_ASSOC);
   }
 
   public function update(array $current, array $new): array | false {
