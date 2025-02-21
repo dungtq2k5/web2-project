@@ -7,19 +7,19 @@ class ProductVariationController extends ErrorHandler {
     $this->utils = new Utils;
   }
 
-  public function processRequest(string $method, ?string $id, ?int $limit, ?int $offset): void {
+  public function processRequest(string $method, ?int $id, ?int $limit, ?int $offset): void {
     if($id) {
       $this->processResourceRequest($method, $id);
       return;
     }
-    
+
     $this->processCollectionRequest($method, $limit, $offset);
   }
 
-  private function processResourceRequest(string $method, string $id): void {
+  private function processResourceRequest(string $method, int $id): void {
     $product = $this->gateway->get($id);
     if(!$product) {
-      $this->sendErrorResponse(404, "Product_variation with an id $id not found");
+      $this->sendErrorResponse(404, "Product variation with an id $id not found");
       return;
     }
 

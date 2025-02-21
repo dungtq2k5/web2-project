@@ -3,22 +3,22 @@
 class ProductOSController extends ErrorHandler {
   public function __construct(private ProductOSGateway $gateway, private Auths $auths) {}
 
-  public function processRequest(string $method, ?string $id, ?int $limit, ?int $offset): void {
+  public function processRequest(string $method, ?int $id, ?int $limit, ?int $offset): void {
     if($id) {
       $this->processResourceRequest($method, $id);
       return;
     }
-      
+
     $this->processCollectionRequest($method, $limit, $offset);
   }
 
-  private function processResourceRequest(string $method, string $id): void {
+  private function processResourceRequest(string $method, int $id): void {
     $os = $this->gateway->get($id);
     if(!$os) {
       $this->sendErrorResponse(404, "OS with an id $id not found");
       return;
     }
-    
+
     switch($method) {
       case "GET":
         echo json_encode([
@@ -36,7 +36,7 @@ class ProductOSController extends ErrorHandler {
           break;
         }
         $data = $this->gateway->update($os, $data);
-        
+
         echo json_encode([
           "success" => true,
           "message" => "OS id $id updated",
@@ -90,7 +90,7 @@ class ProductOSController extends ErrorHandler {
           break;
         }
         $data = $this->gateway->create($data);
-        
+
         http_response_code(201);
         echo json_encode([
           "success" => true,

@@ -1,28 +1,25 @@
 <?php
 
 class CartController extends ErrorHandler {
-  private Utils $utils;
-  
-  public function __construct(private CartGateway $gateway, private Auths $auths) {
-    $this->utils = new Utils();
-  }
 
-  public function processRequest(string $method, ?string $user_id, ?string $product_variation_id, ?int $limit, ?int $offset): void {
+  public function __construct(private CartGateway $gateway, private Auths $auths) {}
+
+  public function processRequest(string $method, ?int $user_id, ?int $product_variation_id, ?int $limit, ?int $offset): void {
     if($user_id) {
       $this->processResourceRequest($method, $user_id, $product_variation_id);
       return;
     }
-      
+
     $this->processCollectionRequest($method, $limit, $offset);
   }
 
-  private function processResourceRequest(string $method, string $user_id, ?string $product_variation_id): void {
+  private function processResourceRequest(string $method, int $user_id, ?int $product_variation_id): void {
     $carts = $this->gateway->get($user_id, $product_variation_id);
     if(!$carts) {
       $this->sendErrorResponse(404, "Cart with user_id $user_id and/or product_variation_id $product_variation_id not found");
       return;
     }
-    
+
     switch($method) {
       case "GET":
         echo json_encode([
@@ -95,7 +92,7 @@ class CartController extends ErrorHandler {
           break;
         }
         $data = $this->gateway->create($data);
-        
+
         http_response_code(201);
         echo json_encode([
           "success" => true,
@@ -126,7 +123,7 @@ class CartController extends ErrorHandler {
         array_key_exists("product_variation_id", $data) &&
         (empty($data["product_variation_id"]) || !is_numeric($data["product_variation_id"]))
       ) $errors[] = "product_variation_id is empty or not an integer value";
-    }  
+    }
 
     if(
       array_key_exists("quantity", $data) &&

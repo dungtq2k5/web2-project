@@ -3,22 +3,22 @@
 class ProductCategoryController extends ErrorHandler {
   public function __construct(private ProductCategoryGateway $gateway, private Auths $auths) {}
 
-  public function processRequest(string $method, ?string $id, ?int $limit, ?int $offset): void {
+  public function processRequest(string $method, ?int $id, ?int $limit, ?int $offset): void {
     if($id) {
       $this->processResourceRequest($method, $id);
       return;
-    } 
-      
+    }
+
     $this->processCollectionRequest($method, $limit, $offset);
   }
 
-  private function processResourceRequest(string $method, string $id): void {
+  private function processResourceRequest(string $method, int $id): void {
     $category = $this->gateway->get($id);
     if(!$category) {
       $this->sendErrorResponse(404, "Category with an id $id not found");
       return;
     }
-    
+
     switch($method) {
       case "GET":
         echo json_encode([
@@ -48,7 +48,7 @@ class ProductCategoryController extends ErrorHandler {
         $this->auths->verifyAction("DELETE_PRODUCT_CATEGORY");
         $res = $this->gateway->delete($id);
 
-        if(!$res) { 
+        if(!$res) {
           echo json_encode([
             "success" => $res,
             "message" => "Category id $id can't be deleted because of constrain"
@@ -90,7 +90,7 @@ class ProductCategoryController extends ErrorHandler {
           break;
         }
         $data = $this->gateway->create($data);
-        
+
         http_response_code(201);
         echo json_encode([
           "success" => true,

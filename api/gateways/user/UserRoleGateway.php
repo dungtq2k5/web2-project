@@ -51,7 +51,6 @@ class UserRoleGateway {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
   }
 
-
   public function delete(int $user_id, int $role_id): bool {
     $sql = "DELETE FROM user_roles WHERE user_id = :user_id AND role_id = :role_id";
 

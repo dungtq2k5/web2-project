@@ -4,22 +4,22 @@ class UserRoleController extends ErrorHandler {
 
   public function __construct(private UserRoleGateway $gateway, private Auths $auths) {}
 
-  public function processRequest(string $method, ?string $user_id, ?string $role_id, ?int $limit, ?int $offset): void {
+  public function processRequest(string $method, ?int $user_id, ?int $role_id, ?int $limit, ?int $offset): void {
     if($user_id) {
       $this->processResourceRequest($method, $user_id, $role_id);
       return;
     }
-      
+
     $this->processCollectionRequest($method, $limit, $offset);
   }
 
-  private function processResourceRequest(string $method, string $user_id, ?string $role_id): void {
+  private function processResourceRequest(string $method, int $user_id, ?int $role_id): void {
     $user_roles = $this->gateway->get($user_id, $role_id);
     if(!$user_roles) {
       $this->sendErrorResponse(404, "User's id $user_id with role's id $role_id not found");
       return;
     }
-    
+
     switch($method) {
       case "GET":
         echo json_encode([
@@ -71,7 +71,7 @@ class UserRoleController extends ErrorHandler {
           break;
         }
         $data = $this->gateway->create($data);
-        
+
         http_response_code(201);
         echo json_encode([
           "success" => true,
@@ -95,12 +95,12 @@ class UserRoleController extends ErrorHandler {
 
     } else { //check fields that exist
       if(
-        array_key_exists("user_id", $data) && 
+        array_key_exists("user_id", $data) &&
         (empty($data["user_id"]) || !is_numeric($data["user_id"]))
       ) $errors[] = "user_id must be an integer";
       if(
         array_key_exists("role_id", $data) &&
-        (empty($data["role_id"]) || !is_numeric($data["role_id"])) 
+        (empty($data["role_id"]) || !is_numeric($data["role_id"]))
       ) $errors[] = "role_id must be an integer";
     }
 

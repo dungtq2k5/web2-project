@@ -53,7 +53,7 @@ class RoleGateway {
     $stmt->bindValue(":name", $new["name"] ?? $current["name"], PDO::PARAM_STR);
     $stmt->bindValue(":id", $current["id"], PDO::PARAM_INT);
     $stmt->execute();
-    
+
     return $this->get($current["id"]);
   }
 
@@ -81,5 +81,4 @@ class RoleGateway {
 
     return (bool) $stmt->fetchColumn();
   }
-
 }

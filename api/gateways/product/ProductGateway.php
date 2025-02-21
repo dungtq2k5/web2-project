@@ -42,7 +42,7 @@ class ProductGateway {
     return $this->get($id);
   }
 
-  public function get(string $id): array | false {
+  public function get(int $id): array | false {
     $sql = "SELECT * FROM products WHERE id = :id";
 
     $stmt = $this->conn->prepare($sql);

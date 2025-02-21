@@ -3,22 +3,22 @@
 class RoleController extends ErrorHandler {
   public function __construct(private RoleGateway $gateway, private Auths $auths) {}
 
-  public function processRequest(string $method, ?string $id, ?int $limit, ?int $offset): void {
+  public function processRequest(string $method, ?int $id, ?int $limit, ?int $offset): void {
     if($id) {
       $this->processResourceRequest($method, $id);
       return;
     }
-      
+
     $this->processCollectionRequest($method, $limit, $offset);
   }
 
-  private function processResourceRequest(string $method, string $id): void {
+  private function processResourceRequest(string $method, int $id): void {
     $role = $this->gateway->get($id);
     if(!$role) {
       $this->sendErrorResponse(404, "Role with an id $id not found");
       return;
     }
-    
+
     switch($method) {
       case "GET":
         echo json_encode([
@@ -36,7 +36,7 @@ class RoleController extends ErrorHandler {
           break;
         }
         $data = $this->gateway->update($role, $data);
-        
+
         echo json_encode([
           "success" => true,
           "message" => "Role id $id updated",
@@ -90,7 +90,7 @@ class RoleController extends ErrorHandler {
           break;
         }
         $data = $this->gateway->create($data);
-        
+
         http_response_code(201);
         echo json_encode([
           "success" => true,

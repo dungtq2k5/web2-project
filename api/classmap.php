@@ -12,6 +12,12 @@ define("USER_CONTROLLER_PATH", CONTROLLERS_PATH . "/user");
 define("CART_GATEWAY_PATH", GATEWAYS_PATH . "/cart");
 define("CART_CONTROLLER_PATH", CONTROLLERS_PATH . "/cart");
 
+define("PROVIDER_GATEWAY_PATH", GATEWAYS_PATH . "/provider");
+define("PROVIDER_CONTROLLER_PATH", CONTROLLERS_PATH . "/provider");
+
+define("GOODS_GATEWAY_PATH", GATEWAYS_PATH . "/goods");
+define("GOODS_CONTROLLER_PATH", CONTROLLERS_PATH . "/goods");
+
 return [
   "Database" => __DIR__ . "/config/Database.php",
 
@@ -31,6 +37,10 @@ return [
 
   "CartGateway" => CART_GATEWAY_PATH . "/CartGateway.php",
 
+  "ProviderGateway" => PROVIDER_GATEWAY_PATH . "/ProviderGateway.php",
+  
+  "GoodsReceiptNoteGateway" => GOODS_GATEWAY_PATH . "/GoodsReceiptNoteGateway.php",
+
   "ProductController" => PRODUCT_CONTROLLER_PATH . "/ProductController.php",
   "ProductVariationController" => PRODUCT_CONTROLLER_PATH . "/ProductVariationController.php",
   "ProductBrandController" => PRODUCT_CONTROLLER_PATH . "/ProductBrandController.php",
@@ -46,6 +56,11 @@ return [
   "UserAddressController" => USER_CONTROLLER_PATH . "/UserAddressController.php",
 
   "CartController" => CART_CONTROLLER_PATH . "/CartController.php",
+
+  "ProviderController" => PROVIDER_CONTROLLER_PATH . "/ProviderController.php",
+
+  "GoodsReceiptNoteController" => GOODS_CONTROLLER_PATH . "/GoodsReceiptNoteController.php",
+
   
   "ErrorHandler" => __DIR__ . "/ErrorHandler.php",
   "Auths" => __DIR__ . "/Auths.php",

@@ -55,7 +55,7 @@ class PermissionGateway {
     $stmt->bindValue(":action_code", $new["action_code"] ?? $current["action_code"], PDO::PARAM_STR);
     $stmt->bindValue(":id", $current["id"], PDO::PARAM_INT);
     $stmt->execute();
-    
+
     return $this->get($current["id"]);
   }
 
@@ -79,5 +79,4 @@ class PermissionGateway {
 
     return (bool) $stmt->fetchColumn();
   }
-
 }

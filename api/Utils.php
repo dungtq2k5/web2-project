@@ -35,13 +35,13 @@ class Utils {
 
   public function isValidDateTimeFormat(string $dateTimeString): bool { //AI gen
     $format = 'Y-m-d H:i:s'; // The format you want to check
-  
+
     try {
       $dateTime = DateTime::createFromFormat($format, $dateTimeString);
-  
+
       // Check if the DateTime object was created successfully AND if the formatted date matches the original string
       return $dateTime && $dateTime->format($format) === $dateTimeString;
-  
+
     } catch (Exception $e) {
       return false; // Invalid date/time string or format mismatch
     }
@@ -74,7 +74,7 @@ class Utils {
     $isInternational
       ? $pattern = '/^\+84[0-9]{9}$/' //International format (e.g., +84901234567), +84 followed by 9 digits
       : $pattern = '/^0[0-9]{9}$/'; //Domestic format (e.g., 0901234567 or 0321234567), 0 followed by 9 digits
-    
+
 
     // 3. Perform the regex match
     return (bool) preg_match($pattern, $phoneNumber);
@@ -84,5 +84,4 @@ class Utils {
     // password contain at least a letter or a number and length >= minLength -> valid
     return (strlen($password) >= $minLength && preg_match('/[a-zA-Z0-9]/', $password)) ? true : false;
   }
-
 }

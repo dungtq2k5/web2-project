@@ -64,7 +64,7 @@ class UserAddressGateway {
     return $this->get($this->conn->lastInsertId());
   }
 
-  public function get(string $id): array | false {
+  public function get(int $id): array | false {
     $sql = "SELECT * FROM user_addresses WHERE id = :id";
 
     $stmt = $this->conn->prepare($sql);
