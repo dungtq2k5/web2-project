@@ -24,7 +24,7 @@ class PermissionGateway {
     } elseif($limit) {
       $sql = "SELECT * FROM permissions LIMIT :limit";
     } elseif($offset) {
-      $sql = "SELECT * FROM permissions OFFSET: offset";
+      $sql = "SELECT * FROM permissions LIMIT 18446744073709551615 OFFSET: offset";
     } else {
       $sql = "SELECT * FROM permissions";
     }
@@ -55,7 +55,7 @@ class PermissionGateway {
     $stmt->bindValue(":action_code", $new["action_code"] ?? $current["action_code"], PDO::PARAM_STR);
     $stmt->bindValue(":id", $current["id"], PDO::PARAM_INT);
     $stmt->execute();
-    
+
     return $this->get($current["id"]);
   }
 
@@ -79,5 +79,4 @@ class PermissionGateway {
 
     return (bool) $stmt->fetchColumn();
   }
-
 }

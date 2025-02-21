@@ -3,22 +3,22 @@
 class ProductBrandController extends ErrorHandler {
   public function __construct(private ProductBrandGateway $gateway, private Auths $auths) {}
 
-  public function processRequest(string $method, ?string $id, ?int $limit, ?int $offset): void {
+  public function processRequest(string $method, ?int $id, ?int $limit, ?int $offset): void {
     if($id) {
       $this->processResourceRequest($method, $id);
       return;
     }
-      
+
     $this->processCollectionRequest($method, $limit, $offset);
   }
 
-  private function processResourceRequest(string $method, string $id): void {
+  private function processResourceRequest(string $method, int $id): void {
     $brand = $this->gateway->get($id);
     if(!$brand) {
       $this->sendErrorResponse(404, "Brand with an id $id not found");
       return;
     }
-    
+
     switch($method) {
       case "GET":
         echo json_encode([
@@ -48,7 +48,7 @@ class ProductBrandController extends ErrorHandler {
         $this->auths->verifyAction("DELETE_PRODUCT_BRAND");
         $res = $this->gateway->delete($id);
 
-        if(!$res) { 
+        if(!$res) {
           echo json_encode([
             "success" => $res,
             "message" => "Brand id $id can't be deleted because of constrain"
@@ -90,7 +90,7 @@ class ProductBrandController extends ErrorHandler {
           break;
         }
         $data = $this->gateway->create($data);
-        
+
         http_response_code(201);
         echo json_encode([
           "success" => true,

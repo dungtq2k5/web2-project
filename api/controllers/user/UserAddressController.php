@@ -1,25 +1,25 @@
 <?php
 
 class UserAddressController extends ErrorHandler {
-  
+
   public function __construct(private UserAddressGateway $gateway, private Auths $auths) {}
 
-  public function processRequest(string $method, ?string $id, ?int $limit, ?int $offset): void {
+  public function processRequest(string $method, ?int $id, ?int $limit, ?int $offset): void {
     if($id) {
       $this->processResourceRequest($method, $id);
       return;
     }
-      
+
     $this->processCollectionRequest($method, $limit, $offset);
   }
 
-  private function processResourceRequest(string $method, string $id): void {
+  private function processResourceRequest(string $method, int $id): void {
     $address = $this->gateway->get($id);
     if(!$address) {
       $this->sendErrorResponse(404, "Address with an id $id not found");
       return;
     }
-    
+
     switch($method) {
       case "GET":
         echo json_encode([
@@ -88,7 +88,7 @@ class UserAddressController extends ErrorHandler {
           break;
         }
         $data = $this->gateway->create($data);
-        
+
         http_response_code(201);
         echo json_encode([
           "success" => true,
@@ -129,7 +129,7 @@ class UserAddressController extends ErrorHandler {
       if(array_key_exists("phone_number", $data) && empty($data["phone_number"])) $errors[] = "phone_number is empty";
       if(array_key_exists("name", $data) && empty($data["name"])) $errors[] = "name is empty";
     }
-    
+
     if(array_key_exists("is_default", $data) && !is_bool($data["is_default"])) $errors[] = "is_default is empty or not a boolean value";
 
     return $errors;

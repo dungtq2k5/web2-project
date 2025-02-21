@@ -2,28 +2,28 @@
 
 class UserController extends ErrorHandler {
   private Utils $utils;
-  
+
   public function __construct(private UserGateway $gateway, private Auths $auths) {
     $this->utils = new Utils();
   }
 
-  public function processRequest(string $method, ?string $id, ?int $limit, ?int $offset): void {
+  public function processRequest(string $method, ?int $id, ?int $limit, ?int $offset): void {
     if($id) {
       $this->processResourceRequest($method, $id);
       return;
     }
-      
+
     $this->processCollectionRequest($method, $limit, $offset);
   }
 
-  private function processResourceRequest(string $method, string $id): void {
+  private function processResourceRequest(string $method, int $id): void {
     $user = $this->gateway->get($id);
     if(!$user) {
       $this->sendErrorResponse(404, "User with an id $id not found");
       return;
     }
     unset($user["password"]);
-    
+
     switch($method) {
       case "GET":
         echo json_encode([
@@ -94,7 +94,7 @@ class UserController extends ErrorHandler {
         }
         $data = $this->gateway->create($data);
         unset($data["password"]);
-        
+
         http_response_code(201);
         echo json_encode([
           "success" => true,
@@ -121,16 +121,16 @@ class UserController extends ErrorHandler {
     } else { //check fields that exist
       if(array_key_exists("full_name", $data) && empty($data["full_name"])) $errors[] = "full_name is empty";
       if(
-        array_key_exists("email", $data) && 
+        array_key_exists("email", $data) &&
         (empty($data["email"]) || !$this->utils->isValidEmail($data["email"]))
       ) $errors[] = "email is empty or not a valid email";
       if(
-        array_key_exists("phone_number", $data) && 
+        array_key_exists("phone_number", $data) &&
         (empty($data["phone_number"]) || !$this->utils->isValidVNPhoneNumber($data["phone_number"]))
       ) $errors[] = "phone_number is empty or not a valid phone number";
       if(
         array_key_exists("password", $data) &&
-        (empty($data["password"]) || !$this->utils->isValidPassword($data["password"])) 
+        (empty($data["password"]) || !$this->utils->isValidPassword($data["password"]))
       ) $errors[] = "password is empty or not a valid password (hint: password must contain at least one letter and one number with min length = 8)";
     }
 

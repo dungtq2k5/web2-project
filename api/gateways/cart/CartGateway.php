@@ -13,7 +13,7 @@ class CartGateway {
     } elseif($limit) {
       $sql = "SELECT * FROM carts LIMIT :limit";
     } elseif($offset) {
-      $sql = "SELECT * FROM carts OFFSET :offset";
+      $sql = "SELECT * FROM carts LIMIT 18446744073709551615 OFFSET :offset";
     } else {
       $sql = "SELECT * FROM carts";
     }
@@ -22,18 +22,19 @@ class CartGateway {
     if($limit) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
     if($offset) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
     $stmt->execute();
-    
+
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
   }
 
   public function create(array $data): array | false {
+    echo "run";
     $user_id = $data["user_id"];
     $product_variation_id = $data["product_variation_id"];
 
     $sql = $this->isExist($user_id, $product_variation_id) //exist -> accumulate quantity
       ? "UPDATE carts SET quantity = quantity + :quantity WHERE user_id = :user_id AND product_variation_id = :product_variation_id"
       : "INSERT INTO carts (user_id, product_variation_id, quantity) VALUES (:user_id, :product_variation_id, :quantity)";
-    
+
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":user_id", $user_id, PDO::PARAM_INT);
     $stmt->bindValue(":product_variation_id", $product_variation_id, PDO::PARAM_INT);
@@ -43,8 +44,8 @@ class CartGateway {
     return $this->get($user_id, $product_variation_id);
   }
 
-  public function get(string $user_id, ?string $product_variation_id): array | false {
-    $sql = $user_id && $product_variation_id 
+  public function get(int $user_id, ?int $product_variation_id): array | false {
+    $sql = $user_id && $product_variation_id
       ? "SELECT * FROM carts WHERE user_id = :user_id AND product_variation_id = :product_variation_id"
       : "SELECT * FROM carts WHERE user_id = :user_id";
 
@@ -77,9 +78,9 @@ class CartGateway {
     return $this->get($user_id, $product_variation_id);
   }
 
-  public function delete(string $user_id, ?string $product_variation_id): bool {
+  public function delete(int $user_id, ?int $product_variation_id): bool {
     $sql = "DELETE FROM carts WHERE user_id = :user_id AND product_variation_id = :product_variation_id";
-    
+
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":user_id", $user_id, PDO::PARAM_INT);
     $stmt->bindValue(":product_variation_id", $product_variation_id, PDO::PARAM_INT);
@@ -87,7 +88,7 @@ class CartGateway {
     return $stmt->execute();
   }
 
-  private function isExist(string $user_id, string $product_variation_id): bool {
+  private function isExist(int $user_id, int $product_variation_id): bool {
     $sql = "SELECT EXISTS (
       SELECT 1 FROM carts WHERE user_id = :user_id AND product_variation_id = :product_variation_id
     )";
@@ -95,6 +96,7 @@ class CartGateway {
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":user_id", $user_id, PDO::PARAM_INT);
     $stmt->bindValue(":product_variation_id", $product_variation_id, PDO::PARAM_INT);
+    $stmt->execute();
 
     return (bool) $stmt->fetchColumn();
   }

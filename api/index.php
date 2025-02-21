@@ -23,12 +23,12 @@ $usr_email = $_SERVER["PHP_AUTH_USER"] ?? null;
 $usr_pwd = $_SERVER["PHP_AUTH_PW"] ?? null;
 $limit = isset($_GET["limit"]) ? abs((int) $_GET["limit"]) : null;
 $offset = isset($_GET["offset"]) ? abs((int) $_GET["offset"]) : null;
-$id = is_numeric(end($uri_parts)) ? end($uri_parts) : null;
+$id = is_numeric(end($uri_parts)) ? (int) end($uri_parts) : null;
 
 $db = new Database("localhost", "smartwatch_db", "root", "");
 $auths = new Auths($db, $usr_email, $usr_pwd);
 
-$uri = preg_replace('/\/[0-9]+$/', '', $uri); //AI gen: remove :id if exist
+$uri = preg_replace('/\/[0-9]+$/', '', $uri); //AI gen: remove {id} if exist
 switch(true) {
   case str_contains($uri, SOURCE_URI . "/products"):
     include_once "./routes/product.php";
@@ -40,6 +40,14 @@ switch(true) {
 
   case str_contains($uri, SOURCE_URI . "/carts"):
     include_once "./routes/cart.php";
+    break;
+
+  case str_contains($uri, SOURCE_URI . "/providers"):
+    include_once "./routes/provider.php";
+    break;
+
+  case str_contains($uri, SOURCE_URI . "/goods_receipt_notes"):
+    include_once "./routes/goodsReceiptNote.php";
     break;
 
   default:

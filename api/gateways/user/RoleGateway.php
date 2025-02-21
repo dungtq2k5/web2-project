@@ -23,7 +23,7 @@ class RoleGateway {
     } elseif($limit) {
       $sql = "SELECT * FROM roles LIMIT :limit";
     } elseif($offset) {
-      $sql = "SELECT * FROM roles OFFSET: offset";
+      $sql = "SELECT * FROM roles LIMIT 18446744073709551615 OFFSET: offset";
     } else {
       $sql = "SELECT * FROM roles";
     }
@@ -53,7 +53,7 @@ class RoleGateway {
     $stmt->bindValue(":name", $new["name"] ?? $current["name"], PDO::PARAM_STR);
     $stmt->bindValue(":id", $current["id"], PDO::PARAM_INT);
     $stmt->execute();
-    
+
     return $this->get($current["id"]);
   }
 
@@ -81,5 +81,4 @@ class RoleGateway {
 
     return (bool) $stmt->fetchColumn();
   }
-
 }

@@ -1,7 +1,11 @@
 <?php
 
-class ProductController extends ErrorHandler {
-  public function __construct(private ProductGateway $gateway, private Auths $auths) {}
+class GoodsReceiptNoteController extends ErrorHandler {
+  private Utils $utils;
+
+  public function __construct(private GoodsReceiptNoteGateway $gateway, private Auths $auths) {
+    $this->utils = new Utils();
+  }
 
   public function processRequest(string $method, ?int $id, ?int $limit, ?int $offset): void {
     if($id) {
@@ -13,9 +17,9 @@ class ProductController extends ErrorHandler {
   }
 
   private function processResourceRequest(string $method, int $id): void {
-    $product = $this->gateway->get($id);
-    if(!$product) {
-      $this->sendErrorResponse(404, "Product with an id $id not found");
+    $receipt_note = $this->gateway->get($id);
+    if(!$receipt_note) {
+      $this->sendErrorResponse(404, "Receipt note with an id $id not found");
       return;
     }
 
@@ -23,34 +27,39 @@ class ProductController extends ErrorHandler {
       case "GET":
         echo json_encode([
           "success" => true,
-          "data" => $product
+          "data" => $receipt_note
         ]);
         break;
 
       case "PUT":
-        $this->auths->verifyAction("UPDATE_PRODUCT");
+        $this->auths->verifyAction("UPDATE_GOODS_RECEIPT_NOTE");
         $data = (array) json_decode(file_get_contents("php://input"));
         $errors = $this->getValidationErrors($data, false);
         if(!empty($errors)) {
           $this->sendErrorResponse(422, $errors);
           break;
         }
-        $data = $this->gateway->update($product, $data);
+        $data = $this->gateway->update($receipt_note, $data);
 
         echo json_encode([
           "success" => true,
-          "message" => "Product id $id updated",
+          "message" => "Receipt note id $id updated",
           "data" => $data
         ]);
         break;
 
       case "DELETE":
-        $this->auths->verifyAction("DELETE_PRODUCT");
+        $this->auths->verifyAction("DELETE_GOODS_RECEIPT_NOTE");
         $res = $this->gateway->delete($id);
+
+        if(!$res) {
+          $this->sendErrorResponse(403, "Receipt note can't be deleted because of constrain");
+          break;
+        }
 
         echo json_encode([
           "success" => $res,
-          "message" => "Product id $id was deleted or stop_selling if there is a constrain"
+          "message" => "Receipt note id $id was deleted"
         ]);
         break;
 
@@ -74,7 +83,7 @@ class ProductController extends ErrorHandler {
         break;
 
       case "POST":
-        $this->auths->verifyAction("CREATE_PRODUCT");
+        $this->auths->verifyAction("CREATE_GOODS_RECEIPT_NOTE");
         $data = (array) json_decode(file_get_contents("php://input"));
         $errors = $this->getValidationErrors($data);
         if(!empty($errors)) {
@@ -86,7 +95,7 @@ class ProductController extends ErrorHandler {
         http_response_code(201);
         echo json_encode([
           "success" => true,
-          "message" => "Product created",
+          "message" => "Receipt note created",
           "data" => $data
         ]);
         break;
@@ -100,21 +109,32 @@ class ProductController extends ErrorHandler {
   private function getValidationErrors(array $data, bool $new=true): array {
     $errors = [];
 
-    if($new) { //check all fields for new product
+    if($new) { //check all fields for new receipt_note
       if(empty($data["name"])) $errors[] = "name is required";
-      if(empty($data["brand_id"]) || !is_numeric($data["brand_id"])) $errors[] = "brand_id is required with integer value";
-      if(empty($data["model"])) $errors[] = "model is required";
-      if(empty($data["category_id"]) || !is_numeric($data["category_id"])) $errors[] = "category_id is required with integer value";
-      if(empty($data["description"])) $errors[] = "description is required";
+      if(empty($data["provider_id"]) || !is_numeric($data["provider_id"])) $errors[] = "provider_id is required with integer value";
+      if(empty($data["staff_id"]) || !is_numeric($data["staff_id"])) $errors[] = "staff_id is required with integer value";
+      if(empty($data["total_price_cents"]) || !is_numeric($data["total_price_cents"])) $errors[] = "total_price_cents is required with integer value";
+      if(empty($data["quantity"]) || !is_numeric($data["quantity"])) $errors[] = "quantity is required with integer value";
+
     } else { //check fields that exist
       if(array_key_exists("name", $data) && empty($data["name"])) $errors[] = "name is empty";
-      if(array_key_exists("brand_id", $data) && (empty($data["brand_id"]) || !is_numeric($data["brand_id"]))) $errors[] = "brand_id is empty or not an integer";
-      if(array_key_exists("model", $data) && empty($data["model"])) $errors[] = "model is empty";
-      if(array_key_exists("category_id", $data) && (empty($data["category_id"]) || !is_numeric($data["category_id"]))) $errors[] = "category_id is empty or not an integer";
-      if(array_key_exists("description", $data) && empty($data["description"])) $errors[] = "description is empty";
+      if(
+        array_key_exists("provider_id", $data) &&
+        (empty($data["provider_id"]) || !is_numeric($data["provider_id"]))
+      ) $errors[] = "provider_id is empty or not an integer value";
+      if(
+        array_key_exists("staff_id", $data) &&
+        (empty($data["staff_id"]) || !is_numeric($data["staff_id"]))
+      ) $errors[] = "staff_id is empty or not an integer value";
+      if(
+        array_key_exists("total_price_cents", $data) &&
+        (empty($data["total_price_cents"]) || !is_numeric($data["total_price_cents"]))
+      ) $errors[] = "total_price_cents is empty or not an integer value";
+      if(
+        array_key_exists("quantity", $data) &&
+        (empty($data["quantity"]) || !is_numeric($data["quantity"]))
+      ) $errors[] = "quantity is empty or not an integer value";
     }
-
-    if(array_key_exists("stop_selling", $data) && !is_bool($data["stop_selling"])) $errors[] = "stop_selling must be a boolean value";
 
     return $errors;
   }
