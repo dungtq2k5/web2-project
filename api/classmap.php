@@ -38,7 +38,7 @@ return [
   "CartGateway" => CART_GATEWAY_PATH . "/CartGateway.php",
 
   "ProviderGateway" => PROVIDER_GATEWAY_PATH . "/ProviderGateway.php",
-  
+
   "GoodsReceiptNoteGateway" => GOODS_GATEWAY_PATH . "/GoodsReceiptNoteGateway.php",
 
   "ProductController" => PRODUCT_CONTROLLER_PATH . "/ProductController.php",
@@ -61,7 +61,7 @@ return [
 
   "GoodsReceiptNoteController" => GOODS_CONTROLLER_PATH . "/GoodsReceiptNoteController.php",
 
-  
+
   "ErrorHandler" => __DIR__ . "/ErrorHandler.php",
   "Auths" => __DIR__ . "/Auths.php",
   "Utils" => __DIR__ . "/Utils.php"

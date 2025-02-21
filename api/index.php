@@ -6,15 +6,16 @@ require_once "./config/settings.php";
 
 $classMap = require_once "./classmap.php";
 spl_autoload_register(function ($class) use ($classMap): void {
-  if(isset($classMap[$class])) {
-    require_once $classMap[$class];
-  }
+    if (isset($classMap[$class])) {
+        require_once $classMap[$class];
+    }
 });
 
 set_exception_handler("ErrorHandler::handleException");
 
-header("Content-type: application/json; charset=UTF-8");
+header("Content-Type: application/json; charset=UTF-8");
 
+// Lấy thông tin từ request
 $method = $_SERVER["REQUEST_METHOD"];
 $uri = trim(parse_url($_SERVER["REQUEST_URI"])["path"], "/"); //web2-project/api/...
 $uri_parts = explode("/", $uri);
