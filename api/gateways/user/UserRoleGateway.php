@@ -59,4 +59,14 @@ class UserRoleGateway {
     $stmt->bindValue(":role_id", $role_id, PDO::PARAM_INT);
     return $stmt->execute();
   }
+
+  public function deleteByUserId(int $user_id): bool {
+    $sql = "DELETE FROM user_roles WHERE user_id = :user_id";
+
+    $stmt = $this->conn->prepare($sql);
+    $stmt->bindValue(":user_id", $user_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    return $stmt->rowCount();
+  }
 }

@@ -2,9 +2,11 @@
 
 class UserGateway {
   private PDO $conn;
+  private UserRoleGateway $userRole;
 
   public function __construct(Database $db) {
     $this->conn = $db->getConnection();
+    $this->userRole = new UserRoleGateway($db);
   }
 
   public function getAll(?int $limit, ?int $offset): array | false {
@@ -72,9 +74,11 @@ class UserGateway {
   }
 
   public function delete(int $id): bool {
-    $sql = $this->hasConstrain($id)
-      ? "UPDATE users SET stop_selling = true WHERE id = :id" //TODO delete user roles -> restricted
-      : "DELETE FROM users WHERE id = :id";
+    if($this->hasConstrain($id)) { //delete all user roles instead
+      return $this->userRole->deleteByUserId($id);
+    }
+
+    $sql = "DELETE FROM users WHERE id = :id";
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":id", $id, PDO::PARAM_INT);

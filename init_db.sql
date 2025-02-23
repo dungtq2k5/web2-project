@@ -1,6 +1,6 @@
 DROP DATABASE smartwatch_db;
 CREATE DATABASE IF NOT EXISTS smartwatch_db;
-USE smartwatch_db; 
+USE smartwatch_db;
 
 -- users
 CREATE TABLE users (
@@ -29,14 +29,14 @@ CREATE TABLE user_roles (
   PRIMARY KEY (user_id, role_id)
 );
 
--- permissions 
+-- permissions
 CREATE TABLE permissions (
   id INT AUTO_INCREMENT PRIMARY KEY,
   action_name VARCHAR(155) UNIQUE NOT NULL,
   action_code VARCHAR(155) UNIQUE NOT NULL
 );
 
--- role_permissions 
+-- role_permissions
 CREATE TABLE role_permissions (
   role_id INT NOT NULL,
   permission_id INT NOT NULL,
@@ -45,7 +45,7 @@ CREATE TABLE role_permissions (
   PRIMARY KEY (role_id, permission_id)
 );
 
--- user_addresses 
+-- user_addresses
 CREATE TABLE user_addresses (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
@@ -88,7 +88,7 @@ CREATE TABLE goods_receipt_notes (
 ALTER TABLE goods_receipt_notes ADD INDEX idx_provider_id(provider_id);
 ALTER TABLE goods_receipt_notes ADD INDEX idx_staff_id(staff_id);
 
--- product_brands 
+-- product_brands
 CREATE TABLE product_brands (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255) UNIQUE NOT NULL
@@ -164,7 +164,7 @@ ALTER TABLE product_variations ADD INDEX idx_stop_selling(stop_selling);
 -- product_instances
 CREATE TABLE product_instances (
   sku VARCHAR(255) PRIMARY KEY, -- SW-APL-S8-45-BLK-SIL
-  product_variation_id INT NOT NULL, 
+  product_variation_id INT NOT NULL,
   goods_receipt_note_id INT NOT NULL,
   is_sold BOOLEAN NOT NULL DEFAULT 0,
   FOREIGN KEY (product_variation_id) REFERENCES product_variations(id),
@@ -210,7 +210,7 @@ CREATE TABLE orders (
 ALTER TABLE orders ADD INDEX idx_user_id(user_id);
 ALTER TABLE orders ADD INDEX idx_delivery_state_id(delivery_state_id);
 
--- order_items 
+-- order_items
 CREATE TABLE order_items (
   id INT AUTO_INCREMENT PRIMARY KEY,
   order_id INT NOT NULL,

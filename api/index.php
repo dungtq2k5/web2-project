@@ -1,4 +1,5 @@
 <?php
+//API v1.0
 
 declare(strict_types=1);
 
@@ -15,7 +16,6 @@ set_exception_handler("ErrorHandler::handleException");
 
 header("Content-Type: application/json; charset=UTF-8");
 
-// Lấy thông tin từ request
 $method = $_SERVER["REQUEST_METHOD"];
 $uri = trim(parse_url($_SERVER["REQUEST_URI"])["path"], "/"); //web2-project/api/...
 $uri_parts = explode("/", $uri);
@@ -41,6 +41,10 @@ switch(true) {
 
   case str_contains($uri, SOURCE_URI . "/carts"):
     include_once "./routes/cart.php";
+    break;
+
+  case str_contains($uri, SOURCE_URI . "/orders"):
+    include_once "./routes/order.php";
     break;
 
   case str_contains($uri, SOURCE_URI . "/providers"):
