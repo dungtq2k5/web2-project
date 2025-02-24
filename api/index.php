@@ -1,5 +1,5 @@
 <?php
-//API v1.0
+//API v1.1
 
 declare(strict_types=1);
 
@@ -15,8 +15,15 @@ spl_autoload_register(function ($class) use ($classMap): void {
 set_exception_handler("ErrorHandler::handleException");
 
 header("Content-Type: application/json; charset=UTF-8");
+header("Access-Control-Allow-Origin: *"); // Allow your origin
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS"); // Allowed request methods
+header("Access-Control-Allow-Headers: Content-Type, Authorization"); // Allowed headers
 
 $method = $_SERVER["REQUEST_METHOD"];
+if($method === "OPTIONS") {
+  http_response_code(200); // Respond with OK for preflight requests
+  exit;
+}
 $uri = trim(parse_url($_SERVER["REQUEST_URI"])["path"], "/"); //web2-project/api/...
 $uri_parts = explode("/", $uri);
 
