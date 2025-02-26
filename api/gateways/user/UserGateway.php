@@ -3,10 +3,12 @@
 class UserGateway {
   private PDO $conn;
   private UserRoleGateway $userRole;
+  private UserAddressGateway $userAddress;
 
   public function __construct(Database $db) {
     $this->conn = $db->getConnection();
     $this->userRole = new UserRoleGateway($db);
+    $this->userAddress = new UserAddressGateway($db);
   }
 
   public function getAll(?int $limit, ?int $offset): array | false {
@@ -23,9 +25,18 @@ class UserGateway {
     $stmt = $this->conn->prepare($sql);
     if($limit) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
     if($offset) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
-    $stmt->execute();
 
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if($stmt->execute()) {
+      $data = [];
+      while($user = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $user["addresses"] = $this->userAddress->getByUserId((int) $user["id"]);
+        $user["roles"] = $this->userRole->getByUserId((int) $user["id"]);
+        $data[] = $user;
+      }
+      return $data;
+    }
+
+    return false;
   }
 
   public function create(array $data): array | false {
@@ -48,9 +59,14 @@ class UserGateway {
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":id", $id, PDO::PARAM_INT);
-    $stmt->execute();
 
-    return $stmt->fetch(PDO::FETCH_ASSOC);
+    if($stmt->execute() && $data = $stmt->fetch(PDO::FETCH_ASSOC)) {
+      $data["addresses"] = $this->userAddress->getByUserId((int) $data["id"]);
+      $data["roles"] = $this->userRole->getByUserId((int) $data["id"]);
+      return $data;
+    }
+
+    return false;
   }
 
   public function update(array $current, array $new): array | false {

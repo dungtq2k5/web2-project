@@ -81,7 +81,7 @@ class Utils {
     return (bool) preg_match($pattern, $phoneNumber);
   }
 
-  public function isValidPassword(string $password, int $minLength=8): bool { //AI support
+  public function isValidPassword(string $password, int $minLength=8): bool { //AI gen
     // password contain at least a letter or a number and length >= minLength -> valid
     return (strlen($password) >= $minLength && preg_match('/[a-zA-Z0-9]/', $password)) ? true : false;
   }
