@@ -1,0 +1,60 @@
+.content__title {
+  margin-bottom: 1em;
+}
+
+.content__table {
+  width: 100%;
+  border-collapse: collapse;
+  white-space: nowrap;
+}
+
+.content__th {
+  text-transform: capitalize;
+}
+
+.content__th, .content__td {
+  padding: .5em;
+  text-align: left;
+  border: 1px solid black;
+}
+
+.content__tr:nth-of-type(2n) {
+  background-color: lightgray;
+}
+
+@media (max-width: 650px) {
+  .content__table {
+    border: 1px solid black;
+  }
+
+  .content__thead {
+    display: none;
+  }
+
+  .content__th, .content__td {
+    border: none;
+  }
+
+  .content__td {
+    display: grid;
+    gap: .5rem;
+    grid-template-columns: 16ch auto;
+    padding: .5rem 1rem;
+  }
+  .content__td:first-child {
+    padding-top: 1em;
+  }
+  .content__td:last-child {
+    padding-bottom: 1em;
+  }
+  .content__td:before {
+    content: attr(data-cell) ": ";
+    text-transform: capitalize;
+  }
+}
+
+
+.content__addresses {
+  max-height: 5rem;
+  overflow-y: scroll;
+}
