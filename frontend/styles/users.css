@@ -1,0 +1,4 @@
+.content__addresses {
+  max-height: 5rem;
+  overflow-y: scroll;
+}

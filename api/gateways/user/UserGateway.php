@@ -3,10 +3,14 @@
 class UserGateway {
   private PDO $conn;
   private UserRoleGateway $userRole;
+  private UserAddressGateway $userAddress;
+  private CartGateway $cart;
 
   public function __construct(Database $db) {
     $this->conn = $db->getConnection();
     $this->userRole = new UserRoleGateway($db);
+    $this->userAddress = new UserAddressGateway($db);
+    $this->cart = new CartGateway($db);
   }
 
   public function getAll(?int $limit, ?int $offset): array | false {
@@ -23,9 +27,19 @@ class UserGateway {
     $stmt = $this->conn->prepare($sql);
     if($limit) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
     if($offset) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
-    $stmt->execute();
 
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if($stmt->execute()) {
+      $data = [];
+      while($user = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $user["addresses"] = $this->userAddress->getByUserId((int) $user["id"]);
+        $user["roles"] = $this->userRole->getByUserId((int) $user["id"]);
+        $user["cart"] = $this->cart->getByUserId((int) $user["id"]);
+        $data[] = $user;
+      }
+      return $data;
+    }
+
+    return false;
   }
 
   public function create(array $data): array | false {
@@ -40,7 +54,17 @@ class UserGateway {
     $stmt->execute();
 
     $id = $this->conn->lastInsertId();
+    if($data["roles_id"]) $this->createRoles($id, $data["roles_id"]);
     return $this->get($id);
+  }
+
+  private function createRoles(int $user_id, array $roles_id): void {
+    foreach($roles_id as $role_id) {
+      $this->userRole->create([
+        "user_id" => $user_id,
+        "role_id" => $role_id
+      ]);
+    }
   }
 
   public function get(int $id): array | false {
@@ -48,9 +72,15 @@ class UserGateway {
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":id", $id, PDO::PARAM_INT);
-    $stmt->execute();
 
-    return $stmt->fetch(PDO::FETCH_ASSOC);
+    if($stmt->execute() && $user = $stmt->fetch(PDO::FETCH_ASSOC)) {
+      $user["addresses"] = $this->userAddress->getByUserId((int) $user["id"]);
+      $user["roles"] = $this->userRole->getByUserId((int) $user["id"]);
+      $user["cart"] = $this->cart->getByUserId((int) $user["id"]);
+      return $user;
+    }
+
+    return false;
   }
 
   public function update(array $current, array $new): array | false {
@@ -70,13 +100,18 @@ class UserGateway {
     $stmt->bindValue(":id", $current["id"], PDO::PARAM_INT);
     $stmt->execute();
 
+    if(isset($new["roles_id"])) $this->updateRoles($current["id"], $new["roles_id"]);
+
     return $this->get($current["id"]);
   }
 
+  private function updateRoles(int $user_id, array $roles_id): void { //delete all current roles -> create new ones
+    $this->userRole->deleteByUserId($user_id);
+    $this->createRoles($user_id, $roles_id);
+  }
+
   public function delete(int $id): bool {
-    if($this->hasConstrain($id)) { //delete all user roles instead
-      return $this->userRole->deleteByUserId($id);
-    }
+    if($this->hasConstrain($id)) return false;
 
     $sql = "DELETE FROM users WHERE id = :id";
 

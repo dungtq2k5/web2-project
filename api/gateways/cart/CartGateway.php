@@ -2,9 +2,11 @@
 
 class CartGateway {
   private PDO $conn;
+  private ProductVariationGateway $productVariation;
 
   public function __construct(Database $db) {
     $this->conn = $db->getConnection();
+    $this->productVariation = new ProductVariationGateway($db);
   }
 
   public function getAll(?int $limit, ?int $offset): array | false {
@@ -99,5 +101,25 @@ class CartGateway {
     $stmt->execute();
 
     return (bool) $stmt->fetchColumn();
+  }
+
+  public function getByUserId(int $user_id): array | false {
+    $sql = "SELECT product_variation_id, quantity FROM carts WHERE user_id = :user_id";
+
+    $stmt = $this->conn->prepare($sql);
+    $stmt->bindValue(":user_id", $user_id, PDO::PARAM_INT);
+
+    if($stmt->execute()) {
+      $data = [];
+      while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $row["product_variation"] = $this->productVariation->get((int) $row["product_variation_id"]);
+        unset($row["product_variation_id"]);
+        $data[] = $row;
+      }
+
+      return $data;
+    }
+
+    return false;
   }
 }

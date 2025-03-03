@@ -1,0 +1,23 @@
+.content__items {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.content__item {
+  display: flex;
+  gap: .5em;
+  align-items: center;
+}
+
+.item__detail {
+  display: flex;
+  gap: .25em;
+  align-items: center;
+}
+
+.item__img {
+  max-width: 66px;
+}

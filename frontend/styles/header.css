@@ -1,0 +1,12 @@
+.header__logo {
+  font-size: .75rem;
+}
+
+.header__nav {
+  width: max-content;
+}
+.header__list {
+  display: flex;
+  gap: .5em;
+  width: 100%;
+}

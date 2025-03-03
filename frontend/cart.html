@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.8/css/line.css">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="./styles/general.css">
+  <link rel="stylesheet" href="./styles/header.css">
+  <link rel="stylesheet" href="./styles/carts.css">
+  <title>Document</title>
+</head>
+<body>
+
+  <header class="header--g">
+    <div class="header__logo">
+      <h1>Logo - [admin] page</h1>
+    </div>
+
+    <nav class="header__nav">
+      <ul class="header__list">
+        <li class="header__item"><button>users</button></li>
+        <li class="header__item"><button>carts</button></li>
+        <li class="header__item"><button>orders</button></li>
+        <li class="header__item"><button>products</button></li>
+        <li class="header__item"><button>providers</button></li>
+        <li class="header__item"><button>goods receipt notes</button></li>
+      </ul>
+    </nav>
+
+    <div class="header__btns">
+      <button class="header_btn">login</button>
+      <button class="header_btn">logout</button>
+    </div>
+  </header>
+
+  <main class="content content--g">
+    <div class="content__title">
+      <h2>Users' Cart management</h2>
+      <div>
+        <button id="create-cart-btn"><i class="uil uil-plus"></i>create cart</button>
+        <span id="crud-cart-msg"></span>
+      </div>
+    </div>
+
+    <div>
+      <form class="search-box--g">
+        <label for="search-input">Searching cart</label>
+        <input type="text" id="search-input">
+        <button id="search-btn">search</button>
+        <button id="clear-search-btn">clear search</button>
+      </form>
+      <p>Result: <span id="result-count"></span></p>
+    </div>
+
+    <div class="auto-scroll--g">
+      <table class="content__table">
+        <thead class="content__thead b">
+          <tr class="content__tr">
+            <!-- TODO click -> popup user, product variation detail -->
+            <th class="content__th">n.o</th>
+            <th class="content__th">user(buyer) id</th>
+            <th class="content__th">user email</th>
+            <th class="content__th">user cart</th>
+            <th class="content__th">actions</th>
+          </tr>
+        </thead>
+
+        <tbody class="content__tbody" id="tbody">
+          <tr class="content__tr">
+            <td data-cell="n.o" class="content__td" title="1">1</td>
+            <td data-cell="user(buyer) id" class="content__td" title="click to view user">1</td>
+            <td data-cell="user email" class="content__td" title="">email@gmail.com</td>
+            <td data-cell="user cart" class="content__td">
+              <ul class="content__items">
+                <li class="content__item">
+                  <div class="item__detail">
+                    <img class="item__img" src="./assets/product.png" alt="smartwatch">
+                    <p>product name</p>
+                    <p>-</p>
+                    <p>133 &#162;</p>
+                  </div>
+                  <i class="uil uil-multiply"></i>
+                  <p class="item__quantity">15</p>
+                  <button class="item__btn">view detail</button>
+                </li>
+              </ul>
+            </td>
+            <td data-cell="actions" class="content__td">
+              <button>delete</button>
+              <button>update</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <div class="backdrop--g" id="backdrop" style="display: none;"></div>
+
+  <footer class="footer--g">footer</footer>
+
+  <!-- <script type="module" src="./main.js"></script> -->
+</body>
+</html>
