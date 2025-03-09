@@ -29,7 +29,7 @@
 
     /* Sidebar thiết lập mặc định */
     #sidebar {
-        width: 400px;
+        min-width: 200px;
     }
 
     /* Mobile Sidebar - Ẩn mặc định */
@@ -50,9 +50,11 @@
             transition: transform 0.3s ease-in-out;
             z-index: 1050;
         }
+
         #sidebar.show {
             transform: translateX(0);
         }
+
         .overlay {
             display: none;
             position: fixed;
@@ -63,6 +65,7 @@
             background: rgba(0, 0, 0, 0.5);
             z-index: 1049;
         }
+
         .overlay.show {
             display: block;
         }
@@ -70,13 +73,13 @@
 </style>
 
 <script>
-    document.getElementById("toggleSidebar").addEventListener("click", function(){
+    document.getElementById("toggleSidebar").addEventListener("click", function () {
         document.getElementById("sidebar").classList.toggle("show");
         document.getElementById("overlay").classList.toggle("show");
     });
 
     // Đóng sidebar khi nhấn vào overlay
-    document.getElementById("overlay").addEventListener("click", function(){
+    document.getElementById("overlay").addEventListener("click", function () {
         document.getElementById("sidebar").classList.remove("show");
         document.getElementById("overlay").classList.remove("show");
     });

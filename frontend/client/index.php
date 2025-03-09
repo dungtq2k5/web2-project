@@ -13,7 +13,7 @@
     </div>
 
     <div id="main-content">
-
+        <?php include("./pages/account.php"); ?>
     </div>
 
     <div id="footer">

@@ -48,8 +48,8 @@
 
     <div class="d-flex flex-column flex-sm-row justify-content-between py-4 my-4 border-top">
       <p>
-      <i class="bi bi-smartwatch fs-3"></i>
-        © 2024 Company, Inc. All rights reserved.
+        <i class="bi bi-smartwatch fs-3"></i>
+        © 2025 Company, Inc. All rights reserved.
       </p>
       <ul class="list-unstyled d-flex">
         <li class="ms-3"><a class="link-body-emphasis" href="#"><i class="bi bi-facebook fs-3"></i></a></li>
