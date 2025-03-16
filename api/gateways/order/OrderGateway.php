@@ -25,9 +25,18 @@ class OrderGateway {
     $stmt = $this->conn->prepare($sql);
     if($limit) $stmt->bindValue(":limit", $limit);
     if($offset) $stmt->bindValue(":offset", $offset);
-    $stmt->execute();
 
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if($stmt->execute()) {
+      $data = [];
+      while($order = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $order["items"] = $this->orderItem->getByOrderId($order["id"]);
+        $data[] = $order;
+      }
+
+      return $data;
+    }
+
+    return false;
   }
 
   public function get(int $id): array | false {
@@ -35,9 +44,13 @@ class OrderGateway {
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":id", $id, PDO::PARAM_INT);
-    $stmt->execute();
 
-    return $stmt->fetch(PDO::FETCH_ASSOC);
+    if($stmt->execute() && $order = $stmt->fetch(PDO::FETCH_ASSOC)) {
+      $order["items"] = $this->orderItem->getByOrderId($order["id"]);
+      return $order;
+    }
+
+    return false;
   }
 
   public function create(array $data): array | false {
@@ -47,7 +60,7 @@ class OrderGateway {
         "INSERT INTO orders (
           user_id,
           total_cents,
-          delivery_address,
+          delivery_address_id,
           delivery_state_id,
           order_date,
           estimate_received_date,
@@ -55,7 +68,7 @@ class OrderGateway {
         ) VALUES (
           :user_id,
           :total_cents,
-          :delivery_address,
+          :delivery_address_id,
           :delivery_state_id,
           :order_date,
           :estimate_received_date,
@@ -65,14 +78,14 @@ class OrderGateway {
         "INSERT INTO orders (
           user_id,
           total_cents,
-          delivery_address,
+          delivery_address_id,
           delivery_state_id,
           estimate_received_date,
           received_date
         ) VALUES (
           :user_id,
           :total_cents,
-          :delivery_address,
+          :delivery_address_id,
           :delivery_state_id,
           :estimate_received_date,
           :received_date
@@ -81,7 +94,7 @@ class OrderGateway {
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":user_id", $data["user_id"], PDO::PARAM_INT);
     $stmt->bindValue(":total_cents", $data["total_cents"], PDO::PARAM_INT);
-    $stmt->bindValue(":delivery_address", $data["delivery_address"], PDO::PARAM_STR);
+    $stmt->bindValue(":delivery_address_id", $data["delivery_address_id"], PDO::PARAM_INT);
     $stmt->bindValue(":delivery_state_id", $data["delivery_state_id"], PDO::PARAM_INT);
     if($order_date) $stmt->bindValue(":order_date", $data["order_date"], PDO::PARAM_STR);
     $stmt->bindValue(":estimate_received_date", $data["estimate_received_date"], PDO::PARAM_STR);
@@ -95,7 +108,7 @@ class OrderGateway {
     $sql = "UPDATE orders SET
       user_id = :user_id,
       total_cents = :total_cents,
-      delivery_address = :delivery_address,
+      delivery_address_id = :delivery_address_id,
       delivery_state_id = :delivery_state_id,
       order_date = :order_date,
       estimate_received_date = :estimate_received_date,
@@ -105,7 +118,7 @@ class OrderGateway {
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":user_id", $new["user_id"] ?? $current["user_id"], PDO::PARAM_INT);
     $stmt->bindValue(":total_cents", $new["total_cents"] ?? $current["total_cents"], PDO::PARAM_INT);
-    $stmt->bindValue(":delivery_address", $new["delivery_address"] ?? $current["delivery_address"], PDO::PARAM_STR);
+    $stmt->bindValue(":delivery_address_id", $new["delivery_address_id"] ?? $current["delivery_address_id"], PDO::PARAM_INT);
     $stmt->bindValue(":delivery_state_id", $new["delivery_state_id"] ?? $current["delivery_state_id"], PDO::PARAM_INT);
     $stmt->bindValue(":order_date", $new["order_date"] ?? $current["order_date"], PDO::PARAM_STR);
     $stmt->bindValue(":estimate_received_date", $new["estimate_received_date"] ?? $current["estimate_received_date"], PDO::PARAM_STR);
@@ -125,4 +138,5 @@ class OrderGateway {
 
     return $stmt->execute();
   }
+
 }

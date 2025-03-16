@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.8/css/line.css">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="./styles/general.css">
+  <link rel="stylesheet" href="./styles/header.css">
+  <link rel="stylesheet" href="./styles/orders.css">
+  <title>Document</title>
+</head>
+<body>
+
+  <header class="header--g">
+    <div class="header__logo">
+      <h1>Logo - [admin] page</h1>
+    </div>
+
+    <nav class="header__nav">
+      <ul class="header__list">
+        <li class="header__item"><button>users</button></li>
+        <li class="header__item"><button>carts</button></li>
+        <li class="header__item"><button>orders</button></li>
+        <li class="header__item"><button>products</button></li>
+        <li class="header__item"><button>providers</button></li>
+        <li class="header__item"><button>goods receipt notes</button></li>
+      </ul>
+    </nav>
+
+    <div class="header__btns">
+      <button class="header_btn">login</button>
+      <button class="header_btn">logout</button>
+    </div>
+  </header>
+
+  <main class="content content--g">
+    <div class="content__title--g">
+      <h2>Orders management</h2>
+      <span id="crud-order-msg"></span>
+    </div>
+
+    <div>
+      <form class="search-box--g">
+        <label for="search-input">Search orders:</label>
+        <input type="text" id="search-input">
+        <button id="search-btn">search</button>
+        <button id="clear-search-btn">clear search</button>
+      </form>
+      <p>Result: <span id="result-count"></span></p>
+    </div>
+
+    <div class="auto-scroll--g">
+
+      <table class="content__table--g">
+        <thead class="content__thead--g b">
+          <tr class="content__tr--g">
+            <th class="content__th--g" title="number">n.o</th>
+            <th class="content__th--g">order id</th>
+            <th class="content__th--g">user id</th>
+            <th class="content__th--g">items</th>
+            <th class="content__th--g">total</th>
+            <th class="content__th--g">delivery to</th>
+            <th class="content__th--g">delivery state</th>
+            <th class="content__th--g">ordered date</th>
+            <th class="content__th--g">estimate received date</th>
+            <th class="content__th--g">received date</th>
+            <th class="content__th--g">actions</th>
+          </tr>
+        </thead>
+
+        <tbody class="content__tbody--g b" id="tbody">
+          <tr class="content__tr">
+            <td data-cell="n.o" class="content__td--g" title="order number ${idx+1}">${idx+1}</td>
+            <td data-cell="order id" class="content__td--g">${order.id}</td>
+            <td data-cell="user id" class="content__td--g">
+              ${user.id}
+              <button>view detail user</button>
+            </td>
+            <td data-cell="items" class="content__td--g">
+              <ul class="content__items">
+                <li class="content__item">
+                  <div>
+                    <img src="./assets/product.png" alt="smartwatch">
+                    <p>${product.name}</p>
+                    <i class="uil uil-multiply"></i>
+                    <p>${variation.price_cents}</p>
+                    <i class="uil uil-multiply"></i>
+                    <p>quantity</p>
+                  </div>
+                  <button>view detail item</button>
+                </li>
+              </ul>
+            </td>
+            <td data-cell="total" class="content__td--g">${order.total_cents}</td>
+            <td data-cell="delivery to" class="content__td--g">${order.delivery_address}</td>
+            <td data-cell="delivery state" class="content__td--g">${orderDelState.name}</td>
+            <td data-cell="ordered date" class="content__td--g">${order.order_date}</td>
+            <td data-cell="estimate received date" class="content__td--g">${order.estimate_received_date}</td>
+            <td data-cell="received date" class="content__td--g">${order.received_date}</td>
+            <td data-cell="actions" class="content__td--g">
+              <button>update</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <div class="backdrop--g" id="backdrop" style="display: none;">
+    <!-- <form class="form--g" id="update-cart-form">
+      <button type="button" class="form__close--g js-update-cart-form-close-btn"><i class="uil uil-times"></i></button>
+      <h2 class="form__title--g">Update cart id ${cart.id} of user id ${user.id}</h2>
+
+      <div>
+        <div class="form__field--g">
+          <label for="city">City/Province</label>
+          <select id="city" class="form__select--g"></select>
+        </div>
+        <div class="form__field--g">
+          <label for="district">District</label>
+          <select id="district" class="form__select--g" disabled>
+            <option>select city/province first</option>
+          </select>
+        </div>
+        <div class="form__field--g">
+          <label for="ward">Ward</label>
+          <select id="ward" class="form__select--g" disabled>
+            <option>select district first</option>
+          </select>
+        </div>
+        <div class="form__field--g">
+          <label for="apartment">Apartment/Building</label>
+          <input
+            type="text"
+            id="apartment"
+            placeholder=""
+            value=""
+            class="form__input--g"
+          >
+        </div>
+        <div class="form__field--g">
+          <label for="street">Street</label>
+          <input
+            type="text"
+            id="street"
+            placeholder=""
+            value=""
+            class="form__input--g"
+          >
+        </div>
+        <span id="delivery-to-msg"></span>
+      </div>
+
+      <div>
+        <div class="form__field--g">
+          <label for="est-received-date">Estimate received date</label>
+          <input
+            type="datetime-local"
+            id="est-received-date"
+            value="2024-07-22 23:39:44"
+            class="form__input--g"
+          >
+        </div>
+        <span id="est-received-date-msg"></span>
+      </div>
+
+      <div>
+        <div class="form__field--g">
+          <label for="received-date">Received date</label>
+          <input
+            type="datetime-local"
+            id="received-date"
+            value="2024-07-22 23:39:44"
+            class="form__input--g"
+          >
+        </div>
+        <span id="received-date-msg"></span>
+      </div>
+
+      <div>
+        <div class="form__field--g">
+          <label for="delivery-state">Delivery state</label>
+          <select id="delivery-state" class="form__select--g">
+            <option value="1">option1</option>
+            <option value="2" selected>option2</option>
+          </select>
+        </div>
+      </div>
+
+      <div>
+        <button id="update-user-form-submit-btn">update</button>
+        <button type="button" class="js-update-user-form-close-btn">cancel</button>
+      </div>
+
+      <span id="submit-msg"></span>
+    </form> -->
+  </div>
+
+  <footer class="footer--g">footer</footer>
+
+  <!-- <script type="module" src="./views/orders-management.js"></script> -->
+</body>
+</html>

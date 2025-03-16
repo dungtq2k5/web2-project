@@ -46,11 +46,11 @@ class ProductController extends ErrorHandler {
 
       case "DELETE":
         $this->auths->verifyAction("DELETE_PRODUCT");
-        $res = $this->gateway->delete($id);
+        $this->gateway->delete($id);
 
         echo json_encode([
-          "success" => $res,
-          "message" => "Product id $id was deleted or stop_selling if there is a constrain"
+          "success" => true,
+          "message" => "Product id $id was deleted or stop_selling = true if there is a constrain"
         ]);
         break;
 
@@ -114,6 +114,7 @@ class ProductController extends ErrorHandler {
       if(array_key_exists("description", $data) && empty($data["description"])) $errors[] = "description is empty";
     }
 
+    if(array_key_exists("image_name", $data) && empty($data["image_name"])) $errors[] = "image_name is empty";
     if(array_key_exists("stop_selling", $data) && !is_bool($data["stop_selling"])) $errors[] = "stop_selling must be a boolean value";
 
     return $errors;

@@ -24,10 +24,10 @@ class Utils {
 
   public function isValidProductSKU(string $sku): bool { //AI gen
     // Regular expression to match the SKU format
-    // $pattern = '/^[a-z]+-[a-z]+-[a-z0-9]+-[0-9]+-[a-z]+-[a-z]+-[0-9]+$/'; // Improved regex
-
-    // return preg_match($pattern, $sku);
-    return true;
+    $pattern = '/^[a-z]+-[a-z]+-[a-z0-9]+-[0-9]+-[a-z]+-[a-z]+-[0-9]+$/'; // Improved regex
+    $test_pattern = '/^[a-z]+-[0-9]+-[a-z]+$/'; //TODO temp for dev
+    return preg_match($test_pattern, $sku);
+    // return true;
   }
 
   public function getCurrentTime(): float { // return milisecs
@@ -81,8 +81,17 @@ class Utils {
     return (bool) preg_match($pattern, $phoneNumber);
   }
 
-  public function isValidPassword(string $password, int $minLength=8): bool { //AI support
-    // password contain at least a letter or a number and length >= minLength -> valid
-    return (strlen($password) >= $minLength && preg_match('/[a-zA-Z0-9]/', $password)) ? true : false;
+  public function isValidPassword(string $password, int $minLength=8): bool { //AI gen
+    // password contains at least a letter + a number + length >= minLength
+    return (strlen($password) >= $minLength && preg_match('/[a-zA-Z]/', $password)) && preg_match('/\d/', $password) ? true : false;
   }
+
+  public function isListOfNumber(array $list): bool {
+    foreach($list as $ele) {
+      if(!is_numeric($ele)) return false;
+    }
+
+    return true;
+  }
+
 }

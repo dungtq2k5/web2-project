@@ -9,7 +9,7 @@ class ProductInstanceController extends ErrorHandler {
       $this->processResourceRequest($method, $sku);
       return;
     }
-    
+
     $this->processCollectionRequest($method, $limit, $offset);
   }
 
@@ -47,7 +47,7 @@ class ProductInstanceController extends ErrorHandler {
 
       case "DELETE":
         $this->auths->verifyAction("DELETE_PRODUCT_INSTANCE");
-        $res = $this->gateway->delete($sku);
+        $this->gateway->delete($sku);
 
         echo json_encode([
           "success" => true,

@@ -101,7 +101,7 @@ class OrderController extends ErrorHandler {
     if($new) {
       if(empty($data["user_id"]) || !is_numeric($data["user_id"])) $errors[] = "user_id is required and must be an integer";
       if(empty($data["total_cents"]) || !is_numeric($data["total_cents"])) $errors[] = "total_cents is required and must be an integer";
-      if(empty($data["delivery_address"])) $errors[] = "delivery_address is required";
+      if(empty($data["delivery_address_id"]) || !is_numeric($data["delivery_address_id"])) $errors[] = "delivery_address_id is required and must be an integer";
       if(empty($data["delivery_state_id"]) || !is_numeric($data["delivery_state_id"])) $errors[] = "delivery_state_id is required and must be an integer";
       if(empty($data["estimate_received_date"]) || !$this->utils->isValidDateTimeFormat($data["estimate_received_date"])) $errors[] = "valid estimate_received_date is required";
       if(empty($data["received_date"]) || !$this->utils->isValidDateTimeFormat($data["received_date"])) $errors[] = "valid received_date is required";
@@ -116,9 +116,9 @@ class OrderController extends ErrorHandler {
         (empty($data["total_cents"]) || !is_numeric($data["total_cents"]))
       ) $errors[] = "total_cents is empty or not an integer";
       if(
-        array_key_exists("delivery_address", $data) &&
-        (empty($data["delivery_address"]))
-      ) $errors[] = "delivery_address is empty";
+        array_key_exists("delivery_address_id", $data) &&
+        (empty($data["delivery_address_id"]) || !is_numeric($data["delivery_address_id"]))
+      ) $errors[] = "delivery_address_id is empty or not an integer";
       if(
         array_key_exists("delivery_state_id", $data) &&
         (empty($data["delivery_state_id"]) || !is_numeric($data["delivery_state_id"]))
