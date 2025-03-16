@@ -22,10 +22,10 @@ class UserController extends ErrorHandler {
       $this->sendErrorResponse(404, "User with an id $id not found");
       return;
     }
-    unset($user["password"]);
 
     switch($method) {
       case "GET":
+        unset($user["password"]);
         echo json_encode([
           "success" => true,
           "data" => $user
@@ -52,11 +52,16 @@ class UserController extends ErrorHandler {
 
       case "DELETE":
         $this->auths->verifyAction("DELETE_USER");
-        $this->gateway->delete($id);
+        $res = $this->gateway->delete($id);
+
+        if(!$res) {
+          $this->sendErrorResponse(409, "User id $id can't be deleted because of constrain");
+          break;
+        }
 
         echo json_encode([
           "success" => true,
-          "message" => "User id $id was deleted or all user's roles was deleted if there is a constrain"
+          "message" => "User id $id was deleted"
         ]);
         break;
 
@@ -133,6 +138,11 @@ class UserController extends ErrorHandler {
         (empty($data["password"]) || !$this->utils->isValidPassword($data["password"]))
       ) $errors[] = "password is empty or not a valid password (hint: password must contain at least one letter and one number with min length = 8)";
     }
+
+    if(array_key_exists("roles_id", $data) && (
+      !is_array($data["roles_id"]) ||
+      !$this->utils->isListOfNumber($data["roles_id"])
+    )) $errors[] = "roles_id is empty or not a list of number(s)";
 
     return $errors;
   }

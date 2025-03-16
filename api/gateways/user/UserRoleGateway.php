@@ -69,4 +69,16 @@ class UserRoleGateway {
 
     return $stmt->rowCount();
   }
+
+  public function getByUserId(int $user_id): array | false {
+    $sql = "SELECT roles.id, roles.name FROM user_roles
+      INNER JOIN roles ON user_roles.role_id = roles.id
+      WHERE user_id = :user_id";
+
+    $stmt = $this->conn->prepare($sql);
+    $stmt->bindValue(":user_id", $user_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+  }
 }

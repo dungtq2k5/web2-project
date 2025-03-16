@@ -56,7 +56,8 @@ CREATE TABLE user_addresses (
   district VARCHAR(255) NOT NULL,
   city_province VARCHAR(255) NOT NULL,
   phone_number VARCHAR(155) NOT NULL,
-  is_default BOOLEAN NOT NULL,
+  is_default BOOLEAN NOT NULL DEFAULT 0,
+  is_deleted BOOLEAN NOT NULL DEFAULT 0,
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
 ALTER TABLE user_addresses ADD INDEX idx_user_id(user_id);
@@ -108,6 +109,7 @@ CREATE TABLE products (
   model VARCHAR(255) UNIQUE NOT NULL,
   category_id INT NOT NULL,
   description TEXT NOT NULL,
+  image_name VARCHAR(255) DEFAULT "default.webp", -- find default image
   stop_selling BOOLEAN NOT NULL DEFAULT 0,
   FOREIGN KEY (brand_id) REFERENCES product_brands(id),
   FOREIGN KEY (category_id) REFERENCES product_categories(id)
@@ -199,25 +201,25 @@ CREATE TABLE orders (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL,
   total_cents INT NOT NULL,
-  delivery_address VARCHAR(255),
+  delivery_address_id INT NOT NULL,
   delivery_state_id INT NOT NULL,
   order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   estimate_received_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   received_date TIMESTAMP NULL,
   FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (delivery_address_id) REFERENCES user_addresses(id),
   FOREIGN KEY (delivery_state_id) REFERENCES order_delivery_states(id)
 );
 ALTER TABLE orders ADD INDEX idx_user_id(user_id);
+ALTER TABLE orders ADD INDEX idx_delivery_address_id(delivery_address_id);
 ALTER TABLE orders ADD INDEX idx_delivery_state_id(delivery_state_id);
 
 -- order_items
 CREATE TABLE order_items (
-  id INT AUTO_INCREMENT PRIMARY KEY,
+  product_instance_sku VARCHAR(255) PRIMARY KEY,
   order_id INT NOT NULL,
-  product_instance_sku VARCHAR(255) NOT NULL,
   price_cents INT NOT NULL,
   FOREIGN KEY (order_id) REFERENCES orders(id),
   FOREIGN KEY (product_instance_sku) REFERENCES product_instances(sku)
 );
 ALTER TABLE order_items ADD INDEX idx_order_id(order_id);
-ALTER TABLE order_items ADD INDEX idx_product_instance_sku(product_instance_sku);

@@ -13,7 +13,9 @@ switch(true) {
     $controller->processRequest($method, $id, $limit, $offset);
     break;
 
-  case $uri === SOURCE_URI . "/orders/items":
+  case strpos($uri, SOURCE_URI . "/orders/items") === 0:
+    $utils = new Utils();
+    $id = $utils->isValidProductSKU(end($uri_parts)) ? end($uri_parts) : null; //PK is product_instance_sku
     $gateway = new OrderItemGateway($db);
     $controller = new OrderItemController($gateway, $auths);
     $controller->processRequest($method, $id, $limit, $offset);
