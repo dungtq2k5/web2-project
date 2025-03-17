@@ -54,7 +54,7 @@ class ProductVariationController extends ErrorHandler {
 
         echo json_encode([
           "success" => true,
-          "message" => "Product variation id $id was deleted or stop_selling if there is a constrain"
+          "message" => "Product variation id $id was deleted or stop_selling = true if there is a constrain"
         ]);
         break;
 
@@ -110,7 +110,6 @@ class ProductVariationController extends ErrorHandler {
       //stock_quantity field: auto calculate in mySQL
       if(empty($data("price_cents")) || !is_numeric($data["price_cents"])) $errors[] = "price_cents is required with integer value";
       if(empty($data("base_price_cents")) || !is_numeric($data["base_price_cents"])) $errors[] = "base_price_cents is required with integer value";
-      if(empty($data["image_name"])) $errors[] = "image_name is required";
       if(empty($data["display_size_mm"]) || !is_numeric($data["display_size_mm"])) $errors[] = "display_size_mm is required with integer value";
       if(empty($data["display_type"])) $errors[] = "display_type is required";
       if(empty($data["resolution_h_px"]) || !is_numeric($data["resolution_h_px"])) $errors[] = "resolution_h_px is required with integer value";
@@ -151,10 +150,6 @@ class ProductVariationController extends ErrorHandler {
         array_key_exists("base_price_cents", $data["base_price_cents"]) &&
         (empty($data("base_price_cents")) || !is_numeric($data["base_price_cents"]))
       ) $errors[] = "base_price_cents is empty or not an integer value";
-      if(
-        array_key_exists("image_name", $data) &&
-        (empty($data["image_name"]))
-      ) $errors[] = "image_name is empty";
       if(
         array_key_exists("display_size_mm", $data) &&
         (empty($data["display_size_mm"]) || !is_numeric($data["display_size_mm"]))
@@ -228,6 +223,7 @@ class ProductVariationController extends ErrorHandler {
       ) $errors[] = "release_date is empty or not right format (YYYY-MM-DD HH:MI:SS)"; //format: YYYY-MM-DD HH:MI:SS
     }
 
+    if(array_key_exists("image_name", $data) && empty($data["image_name"])) $errors[] = "image_name is empty";
     if(array_key_exists("stop_selling", $data) && !is_bool($data["stop_selling"])) $errors[] = "stop_selling must be a boolean value";
 
     return $errors;

@@ -1,0 +1,7 @@
+RewriteEngine On
+RewriteBase /client/
+
+# Chuyển tất cả request không phải file hoặc thư mục thực sang index.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php?route=$1 [L,QSA]

@@ -47,16 +47,11 @@ class UserAddressController extends ErrorHandler {
 
       case "DELETE":
         $this->auths->verifyAction("DELETE_USER_ADDRESS");
-        $res = $this->gateway->delete($id);
-
-        if(!$res) {
-          $this->sendErrorResponse(403, "Can't delete default address");
-          break;
-        }
+        $this->gateway->delete($id);
 
         echo json_encode([
           "success" => true,
-          "message" => "Address id $id was deleted"
+          "message" => "Address id $id was deleted or is_deleted = true if there is a constrain"
         ]);
         break;
 
@@ -107,6 +102,7 @@ class UserAddressController extends ErrorHandler {
     $errors = [];
 
     if($new) { //check all fields for new user
+      if(empty($data["name"])) $errors[] = "name is required";
       if(empty($data["user_id"]) || !is_numeric($data["user_id"])) $errors[] = "user_id is required with integer value";
       if(empty($data["street"])) $errors[] = "street is required";
       if(empty($data["apartment_number"])) $errors[] = "apartment_number is required";
@@ -114,7 +110,6 @@ class UserAddressController extends ErrorHandler {
       if(empty($data["district"])) $errors[] = "district is required";
       if(empty($data["city_province"])) $errors[] = "city_province is required";
       if(empty($data["phone_number"])) $errors[] = "phone_number is required";
-      if(empty($data["name"])) $errors[] = "name is required";
 
     } else { //check fields which exist
       if(
@@ -131,6 +126,7 @@ class UserAddressController extends ErrorHandler {
     }
 
     if(array_key_exists("is_default", $data) && !is_bool($data["is_default"])) $errors[] = "is_default is empty or not a boolean value";
+    if(array_key_exists("is_deleted", $data) && !is_bool($data["is_deleted"])) $errors[] = "is_deleted is empty or not a boolean value";
 
     return $errors;
   }

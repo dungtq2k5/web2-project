@@ -28,6 +28,7 @@ class UserAddressGateway {
 
   public function create(array $data): array | false {
     $sql = "INSERT INTO user_addresses (
+      name,
       user_id,
       street,
       apartment_number,
@@ -36,8 +37,9 @@ class UserAddressGateway {
       city_province,
       phone_number,
       is_default,
-      name
+      is_deleted
     ) VALUES (
+      :name
       :user_id,
       :street,
       :apartment_number,
@@ -46,10 +48,11 @@ class UserAddressGateway {
       :city_province,
       :phone_number,
       :is_default,
-      :name
+      :is_deleted
     )";
 
     $stmt = $this->conn->prepare($sql);
+    $stmt->bindValue(":name", $data["name"], PDO::PARAM_STR);
     $stmt->bindValue(":user_id", $data["user_id"], PDO::PARAM_INT);
     $stmt->bindValue(":street", $data["street"], PDO::PARAM_STR);
     $stmt->bindValue(":apartment_number", $data["apartment_number"], PDO::PARAM_STR);
@@ -58,7 +61,7 @@ class UserAddressGateway {
     $stmt->bindValue(":city_province", $data["city_province"], PDO::PARAM_STR);
     $stmt->bindValue(":phone_number", $data["phone_number"], PDO::PARAM_STR);
     $stmt->bindValue(":is_default", $data["is_default"] ?? false, PDO::PARAM_BOOL);
-    $stmt->bindValue(":name", $data["name"], PDO::PARAM_STR);
+    $stmt->bindValue(":is_deleted", $data["is_deleted"] ?? false, PDO::PARAM_BOOL);
     $stmt->execute();
 
     return $this->get($this->conn->lastInsertId());
@@ -76,6 +79,7 @@ class UserAddressGateway {
 
   public function update(array $current, array $new): array | false {
     $sql = "UPDATE user_addresses SET
+      name = :name,
       user_id = :user_id,
       street = :street,
       apartment_number = :apartment_number,
@@ -84,11 +88,12 @@ class UserAddressGateway {
       city_province = :city_province,
       phone_number = :phone_number,
       is_default = :is_default,
-      name = :name
+      is_deleted = :is_deleted,
       WHERE id = :id
     ";
 
     $stmt = $this->conn->prepare($sql);
+    $stmt->bindValue(":name", $new["name"] ?? $current["name"], PDO::PARAM_STR);
     $stmt->bindValue(":user_id", $new["user_id"] ?? $current["user_id"], PDO::PARAM_INT);
     $stmt->bindValue(":street", $new["street"] ?? $current["street"], PDO::PARAM_STR);
     $stmt->bindValue(":apartment_number", $new["apartment_number"] ?? $current["apartment_number"], PDO::PARAM_STR);
@@ -97,7 +102,7 @@ class UserAddressGateway {
     $stmt->bindValue(":city_province", $new["city_province"] ?? $current["city_province"], PDO::PARAM_STR);
     $stmt->bindValue(":phone_number", $new["phone_number"] ?? $current["phone_number"], PDO::PARAM_STR);
     $stmt->bindValue(":is_default", $new["is_default"] ?? $current["is_default"], PDO::PARAM_BOOL);
-    $stmt->bindValue(":name", $new["name"] ?? $current["name"], PDO::PARAM_STR);
+    $stmt->bindValue(":is_deleted", $new["is_deleted"] ?? $current["is_deleted"], PDO::PARAM_BOOL);
     $stmt->bindValue(":id", $current["id"], PDO::PARAM_INT);
     $stmt->execute();
 
@@ -105,11 +110,9 @@ class UserAddressGateway {
   }
 
   public function delete(int $id): bool {
-    if($this->hasConstrain($id)) {
-      return false;
-    }
-
-    $sql = "DELETE FROM user_addresses WHERE id = :id";
+    $sql = $this->hasConstrain($id)
+      ? "UPDATE user_addresses SET is_deleted = 1 WHERE id = :id"
+      : "DELETE FROM user_addresses WHERE id = :id";
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":id", $id, PDO::PARAM_INT);
@@ -125,5 +128,25 @@ class UserAddressGateway {
     $data = $stmt->fetch(PDO::FETCH_ASSOC);
 
     return (bool) $data["is_default"];
+  }
+
+  public function getByUserId(int $user_id): array | false {
+    $sql = "SELECT
+      id,
+      name,
+      street,
+      apartment_number,
+      ward,
+      district,
+      city_province,
+      phone_number,
+      is_default
+      FROM user_addresses WHERE user_id = :user_id"; //select * except user_id
+
+    $stmt = $this->conn->prepare($sql);
+    $stmt->bindValue(":user_id", $user_id, PDO::PARAM_INT);
+    $stmt->execute();
+
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
   }
 }

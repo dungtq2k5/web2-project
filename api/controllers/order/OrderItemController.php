@@ -8,7 +8,7 @@ class OrderItemController extends ErrorHandler {
     $this->utils = new Utils();
   }
 
-  public function processRequest(string $method, ?int $id, ?int $limit, ?int $offset): void {
+  public function processRequest(string $method, ?string $id, ?int $limit, ?int $offset): void { //product_instance_sku as id
     if($id) {
       $this->processResourceRequest($method, $id);
       return;
@@ -17,7 +17,7 @@ class OrderItemController extends ErrorHandler {
     $this->processCollectionRequest($method, $limit, $offset);
   }
 
-  private function processResourceRequest(string $method, ?int $id): void {
+  private function processResourceRequest(string $method, ?string $id): void {
     $order_item = $this->gateway->get($id);
     if(!$order_item) {
       $this->sendErrorResponse(404, "Order item with an id $id not found");
@@ -97,24 +97,23 @@ class OrderItemController extends ErrorHandler {
         header("Allow: GET, POST");
     }
   }
-  private function getValidationErrors(array $data, bool $new = true): array
-  {
+  private function getValidationErrors(array $data, bool $new = true): array {
     $errors = [];
 
     if($new) {
-      if(empty($data["order_id"]) || !is_numeric($data["order_id"])) $errors[] = "order_id is required and must be an integer";
       if(empty($data["product_instance_sku"]) || !$this->utils->isValidProductSKU($data["product_instance_sku"])) $errors[] = "valid product_instance_sku is required";
+      if(empty($data["order_id"]) || !is_numeric($data["order_id"])) $errors[] = "order_id is required and must be an integer";
       if(empty($data["price_cents"]) || !is_numeric($data["price_cents"])) $errors[] = "price_cents is required and must be an integer";
 
     } else {
       if(
-        array_key_exists("order_id", $data) &&
-        (empty($data["order_id"]) || !is_numeric($data["order_id"]))
-      ) $errors[] = "order_id is empty or not an integer";
-      if(
         array_key_exists("product_instance_sku", $data) &&
         (empty($data["product_instance_sku"]) || !$this->utils->isValidProductSKU($data["product_instance_sku"]))
       ) $errors[] = "product_instance_sku is empty or not valid";
+      if(
+        array_key_exists("order_id", $data) &&
+        (empty($data["order_id"]) || !is_numeric($data["order_id"]))
+      ) $errors[] = "order_id is empty or not an integer";
       if(
         array_key_exists("price_cents", $data) &&
         (empty($data["price_cents"]) || !is_numeric($data["price_cents"]))

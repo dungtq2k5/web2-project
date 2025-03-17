@@ -1,34 +1,54 @@
 <?php
 
-class UserGateway {
+class UserGateway
+{
   private PDO $conn;
   private UserRoleGateway $userRole;
+  private UserAddressGateway $userAddress;
+  private CartGateway $cart;
 
-  public function __construct(Database $db) {
+  public function __construct(Database $db)
+  {
     $this->conn = $db->getConnection();
     $this->userRole = new UserRoleGateway($db);
+    $this->userAddress = new UserAddressGateway($db);
+    $this->cart = new CartGateway($db);
   }
 
-  public function getAll(?int $limit, ?int $offset): array | false {
-    if($limit && $offset) {
+  public function getAll(?int $limit, ?int $offset): array|false
+  {
+    if ($limit && $offset) {
       $sql = "SELECT * FROM users LIMIT :limit OFFSET :offset";
-    } elseif($limit) {
+    } elseif ($limit) {
       $sql = "SELECT * FROM users LIMIT :limit";
-    } elseif($offset) {
+    } elseif ($offset) {
       $sql = "SELECT * FROM users LIMIT 18446744073709551615 OFFSET :offset";
     } else {
       $sql = "SELECT * FROM users";
     }
 
     $stmt = $this->conn->prepare($sql);
-    if($limit) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
-    if($offset) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
-    $stmt->execute();
+    if ($limit)
+      $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
+    if ($offset)
+      $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
 
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    if ($stmt->execute()) {
+      $data = [];
+      while ($user = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $user["addresses"] = $this->userAddress->getByUserId((int) $user["id"]);
+        $user["roles"] = $this->userRole->getByUserId((int) $user["id"]);
+        $user["cart"] = $this->cart->getByUserId((int) $user["id"]);
+        $data[] = $user;
+      }
+      return $data;
+    }
+
+    return false;
   }
 
-  public function create(array $data): array | false {
+  public function create(array $data): array|false
+  {
     $sql = "INSERT INTO users (full_name, email, phone_number, password)
       VALUES (:full_name, :email, :phone_number, :password)";
 
@@ -40,20 +60,40 @@ class UserGateway {
     $stmt->execute();
 
     $id = $this->conn->lastInsertId();
+    if ($data["roles_id"])
+      $this->createRoles($id, $data["roles_id"]);
     return $this->get($id);
   }
 
-  public function get(int $id): array | false {
+  private function createRoles(int $user_id, array $roles_id): void
+  {
+    foreach ($roles_id as $role_id) {
+      $this->userRole->create([
+        "user_id" => $user_id,
+        "role_id" => $role_id
+      ]);
+    }
+  }
+
+  public function get(int $id): array|false
+  {
     $sql = "SELECT * FROM users WHERE id = :id";
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":id", $id, PDO::PARAM_INT);
-    $stmt->execute();
 
-    return $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($stmt->execute() && $user = $stmt->fetch(PDO::FETCH_ASSOC)) {
+      $user["addresses"] = $this->userAddress->getByUserId((int) $user["id"]);
+      $user["roles"] = $this->userRole->getByUserId((int) $user["id"]);
+      $user["cart"] = $this->cart->getByUserId((int) $user["id"]);
+      return $user;
+    }
+
+    return false;
   }
 
-  public function update(array $current, array $new): array | false {
+  public function update(array $current, array $new): array|false
+  {
     $sql = "UPDATE users SET
       full_name = :full_name,
       email = :email,
@@ -70,13 +110,22 @@ class UserGateway {
     $stmt->bindValue(":id", $current["id"], PDO::PARAM_INT);
     $stmt->execute();
 
+    if (isset($new["roles_id"]))
+      $this->updateRoles($current["id"], $new["roles_id"]);
+
     return $this->get($current["id"]);
   }
 
-  public function delete(int $id): bool {
-    if($this->hasConstrain($id)) { //delete all user roles instead
-      return $this->userRole->deleteByUserId($id);
-    }
+  private function updateRoles(int $user_id, array $roles_id): void
+  { //delete all current roles -> create new ones
+    $this->userRole->deleteByUserId($user_id);
+    $this->createRoles($user_id, $roles_id);
+  }
+
+  public function delete(int $id): bool
+  {
+    if ($this->hasConstrain($id))
+      return false;
 
     $sql = "DELETE FROM users WHERE id = :id";
 
@@ -85,7 +134,39 @@ class UserGateway {
     return $stmt->execute();
   }
 
-  private function hasConstrain(int $id): bool {
+  public function login(string $email, string $password, string $login_area): array|null
+  {
+    $sql = "SELECT * FROM users WHERE email = :email";
+    $stmt = $this->conn->prepare($sql);
+    $stmt->bindValue(":email", $email, PDO::PARAM_STR);
+    $stmt->execute();
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$user) {
+      return null;
+    }
+
+    if (!($user["password"] === $password || password_verify($password, $user["password"]))) {
+      return null;
+    }
+
+    $roles = $this->userRole->getByUserId($user["id"]);
+
+    if (!$roles) {
+      return null;
+    }
+
+    $is_user = array_filter($roles, fn($role) => (int) $role["id"] === 3);
+
+    if ($login_area === "user" && empty($is_user)) {
+      return null;
+    }
+
+    return $this->get($user["id"]);
+  }
+
+  private function hasConstrain(int $id): bool
+  {
     $sql = "SELECT EXISTS (
       SELECT 1 FROM user_addresses WHERE user_id = :user_id
       UNION
@@ -100,7 +181,6 @@ class UserGateway {
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":user_id", $id, PDO::PARAM_INT);
-    $stmt->execute();
 
     return (bool) $stmt->fetchColumn();
   }

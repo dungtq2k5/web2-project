@@ -1,7 +1,9 @@
-<div class="wrapper d-md-flex align-items-start" style="min-height:300px">
-    <?php include("./components/sidebar.php") ?>
+<div class="wrapper d-md-flex" style="min-height:300px">
+    <div class="sidebar">
+        <?php include("./components/sidebar.php") ?>
+    </div>
 
-    <div class="content">
+    <div class="content w-100">
         <?php include("./components/orders-content.php") ?>
     </div>
 </div>

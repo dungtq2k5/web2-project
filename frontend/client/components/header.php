@@ -56,7 +56,7 @@
                         <a class="nav-link" href="home">Home</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="products">Smartwatches</a>
+                        <a class="nav-link" href="/products">Smartwatches</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="contact">Contact</a>

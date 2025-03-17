@@ -4,21 +4,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Garmin Smartwatches</title>
+    <title>My Website</title>
+    <script src="scripts/main.js"></script>
 </head>
 
 <body>
-    <div id="header">
-        <?php include("./components/header.php"); ?>
+
+    <?php include "components/header.php"; ?>
+
+    <div>
+        <?php include "pages/account.php"; ?>
     </div>
 
-    <div id="main-content">
-        <?php include("./pages/account.php"); ?>
-    </div>
-
-    <div id="footer">
-        <?php include("./components/footer.php"); ?>
-    </div>
+    <?php include "components/footer.php"; ?>
 
 </body>
 
