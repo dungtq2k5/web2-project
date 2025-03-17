@@ -37,7 +37,7 @@ return [
   "RoleGateway" => USER_GATEWAY_PATH . "/RoleGateway.php",
   "RolePermissionGateway" => USER_GATEWAY_PATH . "/RolePermissionGateway.php",
   "PermissionGateway" => USER_GATEWAY_PATH . "/PermissionGateway.php",
-  "UserAddressGateway" => USER_GATEWAY_PATH  . "/UserAddressGateway.php",
+  "UserAddressGateway" => USER_GATEWAY_PATH . "/UserAddressGateway.php",
 
   "CartGateway" => CART_GATEWAY_PATH . "/CartGateway.php",
   "OrderGateway" => ORDER_GATEWAY_PATH . "/OrderGateway.php",
@@ -73,6 +73,7 @@ return [
   //orders
   "ErrorHandler" => __DIR__ . "/ErrorHandler.php",
   "Auths" => __DIR__ . "/Auths.php",
-  "Utils" => __DIR__ . "/Utils.php"
+  "Utils" => __DIR__ . "/Utils.php",
+  "JWTHandler" => __DIR__ . "/JWTHandler.php"
 ];
 

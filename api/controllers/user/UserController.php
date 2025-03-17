@@ -1,12 +1,13 @@
 <?php
-
 class UserController extends ErrorHandler
 {
   private Utils $utils;
+  private JWTHandler $jwtHandler;
 
   public function __construct(private UserGateway $gateway, private Auths $auths)
   {
     $this->utils = new Utils();
+    $this->jwtHandler = new JWTHandler();
   }
 
   public function processRequest(string $method, ?int $id, ?int $limit, ?int $offset): void
@@ -134,12 +135,18 @@ class UserController extends ErrorHandler
     if (!$user) {
       $this->sendErrorResponse(401, "Email or password is not correct.");
     } else {
+      $jwt = $this->jwtHandler->GenerateJWT($user["id"]);
+      //$decoded = $this->jwtHandler->verifyJWT($jwt);
+
+      unset($user["id"]);
       unset($user["password"]);
 
       echo json_encode([
         "success" => true,
         "message" => "Login success.",
-        "user" => $user
+        "data" => $user,
+        "token" => $jwt,
+        //"decoded" => $decoded
       ]);
     }
   }

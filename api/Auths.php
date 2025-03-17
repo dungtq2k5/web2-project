@@ -1,13 +1,18 @@
 <?php
 
-class Auths extends ErrorHandler  {
+class Auths extends ErrorHandler
+{
   private PDO $conn;
+  private JWTHandler $jwt_handler;
 
-  public function __construct(Database $db, protected ?string $usr_email, protected ?string $usr_pwd) {
+  public function __construct(Database $db)
+  {
     $this->conn = $db->getConnection();
+    $this->jwt_handler = new JWTHandler();
   }
 
-  public function verifyAction(string $action_code): void { //TODO temp for dev
+  public function verifyAction(string $action_code): void
+  { //TODO temp for dev
     // if(!$this->usr_email || !$this->usr_pwd) {
     //   header('WWW-Authenticate: Basic realm="My Realm"'); //Required for basic auth.
     //   $this->sendErrorResponse(401, "Unauthorized");

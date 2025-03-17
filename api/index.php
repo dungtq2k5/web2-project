@@ -34,7 +34,7 @@ $offset = isset($_GET["offset"]) ? abs((int) $_GET["offset"]) : null;
 $id = is_numeric(end($uri_parts)) ? (int) end($uri_parts) : null;
 
 $db = new Database("localhost", "smartwatch_db", "root", "5731");
-$auths = new Auths($db, $usr_email, $usr_pwd);
+$auths = new Auths($db);
 
 $uri = preg_replace('/\/[0-9]+$/', '', $uri); //AI gen: remove {id} if exist
 switch (true) {
