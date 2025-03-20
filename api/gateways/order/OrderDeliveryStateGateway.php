@@ -9,13 +9,13 @@ class OrderDeliveryStateGateway {
 
   public function getAll(?int $limit, ?int $offset): array | false {
     if($limit && $offset){
-      $sql = "SELECT * FROM order_delivery_states LIMIT :limit OFFSET :offset";
+      $sql = "SELECT * FROM order_delivery_states LIMIT :limit OFFSET :offset ORDER BY id";
     } elseif($limit){
-      $sql = "SELECT * FROM order_delivery_states LIMIT :limit";
+      $sql = "SELECT * FROM order_delivery_states LIMIT :limit ORDER BY id";
     } elseif($offset){
-      $sql = "SELECT * FROM order_delivery_states LIMIT 18446744073709551615 OFFSET :offset";
+      $sql = "SELECT * FROM order_delivery_states LIMIT 18446744073709551615 OFFSET :offset ORDER BY id";
     } else {
-      $sql = "SELECT * FROM order_delivery_states";
+      $sql = "SELECT * FROM order_delivery_states ORDER BY id";
     }
 
     $stmt = $this->conn->prepare($sql);

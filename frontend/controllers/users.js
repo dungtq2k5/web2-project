@@ -42,12 +42,11 @@ export async function getUser(id) {
   return user || undefined;
 }
 
+/**
+ * filter users base on almost all fields
+ * @param {boolean} widerSearch filter more than basic info of user
+ */
 export async function getFilterUsersList(valSearch, widerSearch=false, limit=null, offset=null) {
-  /**
-   * filter users base on almost all fields
-   * widerSearch mean filter more than basic info of user
-   */
-
   const usersList = await getUsersList();
   const formattedValSearch = removeOddSpace(valSearch.toLowerCase());
 
@@ -68,7 +67,7 @@ export async function getFilterUsersList(valSearch, widerSearch=false, limit=nul
   }
 
   const start = offset || 0;
-  const end = limit ? start + limit : usersList.length;
+  const end = limit ? start + limit : filteredUsersList.length;
   return filteredUsersList.slice(start, end);
 }
 

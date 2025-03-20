@@ -141,7 +141,8 @@ class UserAddressGateway {
       city_province,
       phone_number,
       is_default
-      FROM user_addresses WHERE user_id = :user_id"; //select * except user_id
+      FROM user_addresses
+      WHERE user_id = :user_id AND is_deleted = 0"; //select * except user_id + deleted
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":user_id", $user_id, PDO::PARAM_INT);

@@ -13,26 +13,30 @@ import {
   removeOddSpace,
   isValidEmail,
   isValidPassword,
-  isValidVNPhoneNumber
+  isValidVNPhoneNumber,
+  formatAddress
 } from "../utils.js";
 import { closeForm, closePopup } from "./components.js";
 
 
-const createUserBtn = $("#create-user-btn");
 const crudUserMsg = $("#crud-user-msg");
 const backdrop = $("#backdrop");
-
 const resultCount = $("#result-count");
+const tbody = $("#tbody");
 
 export default function renderUsersManagePage() {
+  const createUserBtn = $("#create-user-btn");
   createUserBtn.click(async () => {
     createUserBtn.prop("disabled", true);
     await renderCreateUserForm();
-    disableBgScroll();
+    createUserBtn.prop("disabled", false);
   });
 
-  const searchInput = $("#search-input");
-  const searchBtn = $("#search-btn");
+  const searchForm = $("#search-user-form");
+  const searchInput = searchForm.find("#search-user-form-input");
+  const searchBtn = searchForm.find("#search-user-form-search-btn");
+  const clearBtn = searchForm.find("#search-user-form-clear-btn");
+
   searchBtn.click(async e => {
     e.preventDefault();
     searchBtn.prop("disabled", true);
@@ -40,23 +44,27 @@ export default function renderUsersManagePage() {
 
     const valSearch = searchInput.val();
     const filteredUsersList = await getFilterUsersList(valSearch);
-    renderUsersData(filteredUsersList);
+    await renderUsersData(filteredUsersList);
 
     searchBtn.text("search");
     searchBtn.prop("disabled", false);
   });
 
-  $("#clear-search-btn").click(e => {
-    e.preventDefault();
+  clearBtn.click(async () => {
+    clearBtn.prop("disabled", true);
+    clearBtn.text("clearing...");
+
     searchInput.val("");
-    renderUsersData();
+    await renderUsersData();
+
+    clearBtn.text("clear search");
+    clearBtn.prop("disabled", false);
   });
 
   renderUsersData();
 }
 
 async function renderUsersData(usersList=null) {
-  const tbody = $("#tbody");
   tbody.html("<tr><td colspan='10'>Loading data...</td></tr>");
   const users = usersList || await getUsersList();
 
@@ -67,27 +75,27 @@ async function renderUsersData(usersList=null) {
       idx++;
       //TODO format address
       const addressesHTML = user.addresses.map(address => (
-        `<li title="${address.name}"><address>${address.name}</address></li>`
+        `<li><address>${formatAddress(address)}</address></li>`
       )).join("");
       const rolesHTML = user.roles.map(role => (
-        `<li title="${role.name}">${role.name}</li>`
+        `<li>${role.name}</li>`
       )).join("");
 
       dataHTML += `
         <tr class="content__tr--g">
-          <td data-cell="n.o" class="content__td--g" title="${idx}">${idx}</td>
-          <td data-cell="id" class="content__td--g" title="${user.id}">${user.id}</td>
-          <td data-cell="full name" class="content__td--g" title="${user.full_name}">${user.full_name}</td>
-          <td data-cell="email" class="content__td--g" title="${user.email}">${user.email}</td>
-          <td data-cell="phone number" class="content__td--g" title="${user.phone_number}">${user.phone_number}</td>
+          <td data-cell="n.o" class="content__td--g">${idx}</td>
+          <td data-cell="id" class="content__td--g">${user.id}</td>
+          <td data-cell="full name" class="content__td--g">${user.full_name}</td>
+          <td data-cell="email" class="content__td--g">${user.email}</td>
+          <td data-cell="phone number" class="content__td--g">${user.phone_number}</td>
           <td data-cell="addresses" class="content__td--g">
             <ul>${addressesHTML}</ul>
           </td>
           <td data-cell="roles" class="content__td--g">
             <ul>${rolesHTML}</ul>
           </td>
-          <td data-cell="created at" class="content__td--g" title="${user.created_at}">${user.created_at}</td>
-          <td data-cell="updated at" class="content__td--g" title="${user.updated_at}">${user.updated_at}</td>
+          <td data-cell="created at" class="content__td--g">${user.created_at}</td>
+          <td data-cell="updated at" class="content__td--g">${user.updated_at}</td>
           <td
             data-cell="actions"
             class="content__td--g js-action-btns"
@@ -122,6 +130,7 @@ async function renderUsersData(usersList=null) {
 }
 
 async function renderCreateUserForm() {
+  disableBgScroll();
   backdrop.html("<p>Loading create user form...</p>");
   backdrop.show();
   const roles = await getRolesList();
@@ -137,7 +146,7 @@ async function renderCreateUserForm() {
     )).join("");
 
     return `
-      <form class="form--g" id="create-user-form">
+      <form class="form--g">
         <button type="button" class="form__close--g js-create-user-form-close-btn"><i class="uil uil-times"></i></button>
         <h2 class="form__title--g">Create user form</h2>
 
@@ -210,22 +219,20 @@ async function renderCreateUserForm() {
     `
   });
 
-  const form = $("#create-user-form");
+  backdrop.find(".js-create-user-form-close-btn").click(() => closeForm(backdrop));
 
-  form.find(".js-create-user-form-close-btn").click(() => closeForm(backdrop));
-
-  const submitBtn = form.find("#create-user-form-submit-btn");
+  const submitBtn = backdrop.find("#create-user-form-submit-btn");
   submitBtn.click(async e => {
     e.preventDefault();
-    const fullnameMsg = form.find("#fullname-msg");
-    const emailMsg = form.find("#email-msg");
-    const phoneNumberMsg = form.find("#phone-msg");
-    const passwordMsg = form.find("#password-msg");
+    const fullnameMsg = backdrop.find("#fullname-msg");
+    const emailMsg = backdrop.find("#email-msg");
+    const phoneNumberMsg = backdrop.find("#phone-msg");
+    const passwordMsg = backdrop.find("#password-msg");
 
-    const fullname = removeOddSpace(form.find("#fullname").val());
-    const email = removeOddSpace(form.find("#email").val());
-    const phoneNumber = removeOddSpace(form.find("#phone").val());
-    const password = removeOddSpace(form.find("#password").val());
+    const fullname = removeOddSpace(backdrop.find("#fullname").val());
+    const email = removeOddSpace(backdrop.find("#email").val());
+    const phoneNumber = removeOddSpace(backdrop.find("#phone").val());
+    const password = removeOddSpace(backdrop.find("#password").val());
 
     const validateForm = () => {
       let allValid = true;
@@ -267,21 +274,22 @@ async function renderCreateUserForm() {
       submitBtn.text("creating user...");
 
       const rolesId= [];
-      form.find("#create-user-form-roles input[type='checkbox']:checked").each((idx, e) => {
+      backdrop.find("#create-user-form-roles input[type='checkbox']:checked").each((idx, e) => {
         rolesId.push($(e).attr("id"));
       });
       const user = {
         full_name: fullname,
-        email: email,
+        email,
         phone_number: phoneNumber,
-        password: password,
+        password,
         roles_id: rolesId,
       }
       const res = await createUser(user, getAuth());
 
       if(!res.success) {
         submitBtn.text("create");
-        form.find("#submit-msg").text(res.message);
+        submitBtn.prop("disabled", false);
+        backdrop.find("#submit-msg").text(res.message);
         return;
       }
 
@@ -299,7 +307,7 @@ function renderDeleteUserPopup(number, id) {
   disableBgScroll();
 
   backdrop.html(`
-    <div class="form--g" id="delete-user-popup">
+    <div class="form--g">
       <button type="button" class="form__close--g js-delete-user-popup-close-btn"><i class="uil uil-times"></i></button>
       <h2 class="form__title--g">Confirm delete user id ${id} - number ${number}?</h2>
 
@@ -312,11 +320,9 @@ function renderDeleteUserPopup(number, id) {
     </div>
   `);
 
-  const popup = $("#delete-user-popup");
+  backdrop.find(".js-delete-user-popup-close-btn").click(() => closePopup(backdrop));
 
-  popup.find(".js-delete-user-popup-close-btn").click(() => closePopup(backdrop));
-
-  const submitBtn = popup.find("#delete-user-popup-submit-btn");
+  const submitBtn = backdrop.find("#delete-user-popup-submit-btn");
   submitBtn.click(async () => {
     submitBtn.prop("disabled", true);
     submitBtn.text("deleting...");
@@ -324,7 +330,8 @@ function renderDeleteUserPopup(number, id) {
     const res = await deleteUser(id, getAuth());
     if(!res.success) {
       submitBtn.text("delete");
-      popup.find("#delete-user-popup-msg").text(`Error: ${res.message}`);
+      submitBtn.prop("disabled", false);
+      backdrop.find("#delete-user-popup-msg").text(`Error: ${res.message}`);
       return;
     }
 
@@ -364,7 +371,7 @@ async function renderUpdateUserForm(number, id) {
       }).join("");
 
       return `
-        <form class="form--g" id="update-user-form">
+        <form class="form--g">
           <button type="button" class="form__close--g js-update-user-form-close-btn"><i class="uil uil-times"></i></button>
           <h2 class="form__title--g">Update user id ${id} - number ${number} form</h2>
 
@@ -440,22 +447,20 @@ async function renderUpdateUserForm(number, id) {
       `
     });
 
-    const form = $("#update-user-form");
+    backdrop.find(".js-update-user-form-close-btn").click(() => closeForm(backdrop));
 
-    form.find(".js-update-user-form-close-btn").click(() => closeForm(backdrop));
-
-    const submitBtn = form.find("#update-user-form-submit-btn");
+    const submitBtn = backdrop.find("#update-user-form-submit-btn");
     submitBtn.click(async e => {
       e.preventDefault();
-      const fullnameMsg = form.find("#fullname-msg");
-      const emailMsg = form.find("#email-msg");
-      const phoneNumberMsg = form.find("#phone-msg");
-      const passwordMsg = form.find("#password-msg");
+      const fullnameMsg = backdrop.find("#fullname-msg");
+      const emailMsg = backdrop.find("#email-msg");
+      const phoneNumberMsg = backdrop.find("#phone-msg");
+      const passwordMsg = backdrop.find("#password-msg");
 
-      const fullname = removeOddSpace(form.find("#fullname").val());
-      const email = removeOddSpace(form.find("#email").val());
-      const phoneNumber = removeOddSpace(form.find("#phone").val());
-      const password = removeOddSpace(form.find("#password").val());
+      const fullname = removeOddSpace(backdrop.find("#fullname").val());
+      const email = removeOddSpace(backdrop.find("#email").val());
+      const phoneNumber = removeOddSpace(backdrop.find("#phone").val());
+      const password = removeOddSpace(backdrop.find("#password").val());
 
       const validateForm = () => {
         let allValid = true;
@@ -494,7 +499,7 @@ async function renderUpdateUserForm(number, id) {
         submitBtn.text("updating user...");
 
         const rolesId= [];
-        form.find("#update-user-form-roles input[type='checkbox']:checked").each((idx, e) => {
+        backdrop.find("#update-user-form-roles input[type='checkbox']:checked").each((idx, e) => {
           rolesId.push($(e).attr("id"));
         });
 
@@ -509,7 +514,7 @@ async function renderUpdateUserForm(number, id) {
 
         if(!res.success) {
           submitBtn.text("update");
-          form.find("#submit-msg").text(`Error: ${res.message}`);
+          backdrop.find("#submit-msg").text(`Error: ${res.message}`);
           return;
         }
 

@@ -33,6 +33,11 @@ export async function getVariation(id) {
   return variation || undefined;
 }
 
+export async function getVariationsByProductId(id) {
+  const variationsList = await getVariationsList();
+  return variationsList.filter(variation => variation.product_id === id);
+}
+
 export async function createVariation(variation, auth) {
   const res = await sendData(PRODUCTS_VARIATIONS_API_URL, variation, auth);
 

@@ -16,7 +16,7 @@ function setCategoriesList(list) {
 
 export async function getCategoriesList(limit=null, offset=null) {
   if(!isFetch) {
-    console.log("fetch products categories API");
+    console.log("fetch products' categories API");
     await fetchCategories();
   }
 

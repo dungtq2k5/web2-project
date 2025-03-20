@@ -25,12 +25,15 @@ setAuth({
 
 const crudCartMsg = $("#crud-cart-msg");
 const backdrop = $("#backdrop");
-
 const resultCount = $("#result-count");
+const tbody = $("#tbody");
 
 export default function renderUsersCartsManagePage() {
-  const searchInput = $("#search-input");
-  const searchBtn = $("#search-btn");
+  const searchForm  = $("#search-cart-form");
+  const searchInput = searchBtn.find("#search-cart-form-input");
+  const searchBtn = searchForm.find("#search-cart-form-search-bt");
+  const clearBtn = searchForm.find("#search-cart-form-clear-btn");
+
   searchBtn.click(async e => {
     e.preventDefault();
     searchBtn.prop("disabled", true);
@@ -38,114 +41,116 @@ export default function renderUsersCartsManagePage() {
 
     const valSearch = searchInput.val();
     const filteredUsersList = await getFilterUsersList(valSearch, true);
-    renderCartsData(filteredUsersList);
+    await renderCartsData(filteredUsersList);
 
     searchBtn.text("search");
     searchBtn.prop("disabled", false);
   });
 
-  $("#clear-search-btn").click(e => {
-    e.preventDefault();
+  clearBtn.click(async () => {
+    clearBtn.prop("disabled", true);
+    clearBtn.text("clearing...");
+
     searchInput.val("");
-    renderCartsData();
+    await renderCartsData();
+
+    clearBtn.prop("disabled", false);
+    clearBtn.text("clear");
   });
 
   renderCartsData();
 }
 
 async function renderCartsData(usersList=null) {
-  const tbody = $("#tbody");
   tbody.html("<tr><td colspan='5'>Loading data...</td></tr>");
 
   try {
     const users = usersList || await getUsersList();
 
-    (async () => {
-      let dataHTML;
-      for(const [idx, user] of users.entries()) {
-        let cartItemsHTML = ``;
-        for(const [idx, item] of user.cart.entries()) {
-          const productVariation = await getVariation(item.product_variation_id);
-          const product = await getProduct(productVariation.product_id);
-          cartItemsHTML += `
-            <li class="content__item">
-              <div class="item__detail">
-                <img class="item__img" src="" alt="smartwatch">
-                <p>${product.name}</p>
-                <p>-</p>
-                <p>${productVariation.price_cents} &#162;</p>
-                <i class="uil uil-multiply"></i>
-                <p class="item__quantity">${item.quantity}</p>
-              </div>
+    let dataHTML;
+    for(const [idx, user] of users.entries()) {
+      let cartItemsHTML = ``;
+      for(const [, item] of user.cart.entries()) {
+        const productVariation = await getVariation(item.product_variation_id);
+        const product = await getProduct(productVariation.product_id);
+        cartItemsHTML += `
+          <li class="content__item">
+            <div class="item__detail">
+              <img class="item__img" src="" alt="smartwatch">
+              <p>${product.name}</p>
+              <p>-</p>
+              <p>${productVariation.price_cents} &#162;</p>
+              <i class="uil uil-multiply"></i>
+              <p class="item__quantity">${item.quantity}</p>
+            </div>
 
-              <div
-                data-variation-id="${productVariation.id}"
-                data-user-id="${user.id}"
-              >
-                <button class="item__btn js-view-detail-item-btn">view detail item</button>
-                <button title="remove this item" class="js-remove-item-btn">remove item</button>
-              </div>
-            </li>
-          `;
-        }
-
-        dataHTML += `
-          <tr class="content__tr">
-            <td data-cell="n.o" class="content__td--g" title="n.o ${idx+1}">${idx+1}</td>
-            <td
-              data-cell="user(buyer) id"
-              class="content__td--g js-view-detail-user-btn"
+            <div
+              data-variation-id="${productVariation.id}"
               data-user-id="${user.id}"
-              title="click to view user id ${user.id}"
             >
-              ${user.id}
-              <button> view detail user</button>
-            </td>
-            <td data-cell="user email" class="content__td--g" title="email ${user.email}">${user.email}</td>
-            <td data-cell="user cart" class="content__td--g">
-              <ul class="content__items">${cartItemsHTML || "empty cart"}</ul>
-            </td>
-            <td data-cell="actions" class="content__td--g">
-              <button
-                class="js-mod-cart-btn"
-                data-user-id="${user.id}"
-                title="mod user's cart"
-                ${!user.cart.length && "disabled"}
-              >modify cart</button>
-            </td>
-          </tr>
+              <button class="item__btn js-view-detail-item-btn">view detail item</button>
+              <button title="remove this item" class="js-remove-item-btn">remove item</button>
+            </div>
+          </li>
         `;
       }
 
-      tbody.html(dataHTML || "<tr><td colspan='5'>No data found!</td></tr>");
+      dataHTML += `
+        <tr class="content__tr--g">
+          <td data-cell="n.o" class="content__td--g">${idx+1}</td>
+          <td
+            data-cell="user(buyer) id"
+            class="content__td--g js-view-detail-user-btn"
+            data-user-id="${user.id}"
+            title="click to view user id ${user.id}"
+          >
+            ${user.id}
+            <button> view detail user</button>
+          </td>
+          <td data-cell="user email" class="content__td--g">${user.email}</td>
+          <td data-cell="user cart" class="content__td--g">
+            <ul class="content__items">${cartItemsHTML || "empty cart"}</ul>
+          </td>
+          <td data-cell="actions" class="content__td--g">
+            <button
+              class="js-mod-cart-btn"
+              data-user-id="${user.id}"
+              title="mod user's cart"
+              ${!user.cart.length && "disabled"}
+            >modify cart</button>
+          </td>
+        </tr>
+      `;
+    }
 
-      tbody.find(".js-view-detail-item-btn").click(e => {
-        const parent = $(e.currentTarget).parent();
-        const variationId = parent.data("variation-id");
-        renderProductVariationDetailPopup(variationId, backdrop);
-      });
+    tbody.html(dataHTML || "<tr><td colspan='5'>No data found!</td></tr>");
 
-      tbody.find(".js-remove-item-btn").click(e => {
-        const parent = $(e.currentTarget).parent();
-        const variationId = parent.data("variation-id");
-        const userId = parent.data("user-id");
-        renderRemoveItemPopup(variationId, userId);
-      });
+    tbody.find(".js-view-detail-item-btn").click(e => {
+      const parent = $(e.currentTarget).parent();
+      const variationId = parent.data("variation-id");
+      renderProductVariationDetailPopup(variationId, backdrop);
+    });
 
-      tbody.find(".js-mod-cart-btn").click(e => {
-        const userId = $(e.currentTarget).data("user-id");
-        console.log(`modify user id ${userId} cart`);
-        renderModCartForm(userId);
-      });
+    tbody.find(".js-remove-item-btn").click(e => {
+      const parent = $(e.currentTarget).parent();
+      const variationId = parent.data("variation-id");
+      const userId = parent.data("user-id");
+      renderRemoveItemPopup(variationId, userId);
+    });
 
-      tbody.find(".js-view-detail-user-btn").click(e => {
-        const userId = $(e.currentTarget).data("user-id");
-        console.log(`view detail user id ${userId}`);
-        renderUserDetailPopup(userId, backdrop);
-      });
+    tbody.find(".js-mod-cart-btn").click(e => {
+      const userId = $(e.currentTarget).data("user-id");
+      console.log(`modify user id ${userId} cart`);
+      renderModCartForm(userId);
+    });
 
-      resultCount.text(users.length);
-    })(); //IIFE execute right after defining
+    tbody.find(".js-view-detail-user-btn").click(e => {
+      const userId = $(e.currentTarget).data("user-id");
+      console.log(`view detail user id ${userId}`);
+      renderUserDetailPopup(userId, backdrop);
+    });
+
+    resultCount.text(users.length);
 
 
   } catch(error) {
@@ -162,7 +167,7 @@ async function renderModCartForm(userId) {
   try {
     const user = await getUser(userId);
     let itemsHTML = ``;
-    for(const [idx, item] of user.cart.entries()) {
+    for(const [, item] of user.cart.entries()) {
       const variation = await getVariation(item.product_variation_id);
       const product  = await getProduct(variation.product_id);
       itemsHTML += `
@@ -193,7 +198,7 @@ async function renderModCartForm(userId) {
     }
 
     backdrop.html(`
-      <form class="mod-cart-form" id="mod-cart-form">
+      <form class="mod-cart-form">
         <button type="button" class="form__close--g js-mod-cart-form-close-btn">
           <i class="uil uil-times"></i>
         </button>
@@ -210,21 +215,19 @@ async function renderModCartForm(userId) {
       </form>
     `);
 
-    const form = $("#mod-cart-form");
+    backdrop.find(".js-mod-cart-form-close-btn").click(() => closeForm(backdrop));
 
-    form.find(".js-mod-cart-form-close-btn").click(() => closeForm(backdrop));
-
-    const submitBnt = form.find("#mod-cart-form-submit-btn");
+    const submitBnt = backdrop.find("#mod-cart-form-submit-btn");
     submitBnt.click(async e => {
       e.preventDefault();
       submitBnt.prop("disabled", true);
       submitBnt.text("modifying...");
-      const items = form.find("#mod-cart-form__items").children().toArray();
+      const items = backdrop.find("#mod-cart-form__items").children().toArray();
 
       const validateForm = async () => {
         let allValid = true;
 
-        for(const [idx, e] of items.entries()) {
+        for(const [, e] of items.entries()) {
           const item = $(e);
           const variationId = item.data("variation-id");
           const msg = item.find(".js-mod-cart-form-item-quant-msg");
@@ -247,7 +250,7 @@ async function renderModCartForm(userId) {
 
       if(await validateForm()) {
         const allUpdated = async () => {
-          for(const [idx, e] of items.entries()) {
+          for(const [, e] of items.entries()) {
             const item = $(e);
             const variationId = item.data("variation-id");
             const msg = item.find(".js-mod-cart-form-item-quant-msg");
@@ -282,8 +285,8 @@ async function renderModCartForm(userId) {
           renderCartsData();
           closeForm(backdrop);
         } else {
-          submitBnt.prop("disabled", false);
           submitBnt.text("modify");
+          submitBnt.prop("disabled", false);
         }
       }
     });
@@ -298,7 +301,7 @@ function renderRemoveItemPopup(variationId, userId) {
   disableBgScroll();
 
   backdrop.html(`
-    <div class="form--g" id="remove-item-popup">
+    <div class="form--g">
       <button type="button" class="form__close--g js-remove-item-popup-close-btn"><i class="uil uil-times"></i></button>
       <h2 class="form__title--g">Confirm remove item id ${variationId} from user id ${userId}'s cart?</h2>
 
@@ -311,11 +314,9 @@ function renderRemoveItemPopup(variationId, userId) {
     </div>
   `);
 
-  const popup = $("#remove-item-popup");
+  backdrop.find(".js-remove-item-popup-close-btn").click(() => closePopup(backdrop));
 
-  popup.find(".js-remove-item-popup-close-btn").click(() => closePopup(backdrop));
-
-  const submitBtn = popup.find("#remove-item-popup-submit-btn");
+  const submitBtn = backdrop.find("#remove-item-popup-submit-btn");
   submitBtn.click(async () => {
     submitBtn.prop("disabled", true);
     submitBtn.text("removing...");
@@ -323,7 +324,8 @@ function renderRemoveItemPopup(variationId, userId) {
     const res = await deleteUserCart(userId, variationId, getAuth());
     if(!res.success) {
       submitBtn.text("remove");
-      popup.find("#remove-item-popup-msg").text(`Error: ${res.message}`);
+      submitBtn.prop("disabled", false);
+      backdrop.find("#remove-item-popup-msg").text(`Error: ${res.message}`);
       return;
     }
 
@@ -337,6 +339,5 @@ function renderRemoveItemPopup(variationId, userId) {
 
   backdrop.show();
 }
-
 
 renderUsersCartsManagePage();

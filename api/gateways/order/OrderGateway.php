@@ -4,10 +4,12 @@ class OrderGateway {
 
   private PDO $conn;
   private OrderItemGateway $orderItem;
+  private UserAddressGateway $address;
 
   public function __construct(Database $db) {
     $this->conn = $db->getConnection();
     $this->orderItem = new OrderItemGateway($db);
+    $this->address = new UserAddressGateway($db);
   }
 
   public function getAll(?int $limit, ?int $offset): array | false {
@@ -30,6 +32,11 @@ class OrderGateway {
       $data = [];
       while($order = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $order["items"] = $this->orderItem->getByOrderId($order["id"]);
+        $order["delivery_address"] = $this->address->get($order["delivery_address_id"]);
+        unset($order["delivery_address_id"]);
+        unset($order["delivery_address"]["user_id"]);
+        unset($order["delivery_address"]["is_default"]);
+        unset($order["delivery_address"]["is_deleted"]);
         $data[] = $order;
       }
 
@@ -47,6 +54,11 @@ class OrderGateway {
 
     if($stmt->execute() && $order = $stmt->fetch(PDO::FETCH_ASSOC)) {
       $order["items"] = $this->orderItem->getByOrderId($order["id"]);
+      $order["delivery_address"] = $this->address->get($order["delivery_address_id"]);
+      unset($order["delivery_address_id"]);
+      unset($order["delivery_address"]["user_id"]);
+      unset($order["delivery_address"]["is_default"]);
+      unset($order["delivery_address"]["is_deleted"]);
       return $order;
     }
 

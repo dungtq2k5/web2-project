@@ -29,7 +29,7 @@ export async function renderUserDetailPopup(userId, backdropEle) {
 
     backdropEle.html(() => {
       return `
-        <div class="user-detail-popup--g" id="user-detail-popup">
+        <div class="user-detail-popup--g">
           <button type="button" class="form__close--g js-user-detail-popup-close-btn">
             <i class="uil uil-times"></i>
           </button>
@@ -80,8 +80,7 @@ export async function renderUserDetailPopup(userId, backdropEle) {
       `;
     });
 
-    const form = $("#user-detail-popup");
-    form.find(".js-user-detail-popup-close-btn").click(() => closePopup(backdropEle));
+    backdropEle.find(".js-user-detail-popup-close-btn").click(() => closePopup(backdropEle));
 
   } catch(error) {
     console.error(`Error: ${error.massage}`);
@@ -93,7 +92,7 @@ export async function renderUserDetailPopup(userId, backdropEle) {
  * Render a popup also handle await UI.
  * Use this function with caution because of connections with styling files and others.
  *
- * @param   variationId product_variation's id.
+ * @param variationId product_variation's id.
  * @param backdropEle backdrop element from HTML.
  * @returns none.
  */
@@ -108,7 +107,7 @@ export async function renderProductVariationDetailPopup(variationId, backdropEle
 
     backdropEle.html(() => {
       return `
-        <div class="product-detail-popup--g" id="product-detail-popup">
+        <div class="product-detail-popup--g">
           <button type="button" class="form__close--g js-product-detail-popup-close-btn"><i class="uil uil-times"></i></button>
           <h2 class="form__title--g">Product information</h2>
 
@@ -155,7 +154,7 @@ export async function renderProductVariationDetailPopup(variationId, backdropEle
               </div>
               <div>
                 <h4>watch size</h4>
-                <p>${variation.watch_size_mm}(mm)</p>
+                <p>${variation.watch_size_mm}mm</p>
               </div>
               <div>
                 <h4>watch color</h4>
@@ -175,7 +174,7 @@ export async function renderProductVariationDetailPopup(variationId, backdropEle
               </div>
               <div>
                 <h4>display size</h4>
-                <p>${variation.display_size_mm}(mm)</p>
+                <p>${variation.display_size_mm}mm</p>
               </div>
               <div>
                 <h4>display type</h4>
@@ -183,11 +182,11 @@ export async function renderProductVariationDetailPopup(variationId, backdropEle
               </div>
               <div>
                 <h4>resolution</h4>
-                <p>${variation.resolution_h_px}px x ${variation.resolution_w_px}px</p>
+                <p>${variation.resolution_h_px}px <i class="uil uil-times"></i> ${variation.resolution_w_px}px</p>
               </div>
               <div>
                 <h4>memory</h4>
-                <p>${variation.ram_bytes}bytes x ${variation.rom_bytes}bytes</p>
+                <p>${variation.ram_bytes}bytes <i class="uil uil-times"></i> ${variation.rom_bytes}bytes</p>
               </div>
               <div>
                 <h4>os</h4>
@@ -215,11 +214,11 @@ export async function renderProductVariationDetailPopup(variationId, backdropEle
               </div>
               <div>
                 <h4>band</h4>
-                <p>${variation.band_material} | ${variation.band_size_mm}(mm) | ${variation.band_color}</p>
+                <p>${variation.band_material} | ${variation.band_size_mm}mm | ${variation.band_color}</p>
               </div>
               <div>
                 <h4>weight</h4>
-                <p>${variation.weight_milligrams}(mg)</p>
+                <p>${variation.weight_milligrams}mg</p>
               </div>
               <div>
                 <h4>release at</h4>
@@ -233,9 +232,7 @@ export async function renderProductVariationDetailPopup(variationId, backdropEle
       `;
     });
 
-    const form = $("#product-detail-popup");
-
-    form.find(".js-product-detail-popup-close-btn").click(() => closePopup(backdropEle));
+    backdropEle.find(".js-product-detail-popup-close-btn").click(() => closePopup(backdropEle));
 
   } catch(error) {
     console.error(`Error: ${error.massage}`);
