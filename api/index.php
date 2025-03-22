@@ -7,17 +7,17 @@ require_once "./config/settings.php";
 
 $classMap = require_once "./classmap.php";
 spl_autoload_register(function ($class) use ($classMap): void {
-    if (isset($classMap[$class])) {
-        require_once $classMap[$class];
-    }
+  if(isset($classMap[$class])){
+    require_once $classMap[$class];
+  }
 });
 
 set_exception_handler("ErrorHandler::handleException");
 
-header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Origin: *"); // Allow your origin
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS"); // Allowed request methods
 header("Access-Control-Allow-Headers: Content-Type, Authorization"); // Allowed headers
+header("Content-Type: application/json; charset=UTF-8");
 
 $method = $_SERVER["REQUEST_METHOD"];
 if($method === "OPTIONS") {

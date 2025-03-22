@@ -1,12 +1,13 @@
-import { getProduct, getProductsList } from "../controllers/product/products.js";
+import { getProduct, getProductsList, updateProduct } from "../controllers/product/products.js";
 import { getBrandsList } from "../controllers/product/brands.js";
 import { getCategoriesList } from "../controllers/product/categories.js";
 import { getVariationsByProductId } from "../controllers/product/variations.js";
 import { disableBgScroll, removeOddSpace } from "../utils.js";
 import { closeForm, closePopup } from "./components.js";
+import { getAuth } from "../controllers/users.js";
 
 
-const curdProductMsg = $("#curd-product-msg");
+const crudProductMsg = $("#curd-product-msg");
 const backdrop = $("#backdrop");
 const resultCount = $("#result-count");
 const tbody = $("#tbody");
@@ -330,9 +331,22 @@ async function renderUpdateProductForm(productId) {
           description,
           stop_selling: stopSelling
         }
+        const res = await updateProduct(productId, product, getAuth());
 
+        if(!res.success) {
+          submitBtn.text("update");
+          submitBtn.prop("disabled", false);
+          backdrop.find("#submit-msg").text(res.message);
+          return;
+        }
+
+        crudProductMsg.text(`* product id ${productId} was updated`);
+        setTimeout(() => {
+          crudProductMsg.text("");
+        }, 2000);
+        renderProductsData(); //re-render
+        closeForm(backdrop);
       }
-
     });
 
   } catch(error) {

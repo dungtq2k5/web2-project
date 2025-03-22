@@ -4,11 +4,13 @@ class ProductGateway {
   private PDO $conn;
   private ProductBrandGateway $brand;
   private ProductCategoryGateway $category;
+  private Utils $utils;
 
   public function __construct(Database $db) {
     $this->conn = $db->getConnection();
     $this->brand = new ProductBrandGateway($db);
     $this->category = new ProductCategoryGateway($db);
+    $this->utils = new Utils();
   }
 
   public function getAll(?int $limit, ?int $offset): array | false {
@@ -42,8 +44,11 @@ class ProductGateway {
   }
 
   public function create(array $data): array | false {
-    $sql = "INSERT INTO products (name, brand_id, model, category_id, description, image_name, stop_selling)
-      VALUES (:name, :brand_id, :model, :category_id, :description, :stop_selling)";
+    $sql = $data["image"]
+      ? "INSERT INTO products (name, brand_id, model, category_id, description, image_name, stop_selling)
+        VALUES (:name, :brand_id, :model, :category_id, :description, :image_name, :stop_selling)"
+      : "INSERT INTO products (name, brand_id, model, category_id, description, stop_selling)
+        VALUES (:name, :brand_id, :model, :category_id, :description, :stop_selling)";
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":name", $data["name"], PDO::PARAM_STR);
@@ -51,7 +56,10 @@ class ProductGateway {
     $stmt->bindValue(":model", $data["model"], PDO::PARAM_STR);
     $stmt->bindValue(":category_id", $data["category_id"], PDO::PARAM_INT);
     $stmt->bindValue(":description", $data["description"], PDO::PARAM_STR);
-    $stmt->bindValue(":image_name", $data["image_name"] ?? "default.webp", PDO::PARAM_STR);
+    if($data["image"]) {
+      $img_name = $this->utils->saveImage($data["image"], "../products/uploads");
+      $stmt->bindValue(":image_name", $img_name, PDO::PARAM_STR);
+    }
     $stmt->bindValue(":stop_selling", $data["stop_selling"] ?? false, PDO::PARAM_BOOL);
     $stmt->execute();
 
@@ -70,7 +78,7 @@ class ProductGateway {
       unset($product["brand_id"]);
       $product["category"] = $this->category->get((int) $product["category_id"]);
       unset($product["category_id"]);
-      
+
       return $product;
     }
 
@@ -78,6 +86,7 @@ class ProductGateway {
   }
 
   public function update(array $current, array $new): array | false {
+    //TODO handle image
     $sql = "UPDATE products SET
       name = :name,
       brand_id = :brand_id,
@@ -104,6 +113,7 @@ class ProductGateway {
   }
 
   public function delete(int $id): bool {
+    //TODO handle remove image
     $sql = $this->hasConstrain($id)
       ? "UPDATE products SET stop_selling = true WHERE id = :id"
       : "DELETE FROM products WHERE id = :id";

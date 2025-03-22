@@ -1,7 +1,11 @@
 <?php
 
 class ProductController extends ErrorHandler {
-  public function __construct(private ProductGateway $gateway, private Auths $auths) {}
+  private Utils $utils;
+
+  public function __construct(private ProductGateway $gateway, private Auths $auths) {
+    $this->utils = new Utils();
+  }
 
   public function processRequest(string $method, ?int $id, ?int $limit, ?int $offset): void {
     if($id) {
@@ -73,9 +77,19 @@ class ProductController extends ErrorHandler {
         ]);
         break;
 
-      case "POST":
+      case "POST": //handle both JSON and Form data
         $this->auths->verifyAction("CREATE_PRODUCT");
-        $data = (array) json_decode(file_get_contents("php://input"));
+
+        $content_type = $_SERVER["CONTENT_TYPE"];
+        if(strpos($content_type, "application/json") !== false) { //JSON data
+          $data = (array) json_decode(file_get_contents("php://input"));
+        } elseif( //Form data
+          strpos($content_type, "multipart/form-data") !== false ||
+          strpos($content_type, "application/x-www-form-urlencoded") !== false
+        ) {
+          $data = $_POST;
+          if($_FILES["image"]) $data["image"] = $_FILES["image"];
+        }
         $errors = $this->getValidationErrors($data);
         if(!empty($errors)) {
           $this->sendErrorResponse(422, $errors);
@@ -114,8 +128,11 @@ class ProductController extends ErrorHandler {
       if(array_key_exists("description", $data) && empty($data["description"])) $errors[] = "description is empty";
     }
 
-    if(array_key_exists("image_name", $data) && empty($data["image_name"])) $errors[] = "image_name is empty";
-    if(array_key_exists("stop_selling", $data) && !is_bool($data["stop_selling"])) $errors[] = "stop_selling must be a boolean value";
+    // if(array_key_exists("image_name", $data) && empty($data["image_name"])) $errors[] = "image_name is empty";
+    if(array_key_exists("image", $data) && $img_errors = $this->utils->isValidImg($data["image"])) {
+      if(!empty($img_errors)) $errors["image"] = $img_errors;
+    }
+    if(array_key_exists("stop_selling", $data) && !$this->utils->is_interpretable_bool($data["stop_selling"])) $errors[] = "stop_selling must be a boolean value";
 
     return $errors;
   }
