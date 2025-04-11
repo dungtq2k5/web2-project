@@ -29,7 +29,6 @@ class CartGateway {
   }
 
   public function create(array $data): array | false {
-    echo "run";
     $user_id = $data["user_id"];
     $product_variation_id = $data["product_variation_id"];
 

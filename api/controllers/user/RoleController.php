@@ -1,7 +1,11 @@
 <?php
 
-class RoleController extends ErrorHandler {
-  public function __construct(private RoleGateway $gateway, private Auths $auths) {}
+class RoleController {
+  private ErrorHandler $error_handler;
+  
+  public function __construct(private RoleGateway $gateway, private Auths $auths) {
+    $this->error_handler = new ErrorHandler;
+  }
 
   public function processRequest(string $method, ?int $id, ?int $limit, ?int $offset): void {
     if($id) {
@@ -15,7 +19,7 @@ class RoleController extends ErrorHandler {
   private function processResourceRequest(string $method, int $id): void {
     $role = $this->gateway->get($id);
     if(!$role) {
-      $this->sendErrorResponse(404, "Role with an id $id not found");
+      $this->error_handler->sendErrorResponse(404, "Role with an id $id not found");
       return;
     }
 
@@ -32,9 +36,10 @@ class RoleController extends ErrorHandler {
         $data = (array) json_decode(file_get_contents("php://input"));
         $errors = $this->getValidationErrors($data, false);
         if(!empty($errors)) {
-          $this->sendErrorResponse(422, $errors);
+          $this->error_handler->sendErrorResponse(422, $errors);
           break;
         }
+
         $data = $this->gateway->update($role, $data);
 
         echo json_encode([
@@ -63,7 +68,7 @@ class RoleController extends ErrorHandler {
         break;
 
       default:
-        $this->sendErrorResponse(405, "only allow GET, PUT, DELETE method");
+        $this->error_handler->sendErrorResponse(405, "only allow GET, PUT, DELETE method");
         header("Allow: GET, PUT, DELETE");
     }
 
@@ -86,9 +91,10 @@ class RoleController extends ErrorHandler {
         $data = (array) json_decode(file_get_contents("php://input"));
         $errors = $this->getValidationErrors($data);
         if(!empty($errors)) {
-          $this->sendErrorResponse(422, $errors);
+          $this->error_handler->sendErrorResponse(422, $errors);
           break;
         }
+
         $data = $this->gateway->create($data);
 
         http_response_code(201);
@@ -100,7 +106,7 @@ class RoleController extends ErrorHandler {
         break;
 
       default:
-        $this->sendErrorResponse(405, "only allow GET, POST method");
+        $this->error_handler->sendErrorResponse(405, "only allow GET, POST method");
         header("Allow: GET, POST");
     }
   }

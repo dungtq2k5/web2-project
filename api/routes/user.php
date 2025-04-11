@@ -42,6 +42,5 @@ switch(true) {
     break;
 
   default:
-    $errorHandler = new ErrorHandler();
-    $errorHandler->sendErrorResponse(404, "Request not found!");
+    $error_handler->sendErrorResponse(404, "Request not found");
 }

@@ -1,10 +1,12 @@
 <?php
 
-class ProviderController extends ErrorHandler {
+class ProviderController {
+  private ErrorHandler $error_handler;
   private Utils $utils;
 
   public function __construct(private ProviderGateway $gateway, private Auths $auths) {
-    $this->utils = new Utils();
+    $this->error_handler = new ErrorHandler;
+    $this->utils = new Utils;
   }
 
   public function processRequest(string $method, ?int $id, ?int $limit, ?int $offset): void {
@@ -19,7 +21,7 @@ class ProviderController extends ErrorHandler {
   private function processResourceRequest(string $method, int $id): void {
     $provider = $this->gateway->get($id);
     if(!$provider) {
-      $this->sendErrorResponse(404, "Provider with an id $id not found");
+      $this->error_handler->sendErrorResponse(404, "Provider with an id $id not found");
       return;
     }
 
@@ -36,7 +38,7 @@ class ProviderController extends ErrorHandler {
         $data = (array) json_decode(file_get_contents("php://input"));
         $errors = $this->getValidationErrors($data, false);
         if(!empty($errors)) {
-          $this->sendErrorResponse(422, $errors);
+          $this->error_handler->sendErrorResponse(422, $errors);
           break;
         }
         $data = $this->gateway->update($provider, $data);
@@ -53,7 +55,7 @@ class ProviderController extends ErrorHandler {
         $res = $this->gateway->delete($id);
 
         if(!$res) {
-          $this->sendErrorResponse(403, "Provider id $id can't be deleted because of constrain");
+          $this->error_handler->sendErrorResponse(403, "Provider id $id can't be deleted because of constrain");
           break;
         }
 
@@ -64,7 +66,7 @@ class ProviderController extends ErrorHandler {
         break;
 
       default:
-        $this->sendErrorResponse(405, "only allow GET, PUT, DELETE method");
+        $this->error_handler->sendErrorResponse(405, "only allow GET, PUT, DELETE method");
         header("Allow: GET, PUT, DELETE");
     }
 
@@ -87,7 +89,7 @@ class ProviderController extends ErrorHandler {
         $data = (array) json_decode(file_get_contents("php://input"));
         $errors = $this->getValidationErrors($data);
         if(!empty($errors)) {
-          $this->sendErrorResponse(422, $errors);
+          $this->error_handler->sendErrorResponse(422, $errors);
           break;
         }
         $data = $this->gateway->create($data);
@@ -101,7 +103,7 @@ class ProviderController extends ErrorHandler {
         break;
 
       default:
-        $this->sendErrorResponse(405, "only allow GET, POST method");
+        $this->error_handler->sendErrorResponse(405, "only allow GET, POST method");
         header("Allow: GET, POST");
     }
   }

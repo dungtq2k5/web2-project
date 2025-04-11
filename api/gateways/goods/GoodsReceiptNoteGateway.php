@@ -106,4 +106,5 @@ class GoodsReceiptNoteGateway {
 
     return (bool) $stmt->fetchColumn();
   }
+  
 }

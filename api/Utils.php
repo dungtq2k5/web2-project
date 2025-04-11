@@ -1,6 +1,11 @@
 <?php
 
 class Utils {
+  private ErrorHandler $error_handler;
+
+  public function __construct() {
+    $this->error_handler = new ErrorHandler;
+  }
 
   public function genProductSKU(
     string $category,
@@ -25,7 +30,7 @@ class Utils {
   public function isValidProductSKU(string $sku): bool { //AI gen
     // Regular expression to match the SKU format
     $pattern = '/^[a-z]+-[a-z]+-[a-z0-9]+-[0-9]+-[a-z]+-[a-z]+-[0-9]+$/'; // Improved regex
-    $test_pattern = '/^[a-z]+-[0-9]+-[a-z]+$/'; //TODO temp for dev
+    $test_pattern = '/^[a-z]+-[0-9]+-[a-z]+$/'; //DEV use this as temp for dev
     return preg_match($test_pattern, $sku);
     // return true;
   }
@@ -94,4 +99,97 @@ class Utils {
     return true;
   }
 
+  public function removeOddSpace(string $str): string { //AI help
+    return trim(preg_replace('/\+s/', ' ', $str));
+  }
+
+  private function genFileName(string $original_name): string {
+    $extension = pathinfo($original_name, PATHINFO_EXTENSION);
+    return uniqid() . "." . $extension;
+  }
+
+  public function isValidImg(
+    array $file,
+    array $allowed_types = ["image/webp"],
+    int $max_file_size = 5 * 1024 * 1024,
+    int $max_width = 2400,
+    int $max_height = 2400
+  ): array {
+    $errors = [];
+
+    if(!in_array($file["type"], $allowed_types)) {
+      $errors[] = "Invalid file type. Allowed types are: " . implode(", ", $allowed_types);
+    }
+    if($file["size"] > $max_file_size) {
+      $errors[] = "File size exceeds the maximum of ".($max_file_size / (1024 * 1024))."MB";
+    }
+    //check image dimensions
+    $image_info = getimagesize($file["tmp_name"]);
+    if($image_info) {
+      if($image_info[0] > $max_width || $image_info[1] > $max_height) {
+        $errors[] = "Image dimensions exceed the maximum allowed size of {$max_width}x{$max_height}px";
+      }
+    } else {
+      $errors[] = "Uploaded file is not a valid image";
+    }
+
+    return $errors;
+  }
+
+  public function saveFile(array $file, string $upload_dir="../uploads"): string { //upload_dir relative to index.php
+    $new_filename = $this->genFileName($file["name"]);
+    $destination = "$upload_dir/$new_filename";
+
+    if(!file_exists($upload_dir) && !mkdir($upload_dir, 0777, true)) { //create folder if not exist
+      $this->error_handler->sendErrorResponse(500, "Failed to create folder $upload_dir");
+      die;
+    }
+
+    if(!move_uploaded_file($file["tmp_name"], $destination)) {
+      $this->error_handler->sendErrorResponse(500, "Failed to uploaded file");
+      die;
+    }
+
+    return $new_filename;
+  }
+
+  public function removeFile(string $filename, string $upload_dir="../uploads"): bool {
+    if(!unlink("$upload_dir/$filename")) {
+      $this->error_handler->sendErrorResponse(500, "Failed to remove file");
+      die;
+    }
+
+    return true;
+  }
+
+  public function is_interpretable_bool($value): bool {
+    if(is_bool($value)) return true;
+    if(is_numeric($value)) {
+      return $value == 1 || $value == 0;
+    }
+    if(is_string($value)) {
+      $value = strtolower($value);
+      return $value === "true" || $value === "false";
+    }
+
+    return false;
+  }
+
+  public function to_bool($value): bool { // Convert from interpretable bool to bool, otherwise false if isn't interpretable
+    if(is_bool($value)) return $value;
+
+    if(is_numeric($value)) {
+      if($value == 1) return true;
+      if($value == 0) return false;
+    }
+
+    if(is_string($value)) {
+      $value = strtolower($value);
+      if($value === "true") return true;
+      if($value === "false") return false;
+    }
+
+    return false;
+  }
+  
 }

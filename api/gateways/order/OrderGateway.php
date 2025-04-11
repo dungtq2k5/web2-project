@@ -4,10 +4,12 @@ class OrderGateway {
 
   private PDO $conn;
   private OrderItemGateway $orderItem;
+  private UserAddressGateway $address;
 
   public function __construct(Database $db) {
     $this->conn = $db->getConnection();
     $this->orderItem = new OrderItemGateway($db);
+    $this->address = new UserAddressGateway($db);
   }
 
   public function getAll(?int $limit, ?int $offset): array | false {
@@ -30,6 +32,11 @@ class OrderGateway {
       $data = [];
       while($order = $stmt->fetch(PDO::FETCH_ASSOC)) {
         $order["items"] = $this->orderItem->getByOrderId($order["id"]);
+        $order["delivery_address"] = $this->address->get($order["delivery_address_id"]);
+        unset($order["delivery_address_id"]);
+        unset($order["delivery_address"]["user_id"]);
+        unset($order["delivery_address"]["is_default"]);
+        unset($order["delivery_address"]["is_deleted"]);
         $data[] = $order;
       }
 
@@ -47,6 +54,11 @@ class OrderGateway {
 
     if($stmt->execute() && $order = $stmt->fetch(PDO::FETCH_ASSOC)) {
       $order["items"] = $this->orderItem->getByOrderId($order["id"]);
+      $order["delivery_address"] = $this->address->get($order["delivery_address_id"]);
+      unset($order["delivery_address_id"]);
+      unset($order["delivery_address"]["user_id"]);
+      unset($order["delivery_address"]["is_default"]);
+      unset($order["delivery_address"]["is_deleted"]);
       return $order;
     }
 
@@ -118,7 +130,7 @@ class OrderGateway {
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":user_id", $new["user_id"] ?? $current["user_id"], PDO::PARAM_INT);
     $stmt->bindValue(":total_cents", $new["total_cents"] ?? $current["total_cents"], PDO::PARAM_INT);
-    $stmt->bindValue(":delivery_address_id", $new["delivery_address_id"] ?? $current["delivery_address_id"], PDO::PARAM_INT);
+    $stmt->bindValue(":delivery_address_id", $new["delivery_address_id"] ?? $current["delivery_address"]["id"], PDO::PARAM_INT);
     $stmt->bindValue(":delivery_state_id", $new["delivery_state_id"] ?? $current["delivery_state_id"], PDO::PARAM_INT);
     $stmt->bindValue(":order_date", $new["order_date"] ?? $current["order_date"], PDO::PARAM_STR);
     $stmt->bindValue(":estimate_received_date", $new["estimate_received_date"] ?? $current["estimate_received_date"], PDO::PARAM_STR);

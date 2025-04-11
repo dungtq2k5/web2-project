@@ -1,10 +1,10 @@
 <?php
 
-class GoodsReceiptNoteController extends ErrorHandler {
-  private Utils $utils;
+class GoodsReceiptNoteController {
+  private ErrorHandler $error_handler;
 
   public function __construct(private GoodsReceiptNoteGateway $gateway, private Auths $auths) {
-    $this->utils = new Utils();
+    $this->error_handler = new ErrorHandler;
   }
 
   public function processRequest(string $method, ?int $id, ?int $limit, ?int $offset): void {
@@ -19,7 +19,7 @@ class GoodsReceiptNoteController extends ErrorHandler {
   private function processResourceRequest(string $method, int $id): void {
     $receipt_note = $this->gateway->get($id);
     if(!$receipt_note) {
-      $this->sendErrorResponse(404, "Receipt note with an id $id not found");
+      $this->error_handler->sendErrorResponse(404, "Receipt note with an id $id not found");
       return;
     }
 
@@ -36,7 +36,7 @@ class GoodsReceiptNoteController extends ErrorHandler {
         $data = (array) json_decode(file_get_contents("php://input"));
         $errors = $this->getValidationErrors($data, false);
         if(!empty($errors)) {
-          $this->sendErrorResponse(422, $errors);
+          $this->error_handler->sendErrorResponse(422, $errors);
           break;
         }
         $data = $this->gateway->update($receipt_note, $data);
@@ -53,7 +53,7 @@ class GoodsReceiptNoteController extends ErrorHandler {
         $res = $this->gateway->delete($id);
 
         if(!$res) {
-          $this->sendErrorResponse(403, "Receipt note can't be deleted because of constrain");
+          $this->error_handler->sendErrorResponse(403, "Receipt note can't be deleted because of constrain");
           break;
         }
 
@@ -64,7 +64,7 @@ class GoodsReceiptNoteController extends ErrorHandler {
         break;
 
       default:
-        $this->sendErrorResponse(405, "only allow GET, PUT, DELETE method");
+        $this->error_handler->sendErrorResponse(405, "only allow GET, PUT, DELETE method");
         header("Allow: GET, PUT, DELETE");
     }
 
@@ -87,7 +87,7 @@ class GoodsReceiptNoteController extends ErrorHandler {
         $data = (array) json_decode(file_get_contents("php://input"));
         $errors = $this->getValidationErrors($data);
         if(!empty($errors)) {
-          $this->sendErrorResponse(422, $errors);
+          $this->error_handler->sendErrorResponse(422, $errors);
           break;
         }
         $data = $this->gateway->create($data);
@@ -101,7 +101,7 @@ class GoodsReceiptNoteController extends ErrorHandler {
         break;
 
       default:
-        $this->sendErrorResponse(405, "only allow GET, POST method");
+        $this->error_handler->sendErrorResponse(405, "only allow GET, POST method");
         header("Allow: GET, POST");
     }
   }

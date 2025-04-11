@@ -3,20 +3,22 @@
 class ProductVariationGateway {
   private PDO $conn;
   private ProductOSGateway $os;
+  private Utils $utils;
+  private string $upload_dir = "../uploads/variations"; // Relative to index.php
 
   public function __construct(Database $db) {
     $this->conn = $db->getConnection();
     $this->os = new ProductOSGateway($db);
+    $this->utils = new Utils;
   }
 
-  public function create(array $data): array | false { //TODO auto gen product_instances
+  public function create(array $data): array | false {
     $sql = "INSERT INTO product_variations (
       product_id,
       watch_size_mm,
       watch_color,
       price_cents,
       base_price_cents,
-      image_name,
       display_size_mm,
       display_type,
       resolution_h_px,
@@ -42,7 +44,6 @@ class ProductVariationGateway {
       :watch_color,
       :price_cents,
       :base_price_cents,
-      :image_name,
       :display_size_mm,
       :display_type,
       :resolution_h_px,
@@ -70,7 +71,6 @@ class ProductVariationGateway {
     $stmt->bindValue(":watch_color", $data["watch_color"], PDO::PARAM_STR);
     $stmt->bindValue(":price_cents", $data["price_cents"] ?? 0, PDO::PARAM_INT);
     $stmt->bindValue(":base_price_cents", $data["base_price_cents"] ?? 0, PDO::PARAM_INT);
-    $stmt->bindValue(":image_name", $data["image_name"] ?? "default.webp", PDO::PARAM_STR);
     $stmt->bindValue(":display_size_mm", $data["display_size_mm"], PDO::PARAM_INT);
     $stmt->bindValue(":display_type", $data["display_type"], PDO::PARAM_STR);
     $stmt->bindValue(":resolution_h_px", $data["resolution_h_px"], PDO::PARAM_INT);
@@ -89,10 +89,20 @@ class ProductVariationGateway {
     $stmt->bindValue(":band_color", $data["band_color"], PDO::PARAM_STR);
     $stmt->bindValue(":weight_milligrams", $data["weight_milligrams"], PDO::PARAM_INT);
     $stmt->bindValue(":release_date", $data["release_date"], PDO::PARAM_STR);
-    $stmt->bindValue(":stop_selling", $data["stop_selling"] ?? false, PDO::PARAM_BOOL);
-    $stmt->execute();
+    $stmt->bindValue(":stop_selling", $this->utils->to_bool($data["stop_selling"]), PDO::PARAM_BOOL);
 
-    return $this->get($this->conn->lastInsertId());
+    if($stmt->execute()) {
+      $id = $this->conn->lastInsertId();
+
+      if(isset(($data["image"])) && $data["image"] !== "null") {
+        $img_name = $this->utils->saveFile($data["image"], $this->upload_dir);
+        $this->updateImg($id, $img_name);
+      }
+
+      return $this->get($id);
+    }
+
+    return false;
   }
 
   public function getAll(?int $limit, ?int $offset): array | false {
@@ -147,7 +157,6 @@ class ProductVariationGateway {
       watch_color = :watch_color,
       price_cents = :price_cents,
       base_price_cents = :base_price_cents,
-      image_name = :image_name,
       display_size_mm = :display_size_mm,
       display_type = :display_type,
       resolution_h_px = :resolution_h_px,
@@ -176,14 +185,13 @@ class ProductVariationGateway {
     $stmt->bindValue(":watch_color", $new["watch_color"] ?? $current["watch_color"], PDO::PARAM_STR);
     $stmt->bindValue(":price_cents", $new["price_cents"] ?? $current["price_cents"], PDO::PARAM_INT);
     $stmt->bindValue(":base_price_cents", $new["base_price_cents"] ?? $current["base_price_cents"], PDO::PARAM_INT);
-    $stmt->bindValue(":image_name", $new["image_name"] ?? $current["image_name"], PDO::PARAM_STR);
     $stmt->bindValue(":display_size_mm", $new["display_size_mm"] ?? $current["display_size_mm"], PDO::PARAM_INT);
     $stmt->bindValue(":display_type", $new["display_type"] ?? $current["display_type"], PDO::PARAM_STR);
     $stmt->bindValue(":resolution_h_px", $new["resolution_h_px"] ?? $current["resolution_h_px"], PDO::PARAM_INT);
     $stmt->bindValue(":resolution_w_px", $new["resolution_w_px"] ?? $current["resolution_w_px"], PDO::PARAM_INT);
     $stmt->bindValue(":ram_bytes", $new["ram_bytes"] ?? $current["ram_bytes"], PDO::PARAM_INT);
     $stmt->bindValue(":rom_bytes", $new["rom_bytes"] ?? $current["rom_bytes"], PDO::PARAM_INT);
-    $stmt->bindValue(":os_id", $new["os_id"] ?? $current["os_id"], PDO::PARAM_INT);
+    $stmt->bindValue(":os_id", $new["os_id"] ?? $current["os"]["id"], PDO::PARAM_INT);
     $stmt->bindValue(":connectivity", $new["connectivity"] ?? $current["connectivity"], PDO::PARAM_STR);
     $stmt->bindValue(":battery_life_mah", $new["battery_life_mah"] ?? $current["battery_life_mah"], PDO::PARAM_INT);
     $stmt->bindValue(":water_resistance_value", $new["water_resistance_value"] ?? $current["water_resistance_value"], PDO::PARAM_INT);
@@ -195,21 +203,38 @@ class ProductVariationGateway {
     $stmt->bindValue(":band_color", $new["band_color"] ?? $current["band_color"], PDO::PARAM_STR);
     $stmt->bindValue(":weight_milligrams", $new["weight_milligrams"] ?? $current["weight_milligrams"], PDO::PARAM_INT);
     $stmt->bindValue(":release_date", $new["release_date"] ?? $current["release_date"], PDO::PARAM_STR);
-    $stmt->bindValue(":stop_selling", $new["stop_selling"] ?? $current["stop_selling"], PDO::PARAM_BOOL);
+    $stmt->bindValue(":stop_selling", isset($new["stop_selling"]) ? $this->utils->to_bool($new["stop_selling"]) : $current["stop_selling"], PDO::PARAM_BOOL);
     $stmt->bindValue(":id", $current["id"], PDO::PARAM_INT);
     $stmt->execute();
+
+    if($stmt->execute() && isset($new["image"])) { // Only update image when succeed + image exist
+      if($new["image"] === "null") {
+        $this->updateImg($current["id"], null);
+      } else {
+        $img_name = $this->utils->saveFile($new["image"], $this->upload_dir);
+        $this->updateImg($current["id"], $img_name);
+      }
+      if($current["image_name"]) $this->utils->removeFile($current["image_name"], $this->upload_dir);
+    }
 
     return $this->get($current["id"]);
   }
 
   public function delete(int $id): bool {
-    $sql = $this->hasConstrain($id)
-      ? "UPDATE product_variations SET stop_selling = true WHERE id = :id"
-      : "DELETE FROM product_variations WHERE id = :id";
+    if($this->hasConstrain($id)) return false;
+
+    $sql = "DELETE FROM product_variations WHERE id = :id";
+    $img_name = $this->get($id)["image_name"];
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":id", $id, PDO::PARAM_INT);
-    return $stmt->execute();
+
+    if($stmt->execute()) {
+      if($img_name) return $this->utils->removeFile($img_name, $this->upload_dir);
+      return true;
+    }
+
+    return false;
   }
 
   private function hasConstrain(int $id): bool {
@@ -226,4 +251,13 @@ class ProductVariationGateway {
     return (bool) $stmt->fetchColumn();
   }
 
+  private function updateImg(int $id, string | null $img_name): bool {
+    $sql = "UPDATE product_variations SET image_name = :image_name WHERE id = :id";
+
+    $stmt = $this->conn->prepare($sql);
+    $stmt->bindValue(":image_name", $img_name, PDO::PARAM_STR);
+    $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+
+    return $stmt->execute();
+  }
 }

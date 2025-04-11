@@ -17,12 +17,17 @@ class ProductInstanceGateway {
     $this->brand = new ProductBrandGateway($db);
   }
 
-  public function create(array $data): array | false {
-    $variation = $this->variation->get($data["product_variation_id"]);
-    if(!$variation) return false;
+  public function create(array $data): array | false | Exception {
+    $variation_id = $data["product_variation_id"];
+    $variation = $this->variation->get($variation_id);
+    if(!$variation) {
+      $error_msg = "Product variation id '$variation_id' does not exist.";
+      throw new Exception($error_msg, 400);
+    }
+
     $product = $this->product->get($variation["product_id"]);
-    $category = $this->category->get($product["category_id"]);
-    $brand = $this->brand->get($product["brand_id"]);
+    $category = $this->category->get($product["category"]["id"]);
+    $brand = $this->brand->get($product["brand"]["id"]);
     $sku = $this->utils->genProductSKU(
       $category["name"],
       $brand["name"],
@@ -45,9 +50,9 @@ class ProductInstanceGateway {
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":sku", $sku, PDO::PARAM_STR);
-    $stmt->bindValue(":product_variation_id", $data["product_variation_id"], PDO::PARAM_INT);
-    $stmt->bindValue(":goods_receipt_note_id", $data["goods_receipt_note_id"], PDO::PARAM_INT);
-    $stmt->bindValue(":is_sold", $data["is_sold"] ?? false, PDO::PARAM_BOOL);
+    $stmt->bindValue(":product_variation_id", $variation_id, PDO::PARAM_INT);
+    $stmt->bindValue(":goods_receipt_note_id", $data["goods_receipt_note_id"] ?? null, PDO::PARAM_INT);
+    $stmt->bindValue(":is_sold", $this->utils->to_bool($data["is_sold"]), PDO::PARAM_BOOL);
     $stmt->execute();
 
     return $this->get($sku);
@@ -82,15 +87,25 @@ class ProductInstanceGateway {
     return $stmt->fetch(PDO::FETCH_ASSOC);
   }
 
-  public function update(array $current, array $new): array | false {
+  public function update(array $current, array $new): array | false | Exception {
+    if(
+      isset($new["is_sold"]) &&
+      $this->utils->to_bool($new["is_sold"]) === false &&
+      $this->hasConstrain($current["sku"])
+    ) {
+      $error_msg = "Cannot change 'is_sold' from true to false when product instance '{$current["sku"]}' is already in order items.";
+      throw new Exception($error_msg, 409);
+    }
+
     $sql = "UPDATE product_instances SET
       goods_receipt_note_id = :goods_receipt_note_id,
       is_sold = :is_sold
-    WHERE sku = :sku";
+      WHERE sku = :sku
+    ";
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":goods_receipt_note_id", $new["goods_receipt_note_id"] ?? $current["goods_receipt_note_id"], PDO::PARAM_INT);
-    $stmt->bindValue(":is_sold", $new["is_sold"] ?? $current["is_sold"], PDO::PARAM_BOOL);
+    $stmt->bindValue(":is_sold", isset($new["is_sold"]) ? $this->utils->to_bool($new["is_sold"]) : $current["is_sold"], PDO::PARAM_BOOL);
     $stmt->bindValue(":sku", $current["sku"], PDO::PARAM_STR);
     $stmt->execute();
 
@@ -98,9 +113,9 @@ class ProductInstanceGateway {
   }
 
   public function delete(string $sku): bool {
-    $sql = $this->hasConstrain($sku)
-      ? "UPDATE product_instances SET is_sold = true WHERE sku = :sku"
-      : "DELETE FROM product_instances WHERE sku = :sku";
+    if($this->hasConstrain($sku)) return false;
+
+    $sql = "DELETE FROM product_instances WHERE sku = :sku";
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":sku", $sku, PDO::PARAM_STR);

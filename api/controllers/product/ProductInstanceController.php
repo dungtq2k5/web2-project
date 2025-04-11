@@ -1,8 +1,13 @@
 <?php
 
-class ProductInstanceController extends ErrorHandler {
+class ProductInstanceController {
+  private ErrorHandler $error_handler;
+  private Utils $utils;
 
-  public function __construct(private ProductInstanceGateway $gateway, private Auths $auths) {}
+  public function __construct(private ProductInstanceGateway $gateway, private Auths $auths) {
+    $this->error_handler = new ErrorHandler;
+    $this->utils = new Utils;
+  }
 
   public function processRequest(string $method, ?string $sku, ?int $limit, ?int $offset): void {
     if($sku) {
@@ -16,7 +21,7 @@ class ProductInstanceController extends ErrorHandler {
   private function processResourceRequest(string $method, string $sku): void {
     $product = $this->gateway->get($sku);
     if(!$product) {
-      $this->sendErrorResponse(404, "Product instance with sku $sku not found");
+      $this->error_handler->sendErrorResponse(404, "Product instance with sku $sku not found");
       return;
     }
 
@@ -33,9 +38,10 @@ class ProductInstanceController extends ErrorHandler {
         $data = (array) json_decode(file_get_contents("php://input"));
         $errors = $this->getValidationErrors($data, false);
         if(!empty($errors)) {
-          $this->sendErrorResponse(422, $errors);
+          $this->error_handler->sendErrorResponse(422, $errors);
           break;
         }
+
         $data = $this->gateway->update($product, $data);
 
         echo json_encode([
@@ -47,16 +53,16 @@ class ProductInstanceController extends ErrorHandler {
 
       case "DELETE":
         $this->auths->verifyAction("DELETE_PRODUCT_INSTANCE");
-        $this->gateway->delete($sku);
+        $res = $this->gateway->delete($sku);
 
         echo json_encode([
-          "success" => true,
-          "message" => "Product instance sku $sku was deleted or is_sold = true if there is a constrain"
+          "success" => $res,
+          "message" => $res ? "Product instance sku $sku was deleted or is_sold = true if there is a constrain" : "Can't delete product instance sku $sku because of constrain"
         ]);
         break;
 
       default:
-        $this->sendErrorResponse(405, "only allow GET, PUT, DELETE method");
+        $this->error_handler->sendErrorResponse(405, "only allow GET, PUT, DELETE method");
         header("Allow: GET, PUT, DELETE");
     }
   }
@@ -78,25 +84,22 @@ class ProductInstanceController extends ErrorHandler {
         $data = (array) json_decode(file_get_contents("php://input"));
         $errors = $this->getValidationErrors($data);
         if(!empty($errors)) {
-          $this->sendErrorResponse(422, $errors);
+          $this->error_handler->sendErrorResponse(422, $errors);
           break;
         }
-        $res = $this->gateway->create($data);
-        if(!$res) {
-          $this->sendErrorResponse(422, "product_variation_id = {$data["product_variation_id"]} not found");
-          break;
-        }
+
+        $data = $this->gateway->create($data);
 
         http_response_code(201);
         echo json_encode([
           "success" => true,
           "message" => "Product instance created",
-          "data" => $res
+          "data" => $data
         ]);
         break;
 
       default:
-        $this->sendErrorResponse(405, "only allow GET, POST method");
+        $this->error_handler->sendErrorResponse(405, "only allow GET, POST method");
         header("Allow: GET, POST");
     }
   }
@@ -104,21 +107,12 @@ class ProductInstanceController extends ErrorHandler {
   private function getValidationErrors(array $data, bool $new=true): array {
     $errors = [];
 
-    if($new) { //check all fields for new product
+    if($new) { //check all fields for new
       if(empty($data["product_variation_id"]) || !is_numeric($data["product_variation_id"])) $errors[] = "product_variation_id is required with integer value";
-      if(empty($data["goods_receipt_note_id"]) || !is_numeric($data["goods_receipt_note_id"])) $errors[] = "goods_receipt_note_id is required with integer value";
-    } else { //check fields that exist
-      if(
-        array_key_exists("product_variation_id", $data) &&
-        (empty($data["product_variation_id"]) || !is_numeric($data["product_variation_id"]))
-      ) $errors[] = "product_variation_id is empty or not an integer";
-      if(
-        array_key_exists("goods_receipt_note_id", $data) &&
-        (empty($data["goods_receipt_note_id"]) || !is_numeric($data["goods_receipt_note_id"]))
-      ) $errors[] = "goods_receipt_note_id is empty or not an integer";
     }
 
-    if(array_key_exists("is_sold", $data) && !is_bool($data["is_sold"])) $errors[] = "is_sold must be a boolean value";
+    if(array_key_exists("goods_receipt_note_id", $data) && !is_numeric($data["goods_receipt_note_id"])) $errors[] = "goods_receipt_note_id must be an integer";
+    if(array_key_exists("is_sold", $data) && !$this->utils->is_interpretable_bool($data["is_sold"])) $errors[] = "is_sold must be a boolean value";
 
     return $errors;
   }

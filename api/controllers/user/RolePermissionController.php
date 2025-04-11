@@ -1,8 +1,10 @@
 <?php
 
-class RolePermissionController extends ErrorHandler {
-
-  public function __construct(private RolePermissionGateway $gateway, private Auths $auths) {}
+class RolePermissionController {
+  private ErrorHandler $error_handler;
+  public function __construct(private RolePermissionGateway $gateway, private Auths $auths) {
+    $this->error_handler = new ErrorHandler;
+  }
 
   public function processRequest(string $method, ?int $role_id, ?int $permission_id, ?int $limit, ?int $offset): void {
     if($role_id) {
@@ -16,7 +18,7 @@ class RolePermissionController extends ErrorHandler {
   private function processResourceRequest(string $method, int $role_id, ?int $permission_id): void {
     $role_permissions = $this->gateway->get($role_id, $permission_id);
     if(!$role_permissions) {
-      $this->sendErrorResponse(404, "Role id $role_id with permission id $permission_id not found");
+      $this->error_handler->sendErrorResponse(404, "Role id $role_id with permission id $permission_id not found");
       return;
     }
 
@@ -32,7 +34,7 @@ class RolePermissionController extends ErrorHandler {
       case "DELETE":
         $this->auths->verifyAction("DELETE_ROLE_PERMISSION");
         if(!$permission_id) {
-          $this->sendErrorResponse(422, "permission_id is required");
+          $this->error_handler->sendErrorResponse(422, "permission_id is required");
           break;
         }
         $this->gateway->delete($role_id, $permission_id);
@@ -44,7 +46,7 @@ class RolePermissionController extends ErrorHandler {
         break;
 
       default:
-        $this->sendErrorResponse(405, "only allow GET, DELETE method");
+        $this->error_handler->sendErrorResponse(405, "only allow GET, DELETE method");
         header("Allow: GET, DELETE");
     }
 
@@ -67,7 +69,7 @@ class RolePermissionController extends ErrorHandler {
         $data = (array) json_decode(file_get_contents("php://input"));
         $errors = $this->getValidationErrors($data);
         if(!empty($errors)) {
-          $this->sendErrorResponse(422, $errors);
+          $this->error_handler->sendErrorResponse(422, $errors);
           break;
         }
         $data = $this->gateway->create($data);
@@ -81,7 +83,7 @@ class RolePermissionController extends ErrorHandler {
         break;
 
       default:
-        $this->sendErrorResponse(405, "only allow GET, POST method");
+        $this->error_handler->sendErrorResponse(405, "only allow GET, POST method");
         header("Allow: GET, POST");
     }
   }

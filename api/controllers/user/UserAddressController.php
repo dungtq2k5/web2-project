@@ -1,8 +1,13 @@
 <?php
 
-class UserAddressController extends ErrorHandler {
+class UserAddressController {
+  private ErrorHandler $error_handler;
+  private Utils $utils;
 
-  public function __construct(private UserAddressGateway $gateway, private Auths $auths) {}
+  public function __construct(private UserAddressGateway $gateway, private Auths $auths) {
+    $this->error_handler = new ErrorHandler;
+    $this->utils = new Utils;
+  }
 
   public function processRequest(string $method, ?int $id, ?int $limit, ?int $offset): void {
     if($id) {
@@ -16,7 +21,7 @@ class UserAddressController extends ErrorHandler {
   private function processResourceRequest(string $method, int $id): void {
     $address = $this->gateway->get($id);
     if(!$address) {
-      $this->sendErrorResponse(404, "Address with an id $id not found");
+      $this->error_handler->sendErrorResponse(404, "Address with an id $id not found");
       return;
     }
 
@@ -33,9 +38,10 @@ class UserAddressController extends ErrorHandler {
         $data = (array) json_decode(file_get_contents("php://input"));
         $errors = $this->getValidationErrors($data, false);
         if(!empty($errors)) {
-          $this->sendErrorResponse(422, $errors);
+          $this->error_handler->sendErrorResponse(422, $errors);
           break;
         }
+
         $data = $this->gateway->update($address, $data);
 
         echo json_encode([
@@ -56,7 +62,7 @@ class UserAddressController extends ErrorHandler {
         break;
 
       default:
-        $this->sendErrorResponse(405, "only allow GET, PUT, DELETE method");
+        $this->error_handler->sendErrorResponse(405, "only allow GET, PUT, DELETE method");
         header("Allow: GET, PUT, DELETE");
     }
 
@@ -79,7 +85,7 @@ class UserAddressController extends ErrorHandler {
         $data = (array) json_decode(file_get_contents("php://input"));
         $errors = $this->getValidationErrors($data);
         if(!empty($errors)) {
-          $this->sendErrorResponse(422, $errors);
+          $this->error_handler->sendErrorResponse(422, $errors);
           break;
         }
         $data = $this->gateway->create($data);
@@ -93,7 +99,7 @@ class UserAddressController extends ErrorHandler {
         break;
 
       default:
-        $this->sendErrorResponse(405, "only allow GET, POST method");
+        $this->error_handler->sendErrorResponse(405, "only allow GET, POST method");
         header("Allow: GET, POST");
     }
   }
@@ -125,8 +131,8 @@ class UserAddressController extends ErrorHandler {
       if(array_key_exists("name", $data) && empty($data["name"])) $errors[] = "name is empty";
     }
 
-    if(array_key_exists("is_default", $data) && !is_bool($data["is_default"])) $errors[] = "is_default is empty or not a boolean value";
-    if(array_key_exists("is_deleted", $data) && !is_bool($data["is_deleted"])) $errors[] = "is_deleted is empty or not a boolean value";
+    if(array_key_exists("is_default", $data) && !$this->utils->is_interpretable_bool($data["is_default"])) $errors[] = "is_default is empty or not a boolean value";
+    if(array_key_exists("is_deleted", $data) && !$this->utils->is_interpretable_bool($data["is_deleted"])) $errors[] = "is_deleted is empty or not a boolean value";
 
     return $errors;
   }

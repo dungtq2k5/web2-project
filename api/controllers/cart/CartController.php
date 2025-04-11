@@ -1,8 +1,11 @@
 <?php
 
-class CartController extends ErrorHandler {
+class CartController {
+  private ErrorHandler $error_handler;
 
-  public function __construct(private CartGateway $gateway, private Auths $auths) {}
+  public function __construct(private CartGateway $gateway, private Auths $auths) {
+    $this->error_handler = new ErrorHandler;
+  }
 
   public function processRequest(string $method, ?int $user_id, ?int $product_variation_id, ?int $limit, ?int $offset): void {
     if($user_id) {
@@ -16,7 +19,7 @@ class CartController extends ErrorHandler {
   private function processResourceRequest(string $method, int $user_id, ?int $product_variation_id): void {
     $carts = $this->gateway->get($user_id, $product_variation_id);
     if(!$carts) {
-      $this->sendErrorResponse(404, "Cart with user_id $user_id and/or product_variation_id $product_variation_id not found");
+      $this->error_handler->sendErrorResponse(404, "Cart with user_id $user_id and/or product_variation_id $product_variation_id not found");
       return;
     }
 
@@ -32,16 +35,17 @@ class CartController extends ErrorHandler {
       case "PUT":
         $this->auths->verifyAction("UPDATE_CART");
         if(!$product_variation_id) {
-          $this->sendErrorResponse(422, "product_variation_id is required");
+          $this->error_handler->sendErrorResponse(422, "product_variation_id is required");
           break;
         }
         $data = (array) json_decode(file_get_contents("php://input"));
         $errors = $this->getValidationErrors($data, false);
         if(!empty($errors)) {
-          $this->sendErrorResponse(422, $errors);
+          $this->error_handler->sendErrorResponse(422, $errors);
           break;
         }
-        $data = $this->gateway->update($carts[0], $data);
+
+        $data = $this->gateway->update($carts[0], $data); //carts is a list
 
         echo json_encode([
           "success" => true,
@@ -53,19 +57,19 @@ class CartController extends ErrorHandler {
       case "DELETE":
         $this->auths->verifyAction("DELETE_CART");
         if(!$product_variation_id) {
-          $this->sendErrorResponse(422, "product_variation_id is required");
+          $this->error_handler->sendErrorResponse(422, "product_variation_id is required");
           break;
         }
-        $res = $this->gateway->delete($user_id, $product_variation_id);
+        $this->gateway->delete($user_id, $product_variation_id);
 
         echo json_encode([
-          "success" => $res,
+          "success" => true,
           "message" => "Cart was deleted"
         ]);
         break;
 
       default:
-        $this->sendErrorResponse(405, "only allow GET, PUT, DELETE method");
+        $this->error_handler->sendErrorResponse(405, "only allow GET, PUT, DELETE method");
         header("Allow: GET, PUT, DELETE");
     }
 
@@ -88,7 +92,7 @@ class CartController extends ErrorHandler {
         $data = (array) json_decode(file_get_contents("php://input"));
         $errors = $this->getValidationErrors($data);
         if(!empty($errors)) {
-          $this->sendErrorResponse(422, $errors);
+          $this->error_handler->sendErrorResponse(422, $errors);
           break;
         }
         $data = $this->gateway->create($data);
@@ -102,7 +106,7 @@ class CartController extends ErrorHandler {
         break;
 
       default:
-        $this->sendErrorResponse(405, "only allow GET, POST method");
+        $this->error_handler->sendErrorResponse(405, "only allow GET, POST method");
         header("Allow: GET, POST");
     }
   }

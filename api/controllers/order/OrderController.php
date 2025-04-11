@@ -1,10 +1,12 @@
 <?php
 
-class OrderController extends ErrorHandler {
-
+class OrderController {
+  private ErrorHandler $error_handler;
   private Utils $utils;
+  
   public function __construct(private OrderGateway $gateway, private Auths $auths) {
-    $this->utils = new Utils();
+    $this->error_handler = new ErrorHandler;
+    $this->utils = new Utils;
   }
 
   public function processRequest(string $method, ?string $id, ?int $limit, ?int $offset): void {
@@ -19,7 +21,7 @@ class OrderController extends ErrorHandler {
   private function processResourceRequest(string $method, string $id): void {
     $order = $this->gateway->get($id);
     if (!$order) {
-      $this->sendErrorResponse(404, "Order with id $id not found");
+      $this->error_handler->sendErrorResponse(404, "Order with id $id not found");
       return;
     }
 
@@ -33,7 +35,7 @@ class OrderController extends ErrorHandler {
         $data = (array) json_decode(file_get_contents("php://input"));
         $errors = $this->getValidationErrors($data, false);
         if (!empty($errors)) {
-          $this->sendErrorResponse(422, $errors);
+          $this->error_handler->sendErrorResponse(422, $errors);
           break;
         }
         $res = $this->gateway->update($order, $data);
@@ -55,7 +57,7 @@ class OrderController extends ErrorHandler {
         break;
 
       default:
-        $this->sendErrorResponse(405, "Only GET, PUT, DELETE methods are allowed");
+        $this->error_handler->sendErrorResponse(405, "Only GET, PUT, DELETE methods are allowed");
         header("Allow: GET, PUT, DELETE");
     }
   }
@@ -76,7 +78,7 @@ class OrderController extends ErrorHandler {
         $data = (array) json_decode(file_get_contents("php://input"));
         $errors = $this->getValidationErrors($data);
         if (!empty($errors)) {
-          $this->sendErrorResponse(422, $errors);
+          $this->error_handler->sendErrorResponse(422, $errors);
           break;
         }
         $res = $this->gateway->create($data);
@@ -90,7 +92,7 @@ class OrderController extends ErrorHandler {
         break;
 
       default:
-        $this->sendErrorResponse(405, "Only GET, POST methods are allowed");
+        $this->error_handler->sendErrorResponse(405, "Only GET, POST methods are allowed");
         header("Allow: GET, POST");
     }
   }

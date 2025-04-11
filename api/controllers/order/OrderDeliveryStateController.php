@@ -1,8 +1,13 @@
 <?php
 
-class OrderDeliveryStateController extends ErrorHandler {
+class OrderDeliveryStateController {
+  private ErrorHandler $error_handler;
+  private Utils $utils;
 
-  public function __construct(private OrderDeliveryStateGateway $gateway, private Auths $auths) {}
+  public function __construct(private OrderDeliveryStateGateway $gateway, private Auths $auths) {
+    $this->error_handler = new ErrorHandler;
+    $this->utils = new Utils;
+  }
 
   public function processRequest(string $method, ?int $id, ?int $limit, ?int $offset): void {
     if($id) {
@@ -16,7 +21,7 @@ class OrderDeliveryStateController extends ErrorHandler {
   private function processResourceRequest(string $method, ?int $id): void {
     $delivery_state = $this->gateway->get($id);
     if (!$delivery_state) {
-      $this->sendErrorResponse(404, "Delivery state with an id $id not found");
+      $this->error_handler->sendErrorResponse(404, "Delivery state with an id $id not found");
       return;
     }
 
@@ -33,9 +38,10 @@ class OrderDeliveryStateController extends ErrorHandler {
         $data = (array) json_decode(file_get_contents("php://input"));
         $errors = $this->getValidationErrors($data, false);
         if (!empty($errors)) {
-          $this->sendErrorResponse(422, $errors);
+          $this->error_handler->sendErrorResponse(422, $errors);
           break;
         }
+
         $data = $this->gateway->update($delivery_state, $data);
 
         echo json_encode([
@@ -49,19 +55,14 @@ class OrderDeliveryStateController extends ErrorHandler {
         $this->auths->verifyAction("DELETE_ORDER_DELIVERY_STATE");
         $res = $this->gateway->delete($id);
 
-        if(!$res) {
-          $this->sendErrorResponse(403, "Delivery state id $id can't delete because of constrain");
-          break;
-        }
-
         echo json_encode([
-          "success" => true,
-          "message" => "Delivery state id $id was deleted"
+          "success" => $res,
+          "message" => $res ? "Delivery state id $id was deleted" : "Can't delete delivery state id $id because of constrain"
         ]);
         break;
 
       default:
-        $this->sendErrorResponse(405, "only allow GET, PUT, DELETE method");
+        $this->error_handler->sendErrorResponse(405, "only allow GET, PUT, DELETE method");
         header("Allow: GET, PUT, DELETE");
     }
   }
@@ -82,9 +83,10 @@ class OrderDeliveryStateController extends ErrorHandler {
         $data = (array) json_decode(file_get_contents("php://input"));
         $errors = $this->getValidationErrors($data);
         if (!empty($errors)) {
-          $this->sendErrorResponse(422, $errors);
+          $this->error_handler->sendErrorResponse(422, $errors);
           break;
         }
+
         $data = $this->gateway->create($data);
 
         http_response_code(201);
@@ -96,7 +98,7 @@ class OrderDeliveryStateController extends ErrorHandler {
         break;
 
       default:
-        $this->sendErrorResponse(405, "only allow GET, POST method");
+        $this->error_handler->sendErrorResponse(405, "only allow GET, POST method");
         header("Allow: GET, POST");
     }
   }

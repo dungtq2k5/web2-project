@@ -1,8 +1,11 @@
 <?php
 
-class UserRoleController extends ErrorHandler {
+class UserRoleController {
+  private ErrorHandler $error_handler;
 
-  public function __construct(private UserRoleGateway $gateway, private Auths $auths) {}
+  public function __construct(private UserRoleGateway $gateway, private Auths $auths) {
+    $this->error_handler = new ErrorHandler;
+  }
 
   public function processRequest(string $method, ?int $user_id, ?int $role_id, ?int $limit, ?int $offset): void {
     if($user_id) {
@@ -16,7 +19,7 @@ class UserRoleController extends ErrorHandler {
   private function processResourceRequest(string $method, int $user_id, ?int $role_id): void {
     $user_roles = $this->gateway->get($user_id, $role_id);
     if(!$user_roles) {
-      $this->sendErrorResponse(404, "User's id $user_id with role's id $role_id not found");
+      $this->error_handler->sendErrorResponse(404, "User's id $user_id with role's id $role_id not found");
       return;
     }
 
@@ -32,7 +35,7 @@ class UserRoleController extends ErrorHandler {
       case "DELETE":
         $this->auths->verifyAction("DELETE_USER_ROLE");
         if(!$role_id) {
-          $this->sendErrorResponse(422, "role_id is required");
+          $this->error_handler->sendErrorResponse(422, "role_id is required");
           break;
         }
         $this->gateway->delete($user_id, $role_id);
@@ -44,7 +47,7 @@ class UserRoleController extends ErrorHandler {
         break;
 
       default:
-        $this->sendErrorResponse(405, "only allow GET, DELETE method");
+        $this->error_handler->sendErrorResponse(405, "only allow GET, DELETE method");
         header("Allow: GET, DELETE");
     }
 
@@ -67,9 +70,10 @@ class UserRoleController extends ErrorHandler {
         $data = (array) json_decode(file_get_contents("php://input"));
         $errors = $this->getValidationErrors($data);
         if(!empty($errors)) {
-          $this->sendErrorResponse(422, $errors);
+          $this->error_handler->sendErrorResponse(422, $errors);
           break;
         }
+
         $data = $this->gateway->create($data);
 
         http_response_code(201);
@@ -81,7 +85,7 @@ class UserRoleController extends ErrorHandler {
         break;
 
       default:
-        $this->sendErrorResponse(405, "only allow GET, POST method");
+        $this->error_handler->sendErrorResponse(405, "only allow GET, POST method");
         header("Allow: GET, POST");
     }
   }

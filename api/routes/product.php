@@ -4,15 +4,16 @@ switch(true) {
   case $uri === SOURCE_URI . "/products":
     $gateway = new ProductGateway($db);
     $controller = new ProductController($gateway, $auths);
-    $controller->processRequest($method, $id, $limit, $offset);
+    $method_override = $_SERVER["HTTP_X_HTTP_METHOD_OVERRIDE"] ?? $_POST["_method"] ?? null;
+    $controller->processRequest($method_override ?? $method, $id, $limit, $offset);
     break;
-    
+
   case $uri === SOURCE_URI . "/products/os":
     $gateway = new ProductOSGateway($db);
     $controller = new ProductOSController($gateway, $auths);
     $controller->processRequest($method, $id, $limit, $offset);
     break;
-  
+
   case $uri === SOURCE_URI . "/products/brands":
     $gateway = new ProductBrandGateway($db);
     $controller = new ProductBrandController($gateway, $auths);
@@ -36,10 +37,10 @@ switch(true) {
   case $uri === SOURCE_URI . "/products/variations":
     $gateway = new ProductVariationGateway($db);
     $controller = new ProductVariationController($gateway, $auths);
-    $controller->processRequest($method, $id, $limit, $offset);
+    $method_override = $_SERVER["HTTP_X_HTTP_METHOD_OVERRIDE"] ?? $_POST["_method"] ?? null;
+    $controller->processRequest($method_override ?? $method, $id, $limit, $offset);
     break;
 
   default:
-    $errorHandler = new ErrorHandler();
-    $errorHandler->sendErrorResponse(404, "Request not found!");
+    $error_handler->sendErrorResponse(404, "Request not found");
 }

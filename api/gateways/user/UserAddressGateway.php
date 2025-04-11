@@ -2,9 +2,11 @@
 
 class UserAddressGateway {
   private PDO $conn;
+  private Utils $utils;
 
   public function __construct(Database $db) {
     $this->conn = $db->getConnection();
+    $this->utils = new Utils;
   }
 
   public function getAll(?int $limit, ?int $offset): array | false {
@@ -60,8 +62,8 @@ class UserAddressGateway {
     $stmt->bindValue(":district", $data["district"], PDO::PARAM_STR);
     $stmt->bindValue(":city_province", $data["city_province"], PDO::PARAM_STR);
     $stmt->bindValue(":phone_number", $data["phone_number"], PDO::PARAM_STR);
-    $stmt->bindValue(":is_default", $data["is_default"] ?? false, PDO::PARAM_BOOL);
-    $stmt->bindValue(":is_deleted", $data["is_deleted"] ?? false, PDO::PARAM_BOOL);
+    $stmt->bindValue(":is_default", $this->utils->to_bool($data["is_default"]), PDO::PARAM_BOOL);
+    $stmt->bindValue(":is_deleted", $this->utils->to_bool($data["is_deleted"]), PDO::PARAM_BOOL);
     $stmt->execute();
 
     return $this->get($this->conn->lastInsertId());
@@ -101,8 +103,8 @@ class UserAddressGateway {
     $stmt->bindValue(":district", $new["district"] ?? $current["district"], PDO::PARAM_STR);
     $stmt->bindValue(":city_province", $new["city_province"] ?? $current["city_province"], PDO::PARAM_STR);
     $stmt->bindValue(":phone_number", $new["phone_number"] ?? $current["phone_number"], PDO::PARAM_STR);
-    $stmt->bindValue(":is_default", $new["is_default"] ?? $current["is_default"], PDO::PARAM_BOOL);
-    $stmt->bindValue(":is_deleted", $new["is_deleted"] ?? $current["is_deleted"], PDO::PARAM_BOOL);
+    $stmt->bindValue(":is_default", isset($new["is_default"]) ? $this->utils->to_bool($new["is_default"]) : $current["is_default"], PDO::PARAM_BOOL);
+    $stmt->bindValue(":is_deleted", isset($new["is_deleted"]) ? $this->utils->to_bool($new["is_deleted"]) : $current["is_deleted"], PDO::PARAM_BOOL);
     $stmt->bindValue(":id", $current["id"], PDO::PARAM_INT);
     $stmt->execute();
 
@@ -141,7 +143,8 @@ class UserAddressGateway {
       city_province,
       phone_number,
       is_default
-      FROM user_addresses WHERE user_id = :user_id"; //select * except user_id
+      FROM user_addresses
+      WHERE user_id = :user_id AND is_deleted = 0"; //select * except user_id + deleted
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":user_id", $user_id, PDO::PARAM_INT);
