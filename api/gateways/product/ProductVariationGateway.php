@@ -1,13 +1,29 @@
 <?php
 
-class ProductVariationGateway {
+class ProductVariationGateway
+{
   private PDO $conn;
 
-  public function __construct(Database $db) {
+  public function __construct(Database $db)
+  {
     $this->conn = $db->getConnection();
   }
 
-  public function create(array $data): array | false { //TODO auto gen product_instances
+  public function create(array $data): array | false
+  { //TODO auto gen product_instances
+    $imageFileName = null;
+
+    // Nếu có ảnh Base64, lưu vào thư mục và lấy tên file
+    if (!empty($data["image_base64"])) {
+      $imageFileName = $this->saveBase64Image($data["image_base64"]);
+      if ($imageFileName === false) {
+        return false;
+      }
+      $data["image_name"] = $imageFileName;
+    } else {
+      // Nếu không có ảnh, dùng ảnh mặc định
+      $data["image_name"] = $data["image_name"] ?? "default.webp";
+    }
     $sql = "INSERT INTO product_variations (
       product_id,
       watch_size_mm,
@@ -93,26 +109,28 @@ class ProductVariationGateway {
     return $this->get($this->conn->lastInsertId());
   }
 
-  public function getAll(?int $limit, ?int $offset): array | false {
-    if($limit && $offset) {
+  public function getAll(?int $limit, ?int $offset): array | false
+  {
+    if ($limit && $offset) {
       $sql = "SELECT * FROM product_variations LIMIT :limit OFFSET :offset";
-    } elseif($limit) {
+    } elseif ($limit) {
       $sql = "SELECT * FROM product_variations LIMIT :limit";
-    } elseif($offset) {
+    } elseif ($offset) {
       $sql = "SELECT * FROM product_variations LIMIT 18446744073709551615 OFFSET :offset";
     } else {
       $sql = "SELECT * FROM product_variations";
     }
 
     $stmt = $this->conn->prepare($sql);
-    if($limit) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
-    if($offset) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
+    if ($limit) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
+    if ($offset) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
     $stmt->execute();
 
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
   }
 
-  public function get(int $id): array | false {
+  public function get(int $id): array | false
+  {
     $sql = "SELECT * FROM product_variations WHERE id = :id";
 
     $stmt = $this->conn->prepare($sql);
@@ -122,7 +140,60 @@ class ProductVariationGateway {
     return $stmt->fetch(PDO::FETCH_ASSOC);
   }
 
-  public function update(array $current, array $new): array | false {
+  public function getByProductId(int $productId, ?int $limit, ?int $offset): array | false
+  {
+    $sql = "SELECT * FROM product_variations WHERE product_id = :product_id";
+    if ($limit && $offset) {
+      $sql .= " LIMIT :limit OFFSET :offset";
+    } elseif ($limit) {
+      $sql .= " LIMIT :limit";
+    } elseif ($offset) {
+      $sql .= " LIMIT 18446744073709551615 OFFSET :offset";
+    }
+    $stmt = $this->conn->prepare($sql);
+    $stmt->bindValue(":product_id", $productId, PDO::PARAM_INT);
+    if ($limit) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
+    if ($offset) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
+
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+  }
+
+  public function update(array $current, array $new): array | false
+  {
+    $oldImage = $current["image_name"];
+
+    // Xử lý ảnh mới
+    if (!empty($new["image_base64"])) {
+      $newImage = $this->saveBase64Image($new["image_base64"]);
+      if ($newImage === false) {
+        return false;
+      }
+      $new["image_name"] = $newImage;
+
+      // Xóa ảnh cũ nếu không phải ảnh mặc định
+      if ($oldImage !== "default.webp") {
+        $this->deleteImage($oldImage);
+      }
+    } else {
+      $new["image_name"] = $oldImage;
+    }
+
+    // Xử lý số lượng tồn kho
+    $currentStock = $current["stock_quantity"];
+    $stockChange = $new["stock_quantity"] ?? 0; // Số lượng thay đổi
+    // Nếu có yêu cầu thay đổi số lượng
+    if (isset($new["stock_quantity"])) {
+      $newStock = $currentStock + $stockChange; // Cộng dồn
+      if ($newStock < 0) {
+        throw new Exception("Số lượng tồn kho không thể âm");
+      }
+      $new["stock_quantity"] = $newStock;
+    } else {
+      $new["stock_quantity"] = $currentStock;
+    }
+
+
     $sql = "UPDATE product_variations SET
       product_id = :product_id,
       watch_size_mm = :watch_size_mm,
@@ -148,7 +219,8 @@ class ProductVariationGateway {
       band_color = :band_color,
       weight_milligrams = :weight_milligrams,
       release_date = :release_date,
-      stop_selling = :stop_selling
+      stop_selling = :stop_selling,
+      stock_quantity = :stock_quantity    
       WHERE id = :id
     ";
 
@@ -158,7 +230,7 @@ class ProductVariationGateway {
     $stmt->bindValue(":watch_color", $new["watch_color"] ?? $current["watch_color"], PDO::PARAM_STR);
     $stmt->bindValue(":price_cents", $new["price_cents"] ?? $current["price_cents"], PDO::PARAM_INT);
     $stmt->bindValue(":base_price_cents", $new["base_price_cents"] ?? $current["base_price_cents"], PDO::PARAM_INT);
-    $stmt->bindValue(":image_name", $new["image_name"] ?? $current["image_name"], PDO::PARAM_STR);
+    $stmt->bindValue(":image_name", $new["image_name"], PDO::PARAM_STR);
     $stmt->bindValue(":display_size_mm", $new["display_size_mm"] ?? $current["display_size_mm"], PDO::PARAM_INT);
     $stmt->bindValue(":display_type", $new["display_type"] ?? $current["display_type"], PDO::PARAM_STR);
     $stmt->bindValue(":resolution_h_px", $new["resolution_h_px"] ?? $current["resolution_h_px"], PDO::PARAM_INT);
@@ -178,13 +250,26 @@ class ProductVariationGateway {
     $stmt->bindValue(":weight_milligrams", $new["weight_milligrams"] ?? $current["weight_milligrams"], PDO::PARAM_INT);
     $stmt->bindValue(":release_date", $new["release_date"] ?? $current["release_date"], PDO::PARAM_STR);
     $stmt->bindValue(":stop_selling", $new["stop_selling"] ?? $current["stop_selling"], PDO::PARAM_BOOL);
+    $stmt->bindValue(":stock_quantity", $new["stock_quantity"], PDO::PARAM_INT);
     $stmt->bindValue(":id", $current["id"], PDO::PARAM_INT);
     $stmt->execute();
 
     return $this->get($current["id"]);
   }
+  private function deleteImage(string $imageName): bool
+  {
+    if ($imageName === "default.webp") {
+      return true; // Không xóa ảnh mặc định
+    }
 
-  public function delete(int $id): bool {
+    $filePath = __DIR__ . "/../../../backend/uploads/products/" . $imageName;
+    if (file_exists($filePath)) {
+      return unlink($filePath);
+    }
+    return false;
+  }
+  public function delete(int $id): bool
+  {
     $sql = $this->hasConstrain($id)
       ? "UPDATE product_variations SET stop_selling = true WHERE id = :id"
       : "DELETE FROM product_variations WHERE id = :id";
@@ -194,7 +279,19 @@ class ProductVariationGateway {
     return $stmt->execute();
   }
 
-  private function hasConstrain(int $id): bool {
+  // API lấy product_variation có id lớn nhất để tự động tạo id cho product_instance
+  public function getLatestId(): int | false
+  {
+    $sql = "SELECT MAX(id) FROM product_variations";
+
+    $stmt = $this->conn->prepare($sql);
+    $stmt->execute();
+
+    return $stmt->fetchColumn();
+  }
+
+  private function hasConstrain(int $id): bool
+  {
     $sql = "SELECT EXISTS (
       SELECT 1 FROM carts WHERE product_variation_id = :product_variation_id
       UNION
@@ -208,4 +305,57 @@ class ProductVariationGateway {
     return (bool) $stmt->fetchColumn();
   }
 
+  // private function saveBase64Image(string $base64Image): string | false
+  // {
+  //   $uploadDir = __DIR__ . "/../../../backend/uploads/products/";
+  //   if (!is_dir($uploadDir)) {
+  //     mkdir($uploadDir, 0777, true); // Tạo thư mục nếu chưa tồn tại
+  //   }
+
+  //   // Tạo tên file duy nhất
+  //   $imageName = uniqid() . ".png"; // Mặc định lưu dưới dạng PNG
+  //   $targetFile = $uploadDir . $imageName;
+
+  //   // Giải mã Base64 và lưu file
+  //   $imageData = base64_decode($base64Image);
+  //   if (file_put_contents($targetFile, $imageData)) {
+  //     return $imageName;
+  //   } else {
+  //     error_log("Lỗi khi lưu ảnh từ Base64.");
+  //     return false;
+  //   }
+  // }
+  private function saveBase64Image(string $base64Image): string | false
+  {
+    $uploadDir = __DIR__ . "/../../../backend/uploads/products/";
+    if (!is_dir($uploadDir)) {
+      mkdir($uploadDir, 0777, true);
+    }
+
+    // Kiểm tra định dạng ảnh
+    if (strpos($base64Image, 'data:image/') === 0) {
+      $format = explode('/', explode(';', $base64Image)[0])[1];
+      $imageData = base64_decode(explode(',', $base64Image)[1]);
+    } else {
+      // Nếu không có header, mặc định là PNG
+      $format = 'png';
+      $imageData = base64_decode($base64Image);
+    }
+
+    $allowedFormats = ['jpg', 'jpeg', 'png', 'webp'];
+    if (!in_array(strtolower($format), $allowedFormats)) {
+      error_log("Định dạng ảnh không được hỗ trợ: $format");
+      return false;
+    }
+
+    $imageName = uniqid() . '.' . $format;
+    $targetFile = $uploadDir . $imageName;
+
+    if (file_put_contents($targetFile, $imageData)) {
+      return $imageName;
+    } else {
+      error_log("Lỗi khi lưu ảnh từ Base64.");
+      return false;
+    }
+  }
 }
