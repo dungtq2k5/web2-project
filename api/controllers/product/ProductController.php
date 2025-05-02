@@ -1,9 +1,15 @@
 <?php
 
-class ProductController extends ErrorHandler {
-  public function __construct(private ProductGateway $gateway, private Auths $auths) {}
+class ProductController {
+  private ErrorHandler $error_handler;
+  private Utils $utils;
 
-  public function processRequest(string $method, ?int $id, ?int $limit, ?int $offset): void {
+  public function __construct(private ProductGateway $gateway, private Auths $auths) {
+    $this->error_handler = new ErrorHandler;
+    $this->utils = new Utils;
+  }
+
+  public function processRequest(string $method, ?int $id=null, ?int $limit=null, ?int $offset=null): void {
     if($id) {
       $this->processResourceRequest($method, $id);
       return;
@@ -15,12 +21,14 @@ class ProductController extends ErrorHandler {
   private function processResourceRequest(string $method, int $id): void {
     $product = $this->gateway->get($id);
     if(!$product) {
-      $this->sendErrorResponse(404, "Product with an id $id not found");
+      $this->error_handler->sendErrorResponse(404, "Product with an id '$id' not found");
       return;
     }
 
     switch($method) {
       case "GET":
+        $this->auths->verifyAction("READ_PRODUCT");
+
         echo json_encode([
           "success" => true,
           "data" => $product
@@ -29,12 +37,28 @@ class ProductController extends ErrorHandler {
 
       case "PUT":
         $this->auths->verifyAction("UPDATE_PRODUCT");
-        $data = (array) json_decode(file_get_contents("php://input"));
-        $errors = $this->getValidationErrors($data, false);
-        if(!empty($errors)) {
-          $this->sendErrorResponse(422, $errors);
+
+        $content_type = $_SERVER["CONTENT_TYPE"];
+
+        if(strpos($content_type, "application/json") !== false) {         // JSON data
+          $data = (array) json_decode(file_get_contents("php://input"));
+        } elseif(                                                         // Form data
+          strpos($content_type, "multipart/form-data") !== false ||
+          strpos($content_type, "application/x-www-form-urlencoded") !== false
+        ) {
+          $data = $_POST;
+          if($_FILES["image"]) $data["image"] = $_FILES["image"];
+        } else {
+          $this->error_handler->sendErrorResponse(400, "Missing Content-Type header");
           break;
         }
+
+        $errors = $this->getValidationErrors($data, false);
+        if(!empty($errors)) {
+          $this->error_handler->sendErrorResponse(422, $errors);
+          break;
+        }
+
         $data = $this->gateway->update($product, $data);
 
         echo json_encode([
@@ -46,24 +70,27 @@ class ProductController extends ErrorHandler {
 
       case "DELETE":
         $this->auths->verifyAction("DELETE_PRODUCT");
+
         $this->gateway->delete($id);
 
         echo json_encode([
           "success" => true,
-          "message" => "Product id $id was deleted or stop_selling = true if there is a constrain"
+          "message" => "Product id $id was deleted"
         ]);
         break;
 
       default:
-        $this->sendErrorResponse(405, "only allow GET, PUT, DELETE method");
+        $this->error_handler->sendErrorResponse(405, "only allow GET, PUT, DELETE method");
         header("Allow: GET, PUT, DELETE");
     }
 
   }
 
-  private function processCollectionRequest(string $method, ?int $limit, ?int $offset): void {
+  private function processCollectionRequest(string $method, ?int $limit=null, ?int $offset=null): void {
     switch($method) {
       case "GET":
+        $this->auths->verifyAction("READ_PRODUCT");
+
         $data = $this->gateway->getAll($limit, $offset);
 
         echo json_encode([
@@ -75,12 +102,28 @@ class ProductController extends ErrorHandler {
 
       case "POST":
         $this->auths->verifyAction("CREATE_PRODUCT");
-        $data = (array) json_decode(file_get_contents("php://input"));
-        $errors = $this->getValidationErrors($data);
-        if(!empty($errors)) {
-          $this->sendErrorResponse(422, $errors);
+
+        $content_type = $_SERVER["CONTENT_TYPE"];
+
+        if(strpos($content_type, "application/json") !== false) {         // JSON data
+          $data = (array) json_decode(file_get_contents("php://input"));
+        } elseif(                                                         // Form data
+          strpos($content_type, "multipart/form-data") !== false ||
+          strpos($content_type, "application/x-www-form-urlencoded") !== false
+        ) {
+          $data = $_POST;
+          if($_FILES["image"]) $data["image"] = $_FILES["image"];
+        } else {
+          $this->error_handler->sendErrorResponse(400, "Missing Content-Type header");
           break;
         }
+
+        $errors = $this->getValidationErrors($data);
+        if(!empty($errors)) {
+          $this->error_handler->sendErrorResponse(422, $errors);
+          break;
+        }
+
         $data = $this->gateway->create($data);
 
         http_response_code(201);
@@ -92,7 +135,7 @@ class ProductController extends ErrorHandler {
         break;
 
       default:
-        $this->sendErrorResponse(405, "only allow GET, POST method");
+        $this->error_handler->sendErrorResponse(405, "only allow GET, POST method");
         header("Allow: GET, POST");
     }
   }
@@ -114,8 +157,15 @@ class ProductController extends ErrorHandler {
       if(array_key_exists("description", $data) && empty($data["description"])) $errors[] = "description is empty";
     }
 
-    if(array_key_exists("image_name", $data) && empty($data["image_name"])) $errors[] = "image_name is empty";
-    if(array_key_exists("stop_selling", $data) && !is_bool($data["stop_selling"])) $errors[] = "stop_selling must be a boolean value";
+    if(array_key_exists("image", $data) && $data["image"] !== "null") {
+      if(!is_array($data["image"])) {
+        $errors["image"] = "only accept file type or null";
+      } elseif($img_errors = $this->utils->isValidImg($data["image"])) {
+        $errors["image"] = $img_errors;
+      }
+    }
+
+    if(array_key_exists("stop_selling", $data) && !$this->utils->isInterpretableBool($data["stop_selling"])) $errors[] = "stop_selling must be a boolean value";
 
     return $errors;
   }

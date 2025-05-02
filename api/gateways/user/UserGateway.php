@@ -2,122 +2,198 @@
 
 class UserGateway {
   private PDO $conn;
-  private UserRoleGateway $userRole;
-  private UserAddressGateway $userAddress;
+  private UserRoleGateway $user_role;
+  private UserAddressGateway $user_address;
   private CartGateway $cart;
+  private Utils $utils;
 
-  public function __construct(Database $db) {
-    $this->conn = $db->getConnection();
-    $this->userRole = new UserRoleGateway($db);
-    $this->userAddress = new UserAddressGateway($db);
-    $this->cart = new CartGateway($db);
+  public function __construct(PDO $db_conn) {
+    $this->conn = $db_conn;
+    $this->user_role = new UserRoleGateway($db_conn);
+    $this->user_address = new UserAddressGateway($db_conn);
+    $this->cart = new CartGateway($db_conn);
+    $this->utils = new Utils;
   }
 
-  public function getAll(?int $limit, ?int $offset): array | false {
-    if($limit && $offset) {
-      $sql = "SELECT * FROM users LIMIT :limit OFFSET :offset";
-    } elseif($limit) {
-      $sql = "SELECT * FROM users LIMIT :limit";
-    } elseif($offset) {
-      $sql = "SELECT * FROM users LIMIT 18446744073709551615 OFFSET :offset";
-    } else {
-      $sql = "SELECT * FROM users";
+  public function getAll(?int $limit=null, ?int $offset=null): array {
+    $sql = "SELECT * FROM users WHERE is_deleted = false";
+
+    if($limit !== null && $offset !== null) {
+      $sql .= " LIMIT :limit OFFSET :offset";
+    } elseif($limit !== null) {
+      $sql .= " LIMIT :limit";
+    } elseif($offset !== null) {
+      $sql .= " LIMIT 18446744073709551615 OFFSET :offset";
     }
 
     $stmt = $this->conn->prepare($sql);
-    if($limit) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
-    if($offset) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
-
-    if($stmt->execute()) {
-      $data = [];
-      while($user = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $user["addresses"] = $this->userAddress->getByUserId((int) $user["id"]);
-        $user["roles"] = $this->userRole->getByUserId((int) $user["id"]);
-        $user["cart"] = $this->cart->getByUserId((int) $user["id"]);
-        $data[] = $user;
-      }
-      return $data;
-    }
-
-    return false;
-  }
-
-  public function create(array $data): array | false {
-    $sql = "INSERT INTO users (full_name, email, phone_number, password)
-      VALUES (:full_name, :email, :phone_number, :password)";
-
-    $stmt = $this->conn->prepare($sql);
-    $stmt->bindValue(":full_name", $data["full_name"], PDO::PARAM_STR);
-    $stmt->bindValue(":email", $data["email"], PDO::PARAM_STR);
-    $stmt->bindValue(":phone_number", $data["phone_number"], PDO::PARAM_STR);
-    $stmt->bindValue(":password", password_hash($data["password"], PASSWORD_DEFAULT), PDO::PARAM_STR);
+    if($limit !== null) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
+    if($offset !== null) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
     $stmt->execute();
 
-    $id = $this->conn->lastInsertId();
-    if($data["roles_id"]) $this->createRoles($id, $data["roles_id"]);
-    return $this->get($id);
-  }
-
-  private function createRoles(int $user_id, array $roles_id): void {
-    foreach($roles_id as $role_id) {
-      $this->userRole->create([
-        "user_id" => $user_id,
-        "role_id" => $role_id
-      ]);
+    $data = [];
+    while($user = $stmt->fetch(PDO::FETCH_ASSOC)) {
+      unset($user["password"]);
+      unset($user["is_deleted"]);
+      $user["addresses"] = $this->user_address->getByUserId($user["id"]);
+      $user["roles"] = $this->user_role->getByUserId($user["id"]);
+      $user["cart"] = $this->cart->getByUserId($user["id"]);
+      $data[] = $user;
     }
+
+    return $data;
   }
 
   public function get(int $id): array | false {
-    $sql = "SELECT * FROM users WHERE id = :id";
+    $sql = "SELECT * FROM users WHERE id = :id AND is_deleted = false";
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+    $stmt->execute();
 
-    if($stmt->execute() && $user = $stmt->fetch(PDO::FETCH_ASSOC)) {
-      $user["addresses"] = $this->userAddress->getByUserId((int) $user["id"]);
-      $user["roles"] = $this->userRole->getByUserId((int) $user["id"]);
-      $user["cart"] = $this->cart->getByUserId((int) $user["id"]);
+    if($user = $stmt->fetch(PDO::FETCH_ASSOC)) {
+      unset($user["is_deleted"]);
+      $user["addresses"] = $this->user_address->getByUserId($user["id"]);
+      $user["roles"] = $this->user_role->getByUserId($user["id"]);
+      $user["cart"] = $this->cart->getByUserId($user["id"]);
+
       return $user;
     }
 
     return false;
   }
 
-  public function update(array $current, array $new): array | false {
-    $sql = "UPDATE users SET
-      full_name = :full_name,
-      email = :email,
-      phone_number = :phone_number,
-      password = :password
-      WHERE id = :id
-    ";
+  public function create(array $data): array | false {
+    $this->conn->beginTransaction();
 
-    $stmt = $this->conn->prepare($sql);
-    $stmt->bindValue(":full_name", $new["full_name"] ?? $current["full_name"], PDO::PARAM_STR);
-    $stmt->bindValue(":email", $new["email"] ?? $current["email"], PDO::PARAM_STR);
-    $stmt->bindValue(":phone_number", $new["phone_number"] ?? $current["phone_number"], PDO::PARAM_STR);
-    $stmt->bindValue(":password", $new["password"] ? password_hash($new["password"], PASSWORD_DEFAULT) : $current["password"], PDO::PARAM_STR);
-    $stmt->bindValue(":id", $current["id"], PDO::PARAM_INT);
-    $stmt->execute();
+    try {
+      if(!$this->isEmailUnique($data["email"])) { // Make sure unique constraints
+        throw new Exception("Email '{$data['email']}' already exists, please choose another one", 409);
+      }
 
-    if(isset($new["roles_id"])) $this->updateRoles($current["id"], $new["roles_id"]);
+      $sql = "INSERT INTO users (full_name, email, phone_number, password)
+        VALUES (:full_name, :email, :phone_number, :password)";
 
-    return $this->get($current["id"]);
+      $stmt = $this->conn->prepare($sql);
+      $stmt->bindValue(":full_name", $data["full_name"], PDO::PARAM_STR);
+      $stmt->bindValue(":email", $data["email"], PDO::PARAM_STR);
+      $stmt->bindValue(":phone_number", $data["phone_number"], PDO::PARAM_STR);
+      $stmt->bindValue(":password", password_hash($data["password"], PASSWORD_DEFAULT), PDO::PARAM_STR);
+      $stmt->execute();
+
+      $id = $this->conn->lastInsertId();
+
+      if($data["roles_id"]) {
+        $this->user_role->createMultiple($id, $data["roles_id"]);
+      } else {
+        $this->user_role->createMultiple($id, [BUYER_ROLE_ID]); // Default when a user is created is a buyer
+      }
+
+      $this->conn->commit();
+      return $this->get($id);
+
+    } catch(PDOException $e) {
+      $this->conn->rollBack();
+      throw $e; // Re-throw for centralized ErrorHandler
+    } catch(Exception $e) {
+      $this->conn->rollBack();
+      throw $e; // Re-throw for centralized ErrorHandler
+    }
   }
 
-  private function updateRoles(int $user_id, array $roles_id): void { //delete all current roles -> create new ones
-    $this->userRole->deleteByUserId($user_id);
-    $this->createRoles($user_id, $roles_id);
+  public function update(array $current, array $new): array | false {
+    $this->conn->beginTransaction();
+
+    try {
+      $id = $current["id"];
+
+      if($id == ADMIN_ID) { // Cannot modify admin account
+        throw new Exception("Forbidden: User cannot make any changes to base admin account", 403);
+      }
+
+      $new_email = $new["email"];
+
+      if( // Make sure unique constraints
+        $new_email &&
+        $new_email !== $current["email"] &&
+        !$this->isEmailUnique($new_email)
+      ) throw new Exception("Email '{$new['email']}' already exists, please choose another one", 409);
+
+      $sql = "UPDATE users SET
+        full_name = :full_name,
+        email = :email,
+        phone_number = :phone_number,
+        password = :password
+        WHERE id = :id AND is_deleted = false
+      ";
+
+      $stmt = $this->conn->prepare($sql);
+      $stmt->bindValue(":full_name", $new["full_name"] ?? $current["full_name"], PDO::PARAM_STR);
+      $stmt->bindValue(":email", $new_email ?? $current["email"], PDO::PARAM_STR);
+      $stmt->bindValue(":phone_number", $new["phone_number"] ?? $current["phone_number"], PDO::PARAM_STR);
+      $stmt->bindValue(":password", $new["password"] ? password_hash($new["password"], PASSWORD_DEFAULT) : $current["password"], PDO::PARAM_STR);
+      $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+      $stmt->execute();
+
+      if(
+        isset($new["roles_id"]) &&
+        !$this->utils->compareArrays($new["roles_id"], array_column($current["roles"], "id"))
+      ) {
+        $this->user_role->updateMultiple($id, $new["roles_id"]);
+      }
+
+      $this->conn->commit();
+      return $this->get($id);
+
+    } catch(PDOException $e) {
+      $this->conn->rollBack();
+      throw $e; // Re-throw for centralized ErrorHandler
+    } catch(Exception $e) {
+      $this->conn->rollBack();
+      throw $e; // Re-throw for centralized ErrorHandler
+    }
   }
 
   public function delete(int $id): bool {
-    if($this->hasConstrain($id)) return false;
+    $this->conn->beginTransaction();
 
-    $sql = "DELETE FROM users WHERE id = :id";
+    try {
+      if($id == ADMIN_ID) { // Cannot modify admin account
+        throw new Exception("Forbidden: User cannot make any changes to base admin account", 403);
+      }
+
+      $sql = $this->hasConstrain($id)
+        ? "UPDATE users SET is_deleted = true WHERE id = :id AND is_deleted = false"
+        : "DELETE FROM users WHERE id = :id";
+
+      $stmt = $this->conn->prepare($sql);
+      $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+      $stmt->execute();
+
+      return $this->conn->commit();
+
+    } catch(PDOException $e) {
+      $this->conn->rollBack();
+      throw $e; // Re-throw for centralized ErrorHandler
+    } catch(Exception $e) {
+      $this->conn->rollBack();
+      throw $e; // Re-throw for centralized ErrorHandler
+    }
+  }
+
+  public function getByEmailPassword(string $email, string $pwd): array | false | null {
+    $sql = "SELECT id, password FROM users WHERE email = :email AND is_deleted = false";
 
     $stmt = $this->conn->prepare($sql);
-    $stmt->bindValue(":id", $id, PDO::PARAM_INT);
-    return $stmt->execute();
+    $stmt->bindValue(":email", $email, PDO::PARAM_STR);
+    $stmt->execute();
+
+    $usr = $stmt->fetch(PDO::FETCH_ASSOC);
+    if(!$usr || !password_verify($pwd, $usr["password"])) {
+      return false;
+    }
+
+    return $this->get($usr["id"]);
   }
 
   private function hasConstrain(int $id): bool {
@@ -139,4 +215,17 @@ class UserGateway {
 
     return (bool) $stmt->fetchColumn();
   }
+
+  private function isEmailUnique(string $email): bool {
+    $sql = "SELECT EXISTS (
+      SELECT 1 FROM users WHERE email = :email AND is_deleted = false
+    )";
+
+    $stmt = $this->conn->prepare($sql);
+    $stmt->bindValue(":email", $email, PDO::PARAM_STR);
+    $stmt->execute();
+
+    return !(bool) $stmt->fetchColumn();
+  }
+
 }

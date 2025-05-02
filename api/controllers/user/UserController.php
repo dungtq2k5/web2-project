@@ -1,13 +1,15 @@
 <?php
 
-class UserController extends ErrorHandler {
+class UserController {
+  private ErrorHandler $error_handler;
   private Utils $utils;
 
   public function __construct(private UserGateway $gateway, private Auths $auths) {
-    $this->utils = new Utils();
+    $this->error_handler = new ErrorHandler;
+    $this->utils = new Utils;
   }
 
-  public function processRequest(string $method, ?int $id, ?int $limit, ?int $offset): void {
+  public function processRequest(string $method, ?int $id=null, ?int $limit=null, ?int $offset=null): void {
     if($id) {
       $this->processResourceRequest($method, $id);
       return;
@@ -19,12 +21,19 @@ class UserController extends ErrorHandler {
   private function processResourceRequest(string $method, int $id): void {
     $user = $this->gateway->get($id);
     if(!$user) {
-      $this->sendErrorResponse(404, "User with an id $id not found");
+      $this->error_handler->sendErrorResponse(404, "User with an id '$id' not found");
       return;
     }
 
     switch($method) {
       case "GET":
+        $auth = $this->auths->verifyAction("READ_USER");
+
+        if($auth["buyer_only"] && $auth["user_id"] != $id) { // Buyer can only view their own resources
+          $this->error_handler->sendErrorResponse(403, "Forbidden: You do not own this resource");
+          break;
+        }
+
         unset($user["password"]);
         echo json_encode([
           "success" => true,
@@ -33,13 +42,23 @@ class UserController extends ErrorHandler {
         break;
 
       case "PUT":
-        $this->auths->verifyAction("UPDATE_USER");
-        $data = (array) json_decode(file_get_contents("php://input"));
-        $errors = $this->getValidationErrors($data, false);
-        if(!empty($errors)) {
-          $this->sendErrorResponse(422, $errors);
+        $auth = $this->auths->verifyAction("UPDATE_USER");
+
+        if($auth["buyer_only"] && $auth["user_id"] != $id) { // Buyer can only change their own resources
+          $this->error_handler->sendErrorResponse(403, "Forbidden: You do not own this resources");
           break;
         }
+
+        $data = (array) json_decode(file_get_contents("php://input"));
+
+        if($auth["buyer_only"]) unset($data["roles_id"]); // Buyer cannot update their own roles
+
+        $errors = $this->getValidationErrors($data, false);
+        if(!empty($errors)) {
+          $this->error_handler->sendErrorResponse(422, $errors);
+          break;
+        }
+
         $data = $this->gateway->update($user, $data);
         unset($data["password"]);
 
@@ -51,13 +70,14 @@ class UserController extends ErrorHandler {
         break;
 
       case "DELETE":
-        $this->auths->verifyAction("DELETE_USER");
-        $res = $this->gateway->delete($id);
+        $auth = $this->auths->verifyAction("DELETE_USER");
 
-        if(!$res) {
-          $this->sendErrorResponse(409, "User id $id can't be deleted because of constrain");
+        if($auth["buyer_only"] && $auth["user_id"] != $id) { // Buyer can only change their own resources
+          $this->error_handler->sendErrorResponse(403, "Forbidden: You do not own this resources");
           break;
         }
+
+        $this->gateway->delete($id);
 
         echo json_encode([
           "success" => true,
@@ -66,37 +86,39 @@ class UserController extends ErrorHandler {
         break;
 
       default:
-        $this->sendErrorResponse(405, "only allow GET, PUT, DELETE method");
+        $this->error_handler->sendErrorResponse(405, "only allow GET, PUT, DELETE method");
         header("Allow: GET, PUT, DELETE");
     }
 
   }
 
-  private function processCollectionRequest(string $method, ?int $limit, ?int $offset): void {
+  private function processCollectionRequest(string $method, ?int $limit=null, ?int $offset=null): void {
     switch($method) {
       case "GET":
-        $data = $this->gateway->getAll($limit, $offset);
-        $dataFiltered = [];
-        foreach($data as $user) {
-          unset($user["password"]);
-          $dataFiltered[] = $user;
-        };
+        $auth = $this->auths->verifyAction("READ_USER");
+
+        $data = $auth["buyer_only"]
+          ? [$this->gateway->get($auth["user_id"])]
+          : $this->gateway->getAll($limit, $offset);
 
         echo json_encode([
           "success" => true,
           "length" => count($data),
-          "data" => $dataFiltered
+          "data" => $data
         ]);
         break;
 
       case "POST":
         $this->auths->verifyAction("CREATE_USER");
+
         $data = (array) json_decode(file_get_contents("php://input"));
+
         $errors = $this->getValidationErrors($data);
         if(!empty($errors)) {
-          $this->sendErrorResponse(422, $errors);
+          $this->error_handler->sendErrorResponse(422, $errors);
           break;
         }
+
         $data = $this->gateway->create($data);
         unset($data["password"]);
 
@@ -109,21 +131,21 @@ class UserController extends ErrorHandler {
         break;
 
       default:
-        $this->sendErrorResponse(405, "only allow GET, POST method");
+        $this->error_handler->sendErrorResponse(405, "only allow GET, POST method");
         header("Allow: GET, POST");
     }
   }
 
-  private function getValidationErrors(array $data, bool $new=true): array {
+  public function getValidationErrors(array $data, bool $new=true): array {
     $errors = [];
 
-    if($new) { //check all fields for new user
+    if($new) { // Validate all fields for new user
       if(empty($data["full_name"])) $errors[] = "full_name is required";
       if(empty($data["email"]) || !$this->utils->isValidEmailRobust($data["email"])) $errors[] = "valid email is required";
       if(empty($data["phone_number"]) || !$this->utils->isValidVNPhoneNumber($data["phone_number"])) $errors[] = "valid phone_number is required";
       if(empty($data["password"]) || !$this->utils->isValidPassword($data["password"])) $errors[] = "valid password is required (hint: password must contain at least one letter and one number with min length = 8)";
 
-    } else { //check fields that exist
+    } else { // Validate fields that exist
       if(array_key_exists("full_name", $data) && empty($data["full_name"])) $errors[] = "full_name is empty";
       if(
         array_key_exists("email", $data) &&

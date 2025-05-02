@@ -3,41 +3,31 @@
 class RoleGateway {
   private PDO $conn;
 
-  public function __construct(Database $db) {
-    $this->conn = $db->getConnection();
+  public function __construct(PDO $db_conn) {
+    $this->conn = $db_conn;
   }
 
-  public function create(array $data): array | false {
-    $sql = "INSERT INTO roles (name) VALUES (:name)";
+  public function getAll(?int $limit=null, ?int $offset=null): array {
+    $sql = "SELECT id, name FROM roles WHERE is_deleted = false";
 
-    $stmt = $this->conn->prepare($sql);
-    $stmt->bindValue(":name", $data["name"], PDO::PARAM_STR);
-    $stmt->execute();
-
-    return $this->get($this->conn->lastInsertId());
-  }
-
-  public function getAll(?int $limit, ?int $offset): array | false {
-    if($limit && $offset) {
-      $sql = "SELECT * FROM roles LIMIT :limit OFFSET :offset";
-    } elseif($limit) {
-      $sql = "SELECT * FROM roles LIMIT :limit";
-    } elseif($offset) {
-      $sql = "SELECT * FROM roles LIMIT 18446744073709551615 OFFSET: offset";
-    } else {
-      $sql = "SELECT * FROM roles";
+    if($limit !== null && $offset !== null) {
+      $sql .= " LIMIT :limit OFFSET :offset";
+    } elseif($limit !== null) {
+      $sql .= " LIMIT :limit";
+    } elseif($offset !== null) {
+      $sql .= " LIMIT 18446744073709551615 OFFSET :offset";
     }
 
     $stmt = $this->conn->prepare($sql);
-    if($limit) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
-    if($offset) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
+    if($limit !== null) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
+    if($offset !== null) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
     $stmt->execute();
 
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
   }
 
   public function get(int $id): array | false {
-    $sql = "SELECT * FROM roles WHERE id = :id";
+    $sql = "SELECT id, name FROM roles WHERE id = :id AND is_deleted = false";
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":id", $id, PDO::PARAM_INT);
@@ -46,26 +36,92 @@ class RoleGateway {
     return $stmt->fetch(PDO::FETCH_ASSOC);
   }
 
-  public function update(array $current, array $new): array | false {
-    $sql = "UPDATE roles SET name = :name WHERE id = :id";
+  public function create(array $data): array | false {
+    $this->conn->beginTransaction();
 
-    $stmt = $this->conn->prepare($sql);
-    $stmt->bindValue(":name", $new["name"] ?? $current["name"], PDO::PARAM_STR);
-    $stmt->bindValue(":id", $current["id"], PDO::PARAM_INT);
-    $stmt->execute();
+    try {
+      if(!$this->isNameUnique($data["name"])) { // Make sure unique constraints
+        throw new Exception("Role name '{$data['name']}' already exists, please choose another one", 409);
+      }
 
-    return $this->get($current["id"]);
+      $sql = "INSERT INTO roles (name) VALUES (:name)";
+
+      $stmt = $this->conn->prepare($sql);
+      $stmt->bindValue(":name", $data["name"], PDO::PARAM_STR);
+      $stmt->execute();
+
+      $id = $this->conn->lastInsertId();
+
+      $this->conn->commit();
+      return $this->get($id);
+
+    } catch(PDOException $e) {
+      $this->conn->rollBack();
+      throw $e; // Re-throw for centralized ErrorHandler
+    } catch(Exception $e) {
+      $this->conn->rollBack();
+      throw $e; // Re-throw for centralized ErrorHandler
+    }
   }
 
+  public function update(array $current, array $new): array | false {
+    $this->conn->beginTransaction();
+
+    try {
+      $id = $current["id"];
+
+      if(in_array($id, CORE_ROLES_ID)) { // Cannot modify core role
+        throw new Exception("Forbidden: User cannot make any changes to core role", 403);
+      }
+
+      $new_name = $new["name"];
+      if($new_name && $new_name !== $current["name"] && !$this->isNameUnique($new_name)) { // Make sure unique constraints
+        throw new Exception("Role name '{$new['name']}' already exists, please choose another one", 409);
+      }
+
+      $sql = "UPDATE roles SET name = :name WHERE id = :id";
+
+      $stmt = $this->conn->prepare($sql);
+      $stmt->bindValue(":name", $new_name ?? $current["name"], PDO::PARAM_STR);
+      $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+      $stmt->execute();
+
+      $this->conn->commit();
+      return $this->get($id);
+
+    } catch(PDOException $e) {
+      $this->conn->rollBack();
+      throw $e; // Re-throw for centralized ErrorHandler
+    } catch(Exception $e) {
+      $this->conn->rollBack();
+      throw $e; // Re-throw for centralized ErrorHandler
+    }
+  }
   public function delete(int $id): bool {
-    if($this->hasConstrain($id)) return false;
+    $this->conn->beginTransaction();
 
-    $sql = "DELETE FROM roles WHERE id = :id";
-    $stmt = $this->conn->prepare($sql);
-    $stmt->bindValue(":id", $id, PDO::PARAM_INT);
-    $stmt->execute();
+    try {
+      if(in_array($id, CORE_ROLES_ID)) { // Cannot modify core role
+        throw new Exception("Forbidden: User cannot make any changes to core role", 403);
+      }
 
-    return true;
+      $sql = $this->hasConstrain($id)
+        ? "UPDATE roles SET is_deleted = true WHERE id = :id"
+        : "DELETE FROM roles WHERE id = :id";
+
+      $stmt = $this->conn->prepare($sql);
+      $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+      $stmt->execute();
+
+      return $this->conn->commit();
+
+    } catch(PDOException $e) {
+      $this->conn->rollBack();
+      throw $e; // Re-throw for centralized ErrorHandler
+    } catch(Exception $e) {
+      $this->conn->rollBack();
+      throw $e; // Re-throw for centralized ErrorHandler
+    }
   }
 
   private function hasConstrain(int $id): bool {
@@ -80,5 +136,17 @@ class RoleGateway {
     $stmt->execute();
 
     return (bool) $stmt->fetchColumn();
+  }
+
+  private function isNameUnique(string $name): bool {
+    $sql = "SELECT EXISTS (
+      SELECT 1 FROM roles WHERE name = :name AND is_deleted = false
+    )";
+
+    $stmt = $this->conn->prepare($sql);
+    $stmt->bindValue(":name", $name, PDO::PARAM_STR);
+    $stmt->execute();
+
+    return !(bool) $stmt->fetchColumn();
   }
 }

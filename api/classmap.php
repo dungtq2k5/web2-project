@@ -1,25 +1,27 @@
 <?php
 
-define("GATEWAYS_PATH", __DIR__ . "/gateways");
-define("CONTROLLERS_PATH", __DIR__ . "/controllers");
+const GATEWAYS_PATH =  __DIR__ . "/gateways";
+const CONTROLLERS_PATH =  __DIR__ . "/controllers";
 
-define("PRODUCT_GATEWAY_PATH", GATEWAYS_PATH . "/product");
-define("PRODUCT_CONTROLLER_PATH", CONTROLLERS_PATH . "/product");
+const PRODUCT_GATEWAY_PATH =  GATEWAYS_PATH . "/product";
+const PRODUCT_CONTROLLER_PATH =  CONTROLLERS_PATH . "/product";
 
-define("USER_GATEWAY_PATH", GATEWAYS_PATH . "/user");
-define("USER_CONTROLLER_PATH", CONTROLLERS_PATH . "/user");
+const USER_GATEWAY_PATH =  GATEWAYS_PATH . "/user";
+const USER_CONTROLLER_PATH =  CONTROLLERS_PATH . "/user";
 
-define("CART_GATEWAY_PATH", GATEWAYS_PATH . "/cart");
-define("CART_CONTROLLER_PATH", CONTROLLERS_PATH . "/cart");
+const CART_GATEWAY_PATH =  GATEWAYS_PATH . "/cart";
+const CART_CONTROLLER_PATH =  CONTROLLERS_PATH . "/cart";
 
-define("ORDER_GATEWAY_PATH", GATEWAYS_PATH . "/order");
-define("ORDER_CONTROLLER_PATH", CONTROLLERS_PATH . "/order");
+const ORDER_GATEWAY_PATH =  GATEWAYS_PATH . "/order";
+const ORDER_CONTROLLER_PATH =  CONTROLLERS_PATH . "/order";
 
-define("PROVIDER_GATEWAY_PATH", GATEWAYS_PATH . "/provider");
-define("PROVIDER_CONTROLLER_PATH", CONTROLLERS_PATH . "/provider");
+const PROVIDER_GATEWAY_PATH =  GATEWAYS_PATH . "/provider";
+const PROVIDER_CONTROLLER_PATH =  CONTROLLERS_PATH . "/provider";
 
-define("GOODS_GATEWAY_PATH", GATEWAYS_PATH . "/goods");
-define("GOODS_CONTROLLER_PATH", CONTROLLERS_PATH . "/goods");
+const GOODS_GATEWAY_PATH =  GATEWAYS_PATH . "/goods";
+const GOODS_CONTROLLER_PATH =  CONTROLLERS_PATH . "/goods";
+
+const AUTHS_CONTROLLER_PATH =  CONTROLLERS_PATH . "/auth";
 
 return [
   "Database" => __DIR__ . "/config/Database.php",
@@ -64,11 +66,12 @@ return [
 
   "CartController" => CART_CONTROLLER_PATH . "/CartController.php",
   "OrderController" => ORDER_CONTROLLER_PATH . "/OrderController.php",
-  "OrderItemController" => ORDER_CONTROLLER_PATH . "/OrderItemController.php",
   "OrderDeliveryStateController" => ORDER_CONTROLLER_PATH . "/OrderDeliveryStateController.php",
 
   "ProviderController" => PROVIDER_CONTROLLER_PATH . "/ProviderController.php",
   "GoodsReceiptNoteController" => GOODS_CONTROLLER_PATH . "/GoodsReceiptNoteController.php",
+
+  "AuthController" => AUTHS_CONTROLLER_PATH . "/AuthController.php",
 
   //orders
   "ErrorHandler" => __DIR__ . "/ErrorHandler.php",
