@@ -1,0 +1,80 @@
+- REQUIREMENTS: https://docs.google.com/document/d/1LugWPMj7M0KiEYdBAGGXFCjnVA5WhkX2/edit?tab=t.0
+
+- LEGENDS:
+  ✅: done.
+  🔥: working on.
+  ❌: not done.
+
+
+BACKEND - API:
+  - ❌ Validate empty string with odd spaces (removeOddSpace).
+  - ❌ Validate user request (add to cart, ordering,...).
+  - ❌ Improve error messages with help of Copilot.
+  - ❌ Mod orders db when buyers change their addresses.
+
+FRONTEND:
+  - ❌ Using class for controller.
+  - ❌ Fix issues when display msg overlap.
+  - ❌ Page not found UI.
+  - ❌ Table with floating header.
+  - ❌ Update and re-render (using search instead).
+  - 🔥 Add validation for updating is_sold from true to false of product_instances if not.
+
+  - Auths:
+    + 🔥 Signin.
+    + 🔥 Signout.
+
+  - Users management:
+    + ✅ View users data.
+    + ✅ Create new user.
+    + ✅ Update user.
+    + ✅ Delete user.
+    + ✅ Search user.
+
+  - Carts management:
+    + ✅ View users' carts.
+    + ✅ View detail items.
+    + ✅ View detail users.
+    + ✅ Update and delete item users' carts.
+    + ✅ Search users' carts.
+
+  - Orders management:
+    + ✅ View user's orders.
+    + ✅ View detail items.
+    + ✅ View detail users.
+    + ✅ Change delivery state's order.
+    + ✅ Search orders.
+    + ✅ Sort orders.
+
+  - Products management:
+    + ✅ View products.
+    + ✅ CRUD products.
+    + ✅ Search products.
+    + ✅ Create new products variations.
+
+  - Products variations management:
+    + ✅ View variations.
+    + ✅ RUD variations.
+    + ✅ Search variations.
+    + ✅ Add product instances.
+
+  - Products instances management:
+    + ✅ View instances.
+    + ✅ RUD instances (new fields).
+    + ✅ Search instances.
+
+  - ✅ Analysis.
+
+  - 🔥 Roles and permissions.
+
+
+DATABASE:
+  - ❌ Add indexing for db (base on query at gateways function).
+
+UI FRIENDLINESS:
+  - ❌ Styling using Bootstrap.
+  - ❌ Address to long replace by "..." - add title.
+  - ❌ Replace "view button" to link btn + add title "click to view...".
+
+OVERALL:
+  - ❌ Write descriptions for functions - especially in utils.

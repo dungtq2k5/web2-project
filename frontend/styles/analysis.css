@@ -1,0 +1,39 @@
+.content__orders {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+
+.content__order > div {
+  display: grid;
+  grid-template-columns: 20ch auto;
+  gap: .25em;
+}
+
+/* View items */
+.items {
+  display: flex;
+  flex-direction: column;
+  gap: .5em;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.item__general {
+  display: flex;
+  align-items: center;
+  gap: .25em;
+  cursor: pointer;
+}
+.item__general > img {
+  max-width: 100px;
+}
+
+.item_details {
+  margin-left: 1rem;
+}
+.item_details > li {
+  display: flex;
+  gap: .25em;
+}
+

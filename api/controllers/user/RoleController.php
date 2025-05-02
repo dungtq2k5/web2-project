@@ -1,9 +1,13 @@
 <?php
 
-class RoleController extends ErrorHandler {
-  public function __construct(private RoleGateway $gateway, private Auths $auths) {}
+class RoleController {
+  private ErrorHandler $error_handler;
 
-  public function processRequest(string $method, ?int $id, ?int $limit, ?int $offset): void {
+  public function __construct(private RoleGateway $gateway, private Auths $auths) {
+    $this->error_handler = new ErrorHandler;
+  }
+
+  public function processRequest(string $method, ?int $id=null, ?int $limit=null, ?int $offset=null): void {
     if($id) {
       $this->processResourceRequest($method, $id);
       return;
@@ -15,12 +19,14 @@ class RoleController extends ErrorHandler {
   private function processResourceRequest(string $method, int $id): void {
     $role = $this->gateway->get($id);
     if(!$role) {
-      $this->sendErrorResponse(404, "Role with an id $id not found");
+      $this->error_handler->sendErrorResponse(404, "Role with an id '$id' not found");
       return;
     }
 
-    switch($method) {
+  switch($method) {
       case "GET":
+        $this->auths->verifyAction("READ_ROLE");
+
         echo json_encode([
           "success" => true,
           "data" => $role
@@ -29,12 +35,15 @@ class RoleController extends ErrorHandler {
 
       case "PUT":
         $this->auths->verifyAction("UPDATE_ROLE");
+
         $data = (array) json_decode(file_get_contents("php://input"));
+
         $errors = $this->getValidationErrors($data, false);
         if(!empty($errors)) {
-          $this->sendErrorResponse(422, $errors);
+          $this->error_handler->sendErrorResponse(422, $errors);
           break;
         }
+
         $data = $this->gateway->update($role, $data);
 
         echo json_encode([
@@ -46,15 +55,8 @@ class RoleController extends ErrorHandler {
 
       case "DELETE":
         $this->auths->verifyAction("DELETE_ROLE");
-        $res = $this->gateway->delete($id);
 
-        if(!$res) {
-          echo json_encode([
-            "success" => false,
-            "message" => "Role id $id can't be deleted because of constrain"
-          ]);
-          break;
-        }
+        $this->gateway->delete($id);
 
         echo json_encode([
           "success" => true,
@@ -63,15 +65,17 @@ class RoleController extends ErrorHandler {
         break;
 
       default:
-        $this->sendErrorResponse(405, "only allow GET, PUT, DELETE method");
+        $this->error_handler->sendErrorResponse(405, "only allow GET, PUT, DELETE method");
         header("Allow: GET, PUT, DELETE");
     }
 
   }
 
-  private function processCollectionRequest(string $method, ?int $limit, ?int $offset): void {
+  private function processCollectionRequest(string $method, ?int $limit=null, ?int $offset=null): void {
     switch($method) {
       case "GET":
+        $this->auths->verifyAction("READ_ROLE");
+
         $data = $this->gateway->getAll($limit, $offset);
 
         echo json_encode([
@@ -83,12 +87,15 @@ class RoleController extends ErrorHandler {
 
       case "POST":
         $this->auths->verifyAction("CREATE_ROLE");
+
         $data = (array) json_decode(file_get_contents("php://input"));
+
         $errors = $this->getValidationErrors($data);
         if(!empty($errors)) {
-          $this->sendErrorResponse(422, $errors);
+          $this->error_handler->sendErrorResponse(422, $errors);
           break;
         }
+
         $data = $this->gateway->create($data);
 
         http_response_code(201);
@@ -100,7 +107,7 @@ class RoleController extends ErrorHandler {
         break;
 
       default:
-        $this->sendErrorResponse(405, "only allow GET, POST method");
+        $this->error_handler->sendErrorResponse(405, "only allow GET, POST method");
         header("Allow: GET, POST");
     }
   }

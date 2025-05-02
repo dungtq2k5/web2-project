@@ -44,17 +44,18 @@
     </div>
 
     <div>
-      <form class="search-box--g">
-        <label for="search-input">Search user:</label>
-        <input type="text" id="search-input">
-        <button id="search-btn">search</button>
-        <button id="clear-search-btn">clear search</button>
+      <form id="search-user-form" class="search-box--g">
+        <label for="search-user-form-input">Search user:</label>
+        <input type="text" id="search-user-form-input">
+
+        <button id="search-user-form-search-btn" type="submit">search</button>
+        <button id="search-user-form-clear-btn" type="reset">clear search</button>
       </form>
+
       <p>Result: <span id="result-count"></span></p>
     </div>
 
     <div class="auto-scroll--g">
-
       <table class="content__table--g">
         <thead class="content__thead--g b">
           <tr class="content__tr--g">
@@ -80,6 +81,6 @@
 
   <footer class="footer--g">footer</footer>
 
-  <!-- <script type="module" src="./main.js"></script> -->
+  <script type="module" src="./main.js"></script>
 </body>
 </html>

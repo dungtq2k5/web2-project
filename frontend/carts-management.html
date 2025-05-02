@@ -41,11 +41,12 @@
     </div>
 
     <div>
-      <form class="search-box--g">
-        <label for="search-input">Search users' carts:</label>
-        <input type="text" id="search-input">
-        <button id="search-btn">search</button>
-        <button id="clear-search-btn">clear search</button>
+      <form id="search-cart-form" class="search-box--g">
+        <label for="search-cart-form-input">Search users' carts:</label>
+        <input type="text" id="search-cart-form-input">
+
+        <button id="search-cart-form-search-btn" type="submit">search</button>
+        <button id="search-cart-form-clear-btn" type="reset">clear search</button>
       </form>
       <p>Result: <span id="result-count"></span></p>
     </div>
@@ -71,6 +72,6 @@
 
   <footer class="footer--g">footer</footer>
 
-  <!-- <script type="module" src="./views/carts-management.js"></script> -->
+  <script type="module" src="./views/carts-management.js"></script>
 </body>
 </html>

@@ -1,5 +1,5 @@
-import { ORDERS_DELIVERY_STATES_API_URL } from "../settings.js";
-import { fetchData } from "../utils.js";
+import { ORDERS_API_URL, ORDERS_DELIVERY_STATES_API_URL } from "../settings.js";
+import { fetchData, updateData } from "../utils.js";
 
 
 let isFetch = false;
@@ -7,15 +7,11 @@ let statesList = [];
 
 async function fetchStatesList(limit=null, offset=null) {
   const res = await fetchData(ORDERS_DELIVERY_STATES_API_URL, limit, offset);
-  setStatesList(res.data);
+  statesList = res.data;
   isFetch = true;
 }
 
-function setStatesList(list) {
-  statesList = list;
-}
-
-export async function getStatesList(limit=null, offset=null) {
+export async function getStatesList(limit=null, offset=null) { // Return a copy
   if(!isFetch) {
     await fetchStatesList();
     console.log("fetch delivery states API");
@@ -23,12 +19,12 @@ export async function getStatesList(limit=null, offset=null) {
 
   const start = offset || 0;
   const end = limit ? limit + start : statesList.length;
-  return statesList.slice(start, end);
+  return JSON.parse(JSON.stringify(statesList.slice(start, end)));
 }
 
 export async function getState(id) {
-  const statesList = await getStatesList();
-  const state = statesList.find(state => state.id === id);
+  if(!id) return undefined;
 
-  return state || undefined;
+  const statesList = await getStatesList();
+  return statesList.find(state => state.id == id) || undefined;
 }

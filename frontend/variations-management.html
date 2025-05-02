@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.8/css/line.css">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="./styles/general.css">
+  <link rel="stylesheet" href="./styles/header.css">
+  <link rel="stylesheet" href="./styles/products.css">
+  <link rel="stylesheet" href="./styles/variations.css">
+  <title>Document</title>
+</head>
+<body>
+
+  <header class="header--g">
+    <div class="header__logo">
+      <h1>Logo - [admin] page</h1>
+    </div>
+
+    <nav class="header__nav">
+      <ul class="header__list">
+        <li class="header__item"><button>users</button></li>
+        <li class="header__item"><button>carts</button></li>
+        <li class="header__item"><button>orders</button></li>
+        <li class="header__item">
+          <select id="">
+            <option value="">products</option>
+            <option value="" selected>products variations</option>
+            <option value="">products instances</option>
+          </select>
+        </li>
+        <li class="header__item"><button>providers</button></li>
+        <li class="header__item"><button>goods receipt notes</button></li>
+      </ul>
+    </nav>
+
+    <div class="header__btns">
+      <button class="header_btn">login</button>
+      <button class="header_btn">logout</button>
+    </div>
+  </header>
+
+  <main class="content content--g">
+    <div class="content__title--g">
+      <h2>Products variations management</h2>
+      <span id="crud-variation-msg"></span>
+    </div>
+
+    <div>
+      <form id="search-variation-form" class="search-box--g">
+        <h3>Search variations</h3>
+
+        <div>
+          <div>
+            <label for="search-product-id">Product id:</label>
+            <input
+              type="number"
+              id="search-product-id"
+              name="product_id"
+              min="1"
+              placeholder="no filter"
+            >
+          </div>
+
+          <div>
+            <p>Prices:</p>
+            <div>
+              <label for="search-price-from">from</label>
+              <input
+                type="number"
+                name="price_from"
+                id="search-price-from"
+                min="1"
+                placeholder="no filter"
+              >
+              <span>&#162;</span>
+            </div>
+            <div>
+              <label for="search-price-to">to</label>
+              <input
+                type="number"
+                name="price_to"
+                id="search-price-to"
+                placeholder="no filter"
+              >
+              <span>&#162;</span>
+            </div>
+          </div>
+
+          <div>
+            <p>Release at:</p>
+            <div>
+              <label for="search-release-from">from</label>
+              <input
+                type="datetime-local"
+                name="release_from"
+                id="search-release-from"
+              >
+            </div>
+            <div>
+              <label for="search-release-to">to</label>
+              <input
+                type="datetime-local"
+                name="release_to"
+                id="search-release-to"
+              >
+            </div>
+          </div>
+
+          <div>
+            <label for="search-stop-selling">Stop selling:</label>
+            <select name="stop_selling" id="search-stop-selling">
+              <option value="">no filter</option>
+              <option value="true">true</option>
+              <option value="false">false</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <button id="search-variation-form-search-btn" type="submit">search</button>
+          <button id="search-variation-form-clear-btn" type="reset">clear search</button>
+        </div>
+      </form>
+
+      <p>Result: <span id="result-count">0</span></p>
+    </div>
+
+    <div class="auto-scroll--g">
+      <table class="content__table--g">
+        <thead class="content__thead--g b">
+          <tr class="content__tr--g">
+            <th class="content__th--g" title="number">n.o</th>
+            <th class="content__th--g">id</th>
+            <th class="content__th--g">image</th>
+            <th class="content__th--g">product id</th>
+            <th class="content__th--g" title="watch specification">watch specs</th>
+            <th class="content__th--g" title="band specification">band specs</th>
+            <th class="content__th--g" title="release at">release at</th>
+            <th class="content__th--g">base(stock) price</th>
+            <th class="content__th--g">sell price</th>
+            <th class="content__th--g">stock</th>
+            <th class="content__th--g">stop_selling</th>
+            <th class="content__th--g">actions</th>
+          </tr>
+        </thead>
+
+        <tbody class="content__tbody--g b" id="tbody">
+          <!-- <tr class="content__tr--g">
+            <td data-cell="n.o" class="content__td--g">1</td>
+            <td data-cell="id" class="content__td--g">${variation.id}</td>
+            <td data-cell="image" class="content__td--g">
+              <img src="../uploads/default.webp" class="content__img" alt="smartwatch" loading="lazy">
+            </td>
+            <td data-cell="product id" class="content__td--g">${variation.product_id}</td>
+            <td data-cell="watch specs" class="content__td--g">
+              <ul class="content__specs content__specs--watch">
+                <li>
+                  <h3>Display size:</h3>
+                  <p>${variation.display_size_mm} mm</p>
+                </li>
+                <li>
+                  <h3>Display size:</h3>
+                  <p>${variation.display_size_mm} mm</p>
+                </li>
+                <li>
+                  <h3>Display type:</h3>
+                  <p>${variation.display_type}</p>
+                </li>
+                <li>
+                  <h3>Resolution:</h3>
+                  <p>${variation.resolution_h_px} px <i class="uil uil-times"></i> ${variation.resolution_w_px} px</p>
+                </li>
+                <li>
+                  <h3>Memory:</h3>
+                  <p>${variation.ram_bytes} bytes <i class="uil uil-times"></i> ${variation.rom_bytes} bytes</p>
+                </li>
+                <li>
+                  <h3>OS:</h3>
+                  <p>${variation.os.name}</p>
+                </li>
+                <li>
+                  <h3>Connectivity:</h3>
+                  <p>${variation.connectivity}</p>
+                </li>
+                <li>
+                  <h3>Battery:</h3>
+                  <p>${variation.battery} mah</p>
+                </li>
+                <li>
+                  <h3>Water resistance:</h3>
+                  <p>${variation.water_resistance_value} ${variation.water_resistance_unit}</p>
+                </li>
+                <li>
+                  <h3>Sensor:</h3>
+                  <p>${variation.sensor}</p>
+                </li>
+                <li>
+                  <h3>Case material:</h3>
+                  <p>${variation.case_material}</p>
+                </li>
+                <li>
+                  <h3>Total weight (+band):</h3>
+                  <p>${variation.weight_milligrams} mg</p>
+                </li>
+                <li>
+                  <h3>Color:</h3>
+                  <input type="color" value="${variation.watch_color}" disabled>
+                </li>
+              </ul>
+            </td>
+            <td data-cell="band specs" class="content__td--g">
+              <ul class="content__specs content__specs--band">
+                <li>
+                  <h3>Material:</h3>
+                  <p>${variation.band_material}</p>
+                </li>
+                <li>
+                  <h3>Size:</h3>
+                  <p>${variation.band_size_mm} mm</p>
+                </li>
+                <li>
+                  <h3>Color:</h3>
+                  <input type="color" value="${variation.band_color}" disabled>
+                </li>
+              </ul>
+            </td>
+            <td data-cell="release at" class="content__td--g">${variation.release_date}</td>
+            <td data-cell="base price" class="content__td--g">${variation.price_cents}</td>
+            <td data-cell="sell price" class="content__td--g">${variation.base_price_cents}</td>
+            <td data-cell="stock" class="content__td--g">${variation.stock_quantity}</td>
+            <td data-cell="stop selling" class="content__td--g">${variation.stop_selling}</td>
+            <td data-cell="actions" class="content__td--g">
+              <button>update</button>
+              <button>delete</button>
+            </td>
+          </tr> -->
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <div class="backdrop--g" id="backdrop" style="display: none;"></div>
+
+  <footer class="footer--g">footer</footer>
+
+  <script type="module" src="./views/variations-management.js"></script>
+</body>
+</html>

@@ -1,10 +1,12 @@
 <?php
 
-class RolePermissionController extends ErrorHandler {
+class RolePermissionController {
+  private ErrorHandler $error_handler;
+  public function __construct(private RolePermissionGateway $gateway, private Auths $auths) {
+    $this->error_handler = new ErrorHandler;
+  }
 
-  public function __construct(private RolePermissionGateway $gateway, private Auths $auths) {}
-
-  public function processRequest(string $method, ?int $role_id, ?int $permission_id, ?int $limit, ?int $offset): void {
+  public function processRequest(string $method, ?int $role_id=null, ?int $permission_id=null, ?int $limit=null, ?int $offset=null): void {
     if($role_id) {
       $this->processResourceRequest($method, $role_id, $permission_id);
       return;
@@ -13,15 +15,20 @@ class RolePermissionController extends ErrorHandler {
     $this->processCollectionRequest($method, $limit, $offset);
   }
 
-  private function processResourceRequest(string $method, int $role_id, ?int $permission_id): void {
+  private function processResourceRequest(string $method, int $role_id, ?int $permission_id=null): void {
     $role_permissions = $this->gateway->get($role_id, $permission_id);
     if(!$role_permissions) {
-      $this->sendErrorResponse(404, "Role id $role_id with permission id $permission_id not found");
+      $error_msg = $permission_id
+        ? "Role id '$role_id' with permission id '$permission_id' not found"
+        : "Role with an id '$role_id}'";
+      $this->error_handler->sendErrorResponse(404, $error_msg);
       return;
     }
 
     switch($method) {
       case "GET":
+        $this->auths->verifyAction("READ_ROLE_PERMISSION");
+
         echo json_encode([
           "success" => true,
           "length" => count($role_permissions),
@@ -31,10 +38,12 @@ class RolePermissionController extends ErrorHandler {
 
       case "DELETE":
         $this->auths->verifyAction("DELETE_ROLE_PERMISSION");
+
         if(!$permission_id) {
-          $this->sendErrorResponse(422, "permission_id is required");
+          $this->error_handler->sendErrorResponse(422, "permission_id is required");
           break;
         }
+
         $this->gateway->delete($role_id, $permission_id);
 
         echo json_encode([
@@ -44,15 +53,17 @@ class RolePermissionController extends ErrorHandler {
         break;
 
       default:
-        $this->sendErrorResponse(405, "only allow GET, DELETE method");
+        $this->error_handler->sendErrorResponse(405, "only allow GET, DELETE method");
         header("Allow: GET, DELETE");
     }
 
   }
 
-  private function processCollectionRequest(string $method, ?int $limit, ?int $offset): void {
+  private function processCollectionRequest(string $method, ?int $limit=null, ?int $offset=null): void {
     switch($method) {
       case "GET":
+        $this->auths->verifyAction("READ_ROLE_PERMISSION");
+
         $data = $this->gateway->getAll($limit, $offset);
 
         echo json_encode([
@@ -64,12 +75,15 @@ class RolePermissionController extends ErrorHandler {
 
       case "POST":
         $this->auths->verifyAction("CREATE_ROLE_PERMISSION");
+
         $data = (array) json_decode(file_get_contents("php://input"));
+
         $errors = $this->getValidationErrors($data);
         if(!empty($errors)) {
-          $this->sendErrorResponse(422, $errors);
+          $this->error_handler->sendErrorResponse(422, $errors);
           break;
         }
+
         $data = $this->gateway->create($data);
 
         http_response_code(201);
@@ -81,7 +95,7 @@ class RolePermissionController extends ErrorHandler {
         break;
 
       default:
-        $this->sendErrorResponse(405, "only allow GET, POST method");
+        $this->error_handler->sendErrorResponse(405, "only allow GET, POST method");
         header("Allow: GET, POST");
     }
   }

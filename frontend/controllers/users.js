@@ -1,4 +1,4 @@
-import { USERS_API_URL, AUTH_STORAGE } from "../settings.js";
+import { USERS_API_URL } from "../settings.js";
 import { updateCart, deleteCart } from "./carts.js"
 import {
   deleteData,
@@ -16,15 +16,11 @@ let usersList = [];
 
 async function fetchUsers(limit=null, offset=null) {
   const res = await fetchData(USERS_API_URL, limit, offset);
-  setUsersList(res.data);
+  usersList = res.data;
   isFetch = true;
 }
 
-function setUsersList(list) {
-  usersList = list;
-}
-
-export async function getUsersList(limit=null, offset=null) {
+export async function getUsersList(limit=null, offset=null) { // Return a copy
   if(!isFetch) { // first call not fetch -> fetch
     await fetchUsers();
     console.log("fetch users API");
@@ -32,22 +28,21 @@ export async function getUsersList(limit=null, offset=null) {
 
   const start = offset || 0;
   const end = limit ? limit + start : usersList.length;
-  return usersList.slice(start, end);
+  return JSON.parse(JSON.stringify(usersList.slice(start, end)));
 }
 
 export async function getUser(id) {
-  const usersList = await getUsersList();
-  const user = usersList.find(user => user.id === id);
+  if(!id) return undefined;
 
-  return user || undefined;
+  const usersList = await getUsersList();
+  return usersList.find(user => user.id == id) || undefined;
 }
 
+/**
+ * filter users base on almost all fields
+ * @param {boolean} widerSearch filter more than basic info of user
+ */
 export async function getFilterUsersList(valSearch, widerSearch=false, limit=null, offset=null) {
-  /**
-   * filter users base on almost all fields
-   * widerSearch mean filter more than basic info of user
-   */
-
   const usersList = await getUsersList();
   const formattedValSearch = removeOddSpace(valSearch.toLowerCase());
 
@@ -68,7 +63,7 @@ export async function getFilterUsersList(valSearch, widerSearch=false, limit=nul
   }
 
   const start = offset || 0;
-  const end = limit ? start + limit : usersList.length;
+  const end = limit ? start + limit : filteredUsersList.length;
   return filteredUsersList.slice(start, end);
 }
 
@@ -92,76 +87,75 @@ async function includeCart(valSearch, userCart) { //support for getFilterUsersLi
   return false;
 }
 
-export async function createUser(user, auth) {
-  const res = await sendData(USERS_API_URL, user, auth);
+export async function createUser(user) {
+  const res = await sendData(USERS_API_URL, user);
 
   if(res.success) {
     if(!isFetch) { //first call function && not fetch
       await fetchUsers();
     } else { //already fetch -> update list
-      const usersList = await getUsersList();
       usersList.push(res.data);
-      setUsersList(usersList);
     }
   }
 
   return res;
 }
 
-export async function deleteUser(id, auth) {
-  const res = await deleteData(USERS_API_URL, id, auth);
+export async function deleteUser(id) {
+  const res = await deleteData(USERS_API_URL, id);
 
   if(res.success) {
     if(!isFetch) {
       await fetchUsers();
     } else {
-      const usersList = await getUsersList();
-      const newUsersList = usersList.filter(user => user.id !== id);
-      setUsersList(newUsersList);
+      const idx = usersList.findIndex(user => user.id == id);
+      if(idx !== -1) {
+        usersList.splice(idx, 1);
+      } else {
+        console.warn(`Couldn't find user with an id ${userId} to delete`);
+      }
     }
   }
 
   return res;
 }
 
-export async function updateUser(id, user, auth) {
-  const res = await updateData(USERS_API_URL, id, user, auth);
+export async function updateUser(id, user) {
+  const res = await updateData(USERS_API_URL, id, user);
 
   if(res.success) {
     if(!isFetch) {
       await fetchUsers();
     } else {
-      const usersList = await getUsersList();
-      const newUsersList = usersList.map(user => user.id === id ? {...user, ...res.data} : user);
-      setUsersList(newUsersList);
+      const idx = usersList.findIndex(user => user.id == id);
+      if(idx !== -1) {
+        usersList[idx] = {...usersList[idx], ...res.data};
+      } else {
+        console.warn(`Couldn't find user with an id ${id} to update`);
+      }
     }
   }
 
   return res;
 }
 
-export async function updateUserCart(cart, auth) {
-  const res = await updateCart(cart, auth);
+export async function updateUserCart(cart) {
+  const res = await updateCart(cart);
 
   if(res.success) {
     if(!isFetch) {
       await fetchUsers();
     } else {
-      const usersList = await getUsersList();
-      const product_variation_id = cart.product_variation_id;
-      const newQuant = cart.quantity;
       const userId = cart.user_id;
-
-      try {
+      const idx = usersList.findIndex(user => user.id == userId);
+      if(idx !== -1) {
         const updatedUser = await getUser(userId);
-        const cartItem = updatedUser.cart.find(item => item.product_variation_id === product_variation_id);
-        cartItem.quantity = newQuant;
-        const newUsersList = usersList.map(user => user.id === userId ? updatedUser : user);
-        setUsersList(newUsersList);
+        const cartItem = updatedUser.cart.find(item => item.product_variation_id == cart.product_variation_id);
+        cartItem.quantity = cart.quantity;
 
-      } catch(error) {
-        console.error("Finding error: " + error);
-        throw error;
+        usersList[idx] = updatedUser;
+      } else {
+        console.warn(`Couldn't find user with an id ${id} to update user cart`);
       }
     }
   }
@@ -169,36 +163,23 @@ export async function updateUserCart(cart, auth) {
   return res;
 }
 
-export async function deleteUserCart(userId, productVariationId, auth) {
-  const res = await deleteCart(userId, productVariationId, auth);
+export async function deleteUserCart(userId, productVariationId) {
+  const res = await deleteCart(userId, productVariationId);
 
   if(res.success) {
     if(!isFetch) {
       await fetchUsers();
     } else {
-      const usersList = await getUsersList();
+      const idx = usersList.findIndex(user => user.id == userId);
+      if(idx !== -1) {
+        const user = usersList[idx];
+        user.cart = user.cart.filter(item => item.product_variation_id != productVariationId);
 
-      try {
-        const user = await getUser(userId);
-        const updatedCart = user.cart.filter(item => item.product_variation_id !== productVariationId);
-        const newUsersList = usersList.map(user => user.id === userId ? {...user, cart: updatedCart} : user);
-        setUsersList(newUsersList);
-
-      } catch(error) {
-        console.error("Finding error: " + error);
-        throw error;
+      } else {
+        console.warn(`Couldn't find user with an id ${userId} to delete user cart`);
       }
     }
   }
 
   return res;
-}
-
-export function getAuth() {
-  if(!sessionStorage.getItem(AUTH_STORAGE)) return false;
-  return JSON.parse(sessionStorage.getItem(AUTH_STORAGE));
-}
-
-export function setAuth(auth) {
-  sessionStorage.setItem(AUTH_STORAGE, JSON.stringify(auth));
 }

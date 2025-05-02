@@ -1,2 +1,9 @@
 test.*
 *.txt
+!changes-log.txt
+!features.txt
+/uploads/products/*
+/uploads/variations/*
+vendor
+.env
+.vscode

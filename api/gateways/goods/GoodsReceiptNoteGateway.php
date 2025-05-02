@@ -3,58 +3,47 @@
 class GoodsReceiptNoteGateway {
   private PDO $conn;
 
-  public function __construct(Database $db) {
-    $this->conn = $db->getConnection();
+  public function __construct(PDO $db_conn) {
+    $this->conn = $db_conn;
   }
 
-  public function getAll(?int $limit, ?int $offset): array | false {
-    if($limit && $offset) {
-      $sql = "SELECT * FROM goods_receipt_notes LIMIT :limit OFFSET :offset";
-    } elseif($limit) {
-      $sql = "SELECT * FROM goods_receipt_notes LIMIT :limit";
-    } elseif($offset) {
-      $sql = "SELECT * FROM goods_receipt_notes LIMIT 18446744073709551615 OFFSET :offset";
-    } else {
-      $sql = "SELECT * FROM goods_receipt_notes";
+  public function getAll(?int $limit=null, ?int $offset=null): array {
+    $sql = "SELECT
+      id,
+      name,
+      provider_id,
+      staff_id,
+      total_price_cents,
+      quantity,
+      created_at
+      FROM goods_receipt_notes WHERE is_deleted = false";
+
+    if($limit !== null && $offset !== null) {
+      $sql .= " LIMIT :limit OFFSET :offset";
+    } elseif($limit !== null) {
+      $sql .= " LIMIT :limit";
+    } elseif($offset !== null) {
+      $sql .= " LIMIT 18446744073709551615 OFFSET :offset";
     }
 
     $stmt = $this->conn->prepare($sql);
-    if($limit) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
-    if($offset) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
+    if($limit !== null) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
+    if($offset !== null) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
     $stmt->execute();
 
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
   }
 
-  public function create(array $data): array | false {
-    $sql = "INSERT INTO goods_receipt_notes (
+  public function get(int $id): array | false {
+    $sql = "SELECT
+      id,
       name,
       provider_id,
       staff_id,
       total_price_cents,
-      quantity
-    ) VALUES (
-      :name,
-      :provider_id,
-      :staff_id,
-      :total_price_cents,
-      :quantity
-    )";
-
-    $stmt = $this->conn->prepare($sql);
-    $stmt->bindValue(":name", $data["name"], PDO::PARAM_STR);
-    $stmt->bindValue(":provider_id", $data["provider_id"], PDO::PARAM_INT);
-    $stmt->bindValue(":staff_id", $data["staff_id"], PDO::PARAM_INT);
-    $stmt->bindValue(":total_price_cents", $data["total_price_cents"], PDO::PARAM_INT);
-    $stmt->bindValue(":quantity", $data["quantity"], PDO::PARAM_INT);
-    $stmt->execute();
-
-    $id = $this->conn->lastInsertId();
-    return $this->get($id);
-  }
-
-  public function get(int $id): array | false {
-    $sql = "SELECT * FROM goods_receipt_notes WHERE id = :id";
+      quantity,
+      created_at
+      FROM goods_receipt_notes WHERE id = :id AND is_deleted = false";
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":id", $id, PDO::PARAM_INT);
@@ -63,36 +52,101 @@ class GoodsReceiptNoteGateway {
     return $stmt->fetch(PDO::FETCH_ASSOC);
   }
 
+  public function create(array $data): array | false {
+    $this->conn->beginTransaction();
+
+    try {
+      $sql = "INSERT INTO goods_receipt_notes (
+        name,
+        provider_id,
+        staff_id,
+        total_price_cents,
+        quantity
+      ) VALUES (
+        :name,
+        :provider_id,
+        :staff_id,
+        :total_price_cents,
+        :quantity
+      )";
+
+      $stmt = $this->conn->prepare($sql);
+      $stmt->bindValue(":name", $data["name"], PDO::PARAM_STR);
+      $stmt->bindValue(":provider_id", $data["provider_id"], PDO::PARAM_INT);
+      $stmt->bindValue(":staff_id", $data["staff_id"], PDO::PARAM_INT);
+      $stmt->bindValue(":total_price_cents", $data["total_price_cents"], PDO::PARAM_INT);
+      $stmt->bindValue(":quantity", $data["quantity"], PDO::PARAM_INT);
+      $stmt->execute();
+
+      $id = $this->conn->lastInsertId();
+
+      $this->conn->commit();
+      return $this->get($id);
+
+    } catch(PDOException $e) {
+      $this->conn->rollBack();
+      throw $e; // Re-throw for centralized ErrorHandler
+    } catch(Exception $e) {
+      $this->conn->rollBack();
+      throw $e; // Re-throw for centralized ErrorHandler
+    }
+  }
+
   public function update(array $current, array $new): array | false {
-    $sql = "UPDATE goods_receipt_notes SET
-      name = :name,
-      provider_id = :provider_id,
-      staff_id = :staff_id,
-      total_price_cents = :total_price_cents,
-      quantity = :quantity
-      WHERE id = :id
-    ";
+    $this->conn->beginTransaction();
 
-    $stmt = $this->conn->prepare($sql);
-    $stmt->bindValue(":name", $new["name"] ?? $current["name"], PDO::PARAM_STR);
-    $stmt->bindValue(":provider_id", $new["provider_id"] ?? $current["provider_id"], PDO::PARAM_INT);
-    $stmt->bindValue(":staff_id", $new["staff_id"] ?? $current["staff_id"], PDO::PARAM_INT);
-    $stmt->bindValue(":total_price_cents", $new["total_price_cents"] ?? $current["total_price_cents"], PDO::PARAM_INT);
-    $stmt->bindValue(":quantity", $new["quantity"] ?? $current["quantity"], PDO::PARAM_INT);
-    $stmt->bindValue(":id", $current["id"], PDO::PARAM_INT);
-    $stmt->execute();
+    try {
+      $sql = "UPDATE goods_receipt_notes SET
+        name = :name,
+        provider_id = :provider_id,
+        staff_id = :staff_id,
+        total_price_cents = :total_price_cents,
+        quantity = :quantity
+        WHERE id = :id AND is_deleted = false
+      ";
 
-    return $this->get($current["id"]);
+      $stmt = $this->conn->prepare($sql);
+      $stmt->bindValue(":name", $new["name"] ?? $current["name"], PDO::PARAM_STR);
+      $stmt->bindValue(":provider_id", $new["provider_id"] ?? $current["provider_id"], PDO::PARAM_INT);
+      $stmt->bindValue(":staff_id", $new["staff_id"] ?? $current["staff_id"], PDO::PARAM_INT);
+      $stmt->bindValue(":total_price_cents", $new["total_price_cents"] ?? $current["total_price_cents"], PDO::PARAM_INT);
+      $stmt->bindValue(":quantity", $new["quantity"] ?? $current["quantity"], PDO::PARAM_INT);
+      $stmt->bindValue(":id", $current["id"], PDO::PARAM_INT);
+      $stmt->execute();
+
+      $this->conn->commit();
+      return $this->get($current["id"]);
+
+    } catch(PDOException $e) {
+      $this->conn->rollBack();
+      throw $e; // Re-throw for centralized ErrorHandler
+    } catch(Exception $e) {
+      $this->conn->rollBack();
+      throw $e; // Re-throw for centralized ErrorHandler
+    }
   }
 
   public function delete(int $id): bool {
-    if($this->hasConstrain($id)) return false;
+    $this->conn->beginTransaction();
 
-    $sql = "DELETE FROM goods_receipt_notes WHERE id = :id";
+    try {
+      $sql = $this->hasConstrain($id)
+        ? "UPDATE goods_receipt_notes SET is_deleted = true WHERE id = :id AND is_deleted = false"
+        : "DELETE FROM goods_receipt_notes WHERE id = :id";
 
-    $stmt = $this->conn->prepare($sql);
-    $stmt->bindValue(":id", $id, PDO::PARAM_INT);
-    return $stmt->execute();
+      $stmt = $this->conn->prepare($sql);
+      $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+      $stmt->execute();
+
+      return $this->conn->commit();
+
+    } catch(PDOException $e) {
+      $this->conn->rollBack();
+      throw $e; // Re-throw for centralized ErrorHandler
+    } catch(Exception $e) {
+      $this->conn->rollBack();
+      throw $e; // Re-throw for centralized ErrorHandler
+    }
   }
 
   private function hasConstrain(int $id): bool {
@@ -106,4 +160,5 @@ class GoodsReceiptNoteGateway {
 
     return (bool) $stmt->fetchColumn();
   }
+
 }

@@ -1,13 +1,15 @@
 <?php
 
-class ProductVariationController extends ErrorHandler {
+class ProductVariationController {
+  private ErrorHandler $error_handler;
   private Utils $utils;
 
   public function __construct(private ProductVariationGateway $gateway, private Auths $auths) {
+    $this->error_handler = new ErrorHandler;
     $this->utils = new Utils;
   }
 
-  public function processRequest(string $method, ?int $id, ?int $limit, ?int $offset): void {
+  public function processRequest(string $method, ?int $id=null, ?int $limit=null, ?int $offset=null): void {
     if($id) {
       $this->processResourceRequest($method, $id);
       return;
@@ -19,12 +21,14 @@ class ProductVariationController extends ErrorHandler {
   private function processResourceRequest(string $method, int $id): void {
     $product = $this->gateway->get($id);
     if(!$product) {
-      $this->sendErrorResponse(404, "Product variation with an id $id not found");
+      $this->error_handler->sendErrorResponse(404, "Product variation with an id '$id' not found");
       return;
     }
 
     switch($method) {
       case "GET":
+        $this->auths->verifyAction("READ_PRODUCT_VARIATION");
+
         echo json_encode([
           "success" => true,
           "data" => $product
@@ -33,12 +37,28 @@ class ProductVariationController extends ErrorHandler {
 
       case "PUT":
         $this->auths->verifyAction("UPDATE_PRODUCT_VARIATION");
-        $data = (array) json_decode(file_get_contents("php://input"));
-        $errors = $this->getValidationErrors($data, false);
-        if(!empty($errors)) {
-          $this->sendErrorResponse(422, $errors);
+
+        $content_type = $_SERVER["CONTENT_TYPE"];
+
+        if(strpos($content_type, "application/json") !== false) {
+          $data = (array) json_decode(file_get_contents("php://input"));
+        } elseif(
+          strpos($content_type, "multipart/form-data") !== false ||
+          strpos($content_type, "application/x-www-form-urlencoded") !== false
+        ) {
+          $data = $_POST;
+          if($_FILES["image"]) $data["image"] = $_FILES["image"];
+        } else {
+          $this->error_handler->sendErrorResponse(400, "Missing Content-Type header");
           break;
         }
+
+        $errors = $this->getValidationErrors($data, false);
+        if(!empty($errors)) {
+          $this->error_handler->sendErrorResponse(422, $errors);
+          break;
+        }
+
         $data = $this->gateway->update($product, $data);
 
         echo json_encode([
@@ -50,23 +70,26 @@ class ProductVariationController extends ErrorHandler {
 
       case "DELETE":
         $this->auths->verifyAction("DELETE_PRODUCT_VARIATION");
+
         $this->gateway->delete($id);
 
         echo json_encode([
           "success" => true,
-          "message" => "Product variation id $id was deleted or stop_selling = true if there is a constrain"
+          "message" => "Product variation id $id was deleted"
         ]);
         break;
 
       default:
-        $this->sendErrorResponse(405, "only allow GET, PUT, DELETE method");
+        $this->error_handler->sendErrorResponse(405, "only allow GET, PUT, DELETE method");
         header("Allow: GET, PUT, DELETE");
     }
   }
 
-  private function processCollectionRequest(string $method, ?int $limit, ?int $offset): void {
+  private function processCollectionRequest(string $method, ?int $limit=null, ?int $offset=null): void {
     switch($method) {
       case "GET":
+        $this->auths->verifyAction("READ_PRODUCT_VARIATION");
+
         $data = $this->gateway->getAll($limit, $offset);
 
         echo json_encode([
@@ -78,10 +101,25 @@ class ProductVariationController extends ErrorHandler {
 
       case "POST":
         $this->auths->verifyAction("CREATE_PRODUCT_VARIATION");
-        $data = (array) json_decode(file_get_contents("php://input"));
+
+        $content_type = $_SERVER["CONTENT_TYPE"];
+
+        if(strpos($content_type, "application/json") !== false) {
+          $data = (array) json_decode(file_get_contents("php://input"));
+        } elseif(
+          strpos($content_type, "multipart/form-data") !== false ||
+          strpos($content_type, "application/x-www-form-urlencoded") !== false
+        ) {
+          $data = $_POST;
+          if($_FILES["image"]) $data["image"] = $_FILES["image"];
+        } else {
+          $this->error_handler->sendErrorResponse(400, "Missing Content-Type header");
+          break;
+        }
+
         $errors = $this->getValidationErrors($data);
         if(!empty($errors)) {
-          $this->sendErrorResponse(422, $errors);
+          $this->error_handler->sendErrorResponse(422, $errors);
           break;
         }
         $data = $this->gateway->create($data);
@@ -95,7 +133,7 @@ class ProductVariationController extends ErrorHandler {
         break;
 
       default:
-        $this->sendErrorResponse(405, "only allow GET, POST method");
+        $this->error_handler->sendErrorResponse(405, "only allow GET, POST method");
         header("Allow: GET, POST");
     }
   }
@@ -104,12 +142,11 @@ class ProductVariationController extends ErrorHandler {
     $errors = [];
 
     if($new) { //check all fields for new product
-      if(empty($data["product_id"]) || !is_numeric($data["product_id"])) $errors[] = "product_id is required";
+      if(empty($data["product_id"]) || !is_numeric($data["product_id"])) $errors[] = "product_id is required with integer value";
       if(empty($data["watch_size_mm"]) || !is_numeric($data["watch_size_mm"])) $errors[] = "watch_size_mm is required with integer value";
       if(empty($data["watch_color"])) $errors[] = "watch_color is required";
-      //stock_quantity field: auto calculate in mySQL
-      if(empty($data("price_cents")) || !is_numeric($data["price_cents"])) $errors[] = "price_cents is required with integer value";
-      if(empty($data("base_price_cents")) || !is_numeric($data["base_price_cents"])) $errors[] = "base_price_cents is required with integer value";
+      if(empty($data["price_cents"]) || !is_numeric($data["price_cents"])) $errors[] = "price_cents is required with integer value";
+      if(empty($data["base_price_cents"]) || !is_numeric($data["base_price_cents"])) $errors[] = "base_price_cents is required with integer value";
       if(empty($data["display_size_mm"]) || !is_numeric($data["display_size_mm"])) $errors[] = "display_size_mm is required with integer value";
       if(empty($data["display_type"])) $errors[] = "display_type is required";
       if(empty($data["resolution_h_px"]) || !is_numeric($data["resolution_h_px"])) $errors[] = "resolution_h_px is required with integer value";
@@ -143,12 +180,12 @@ class ProductVariationController extends ErrorHandler {
         (empty($data["watch_color"]))
       ) $errors[] = "watch_color is empty";
       if(
-        array_key_exists("price_cents", $data["price_cents"]) &&
-        (empty($data("price_cents")) || !is_numeric($data["price_cents"]))
+        array_key_exists("price_cents", $data) &&
+        (empty($data["price_cents"]) || !is_numeric($data["price_cents"]))
       ) $errors[] = "price_cents is empty or not an integer value";
       if(
-        array_key_exists("base_price_cents", $data["base_price_cents"]) &&
-        (empty($data("base_price_cents")) || !is_numeric($data["base_price_cents"]))
+        array_key_exists("base_price_cents", $data) &&
+        (empty($data["base_price_cents"]) || !is_numeric($data["base_price_cents"]))
       ) $errors[] = "base_price_cents is empty or not an integer value";
       if(
         array_key_exists("display_size_mm", $data) &&
@@ -223,8 +260,15 @@ class ProductVariationController extends ErrorHandler {
       ) $errors[] = "release_date is empty or not right format (YYYY-MM-DD HH:MI:SS)"; //format: YYYY-MM-DD HH:MI:SS
     }
 
-    if(array_key_exists("image_name", $data) && empty($data["image_name"])) $errors[] = "image_name is empty";
-    if(array_key_exists("stop_selling", $data) && !is_bool($data["stop_selling"])) $errors[] = "stop_selling must be a boolean value";
+    if(array_key_exists("image", $data) && !$this->utils->isInterpretableNull($data["image"])) {
+      if(!is_array($data["image"])) {
+        $errors["image"] = "only accept file type or null";
+      } elseif($img_errors = $this->utils->isValidImg($data["image"])) {
+        $errors["image"] = $img_errors;
+      }
+    }
+
+    if(array_key_exists("stop_selling", $data) && !$this->utils->isInterpretableBool($data["stop_selling"])) $errors[] = "stop_selling must be a boolean value";
 
     return $errors;
   }

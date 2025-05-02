@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.8/css/line.css">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="./styles/general.css">
+  <link rel="stylesheet" href="./styles/header.css">
+  <link rel="stylesheet" href="./styles/analysis.css">
+  <title>Document</title>
+</head>
+<body>
+
+  <header class="header--g">
+    <div class="header__logo">
+      <h1>Logo - [admin] page</h1>
+    </div>
+
+    <nav class="header__nav">
+      <ul class="header__list">
+        <li class="header__item"><button>users</button></li>
+        <li class="header__item"><button>carts</button></li>
+        <li class="header__item"><button>orders</button></li>
+        <li class="header__item">
+          <select id="">
+            <option value="">products</option>
+            <option value="">products variations</option>
+            <option value="" selected>products instances</option>
+          </select>
+        </li>
+        <li class="header__item"><button>providers</button></li>
+        <li class="header__item"><button>goods receipt notes</button></li>
+      </ul>
+    </nav>
+
+    <div class="header__btns">
+      <button class="header_btn">login</button>
+      <button class="header_btn">logout</button>
+    </div>
+  </header>
+
+  <main class="content content--g">
+    <h2 class="content__title--g">Analysis</h2>
+
+    <div>
+      <form id="search-analysis-form" class="search-box--g">
+        <h3>Search top customers</h3>
+
+        <div>
+          <div>
+            <label for="analysis-order-from">Order from:</label>
+            <input name="order_from" id="analysis-order-from" type="datetime-local">
+          </div>
+          <div>
+            <label for="analysis-order-to">Order to:</label>
+            <input name="order_to" id="analysis-order-to" type="datetime-local">
+          </div>
+        </div>
+
+        <div>
+          <label for="analysis-top-customers">Top customers display:</label>
+          <input
+            type="number"
+            name="top_customers"
+            id="analysis-top-customers"
+            min="1"
+            placeholder="all"
+          >
+        </div>
+
+        <div>
+          <label for="analysis-sort-by">Sort total spent by:</label>
+          <select name="sort_by" id="analysis-sort-by">
+            <option value="desc">descending</option>
+            <option value="asc">ascending</option>
+          </select>
+        </div>
+
+        <div>
+          <button id="search-analysis-form-search-btn" type="submit">search</button>
+          <button id="search-analysis-form-clear-btn" type="reset">clear search</button>
+        </div>
+      </form>
+
+      <p>Result: <span id="result-count">0</span></p>
+    </div>
+
+    <div class="auto-scroll--g">
+      <table class="content__table--g">
+        <thead class="content__thead--g b">
+          <tr class="content__tr--g">
+            <th class="content__th--g">top</th>
+            <th class="content__th--g">user id</th>
+            <th class="content__th--g">user email</th>
+            <th class="content__th--g">orders received</th>
+            <th class="content__th--g">total spent</th>
+          </tr>
+        </thead>
+
+        <tbody class="content__tbody--g b" id="tbody">
+          <!-- <tr>
+            <td data-cell="n.o" class="content__td--g">${idx+1}</td>
+            <td data-cell="user id" class="content__td--g">
+              ${user.id}
+              <button>view detail user</button>
+            </td>
+            <td data-cell="user email" class="content__td--g">${user.email}</td>
+            <td data-cell="orders received" class="content__td--g">
+              <ul class="content__orders">
+                <li class="content__order">
+                  <div>
+                    <h4>Order id:</h4>
+                    <p>${order.id}</p>
+                  </div>
+                  <div>
+                    <h4>Total:</h4>
+                    <p>${order.total_cents} &#162;</p>
+                  </div>
+                  <div>
+                    <h4>Delivery to:</h4>
+                    <p>${order.delivery_address_id}</p>
+                  </div>
+                  <div>
+                    <h4>Order at:</h4>
+                    <p>${order.order_date}</p>
+                  </div>
+                  <div>
+                    <h4>Estimate received date:</h4>
+                    <p>${order.estimate_received_date}</p>
+                  </div>
+                  <div>
+                    <h4>Received date:</h4>
+                    <p>${order.received_date}</p>
+                  </div>
+                  <div>
+                    <h4>Total items:</h4>
+                    <p>number</p>
+                    <button>view items</button>
+                  </div>
+                </li>
+              </ul>
+            </td>
+            <td data-cell="total spent" class="content__td--g">${totalSpent}</td>
+          </tr> -->
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <div class="backdrop--g" id="backdrop" style="display: none;">
+    <!-- <div class="form--g">
+      <button type="button" class="form__close--g">
+        <i class="uil uil-times"></i>
+      </button>
+      <h2 class="form__title--g">Items in order id ${orderId}</h2>
+
+      <ul class="items">
+        <li class="item">
+          <details>
+            <summary class="item__general" title="click to view details">
+              <img
+                width=""
+                height=""
+                src="../uploads/default.webp"
+                class="product__img"
+                alt="smartwatch"
+                loading="lazy"
+              >
+              <i class="uil uil-times"></i>
+              <p>${product.name}</p>
+              <i class="uil uil-times"></i>
+              <p>${variation.watch_size_mm}mm</p>
+              <i class="uil uil-times"></i>
+              <p>${variation.price_cents} &#162;</p>
+              <i class="uil uil-times"></i>
+              <p>${quantity}</p>
+            </summary>
+
+            <ul class="item_details">
+              <li>
+                <p>sku: ${instance.sku}</p>
+                <i class="uil uil-times"></i>
+                <p>serial: ${instance.supplier_serial_number}</p>
+                <i class="uil uil-times"></i>
+                <p>imei: ${instance.supplier_imei_number}</p>
+              </li>
+            </ul>
+          </details>
+        </li>
+      </ul>
+
+      <button type="button" class="">close</button>
+    </div> -->
+  </div>
+
+  <footer class="footer--g">footer</footer>
+
+  <script type="module" src="./views/analysis.js"></script>
+</body>
+</html>

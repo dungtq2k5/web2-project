@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unicons.iconscout.com/release/v4.0.8/css/line.css">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="./styles/general.css">
+  <link rel="stylesheet" href="./styles/header.css">
+  <link rel="stylesheet" href="./styles/instances.css">
+  <title>Document</title>
+</head>
+<body>
+
+  <header class="header--g">
+    <div class="header__logo">
+      <h1>Logo - [admin] page</h1>
+    </div>
+
+    <nav class="header__nav">
+      <ul class="header__list">
+        <li class="header__item"><button>users</button></li>
+        <li class="header__item"><button>carts</button></li>
+        <li class="header__item"><button>orders</button></li>
+        <li class="header__item">
+          <select id="">
+            <option value="">products</option>
+            <option value="">products variations</option>
+            <option value="" selected>products instances</option>
+          </select>
+        </li>
+        <li class="header__item"><button>providers</button></li>
+        <li class="header__item"><button>goods receipt notes</button></li>
+      </ul>
+    </nav>
+
+    <div class="header__btns">
+      <button class="header_btn">login</button>
+      <button class="header_btn">logout</button>
+    </div>
+  </header>
+
+  <main class="content content--g">
+    <div class="content__title--g">
+      <h2>Products instances management</h2>
+      <span id="crud-instance-msg"></span>
+    </div>
+
+    <div>
+      <form id="search-instances-form" class="search-box--g">
+        <h3>Search instances</h3>
+
+        <div>
+          <div>
+            <label for="search-receipt-id" title="leave blank for not filter off this field">Receipt id:</label>
+            <input
+              type="text"
+              id="search-receipt-id"
+              name="receipt_id"
+              placeholder="not filtered"
+            >
+          </div>
+
+          <div>
+            <label for="search-variation-id" title="leave blank for not filter off this field">Variation id:</label>
+            <input
+              type="number"
+              id="search-variation-id"
+              name="variation_id"
+              min="1"
+              placeholder="not filtered"
+            >
+          </div>
+
+          <div>
+            <label for="search-is-sold">Is sold:</label>
+            <select name="is_sold" id="search-is-sold">
+              <option value="">not filtered</option>
+              <option value="true">true</option>
+              <option value="false">false</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <button id="search-instances-form-search-btn" type="submit">search</button>
+          <button id="search-instances-form-clear-btn" type="reset">clear search</button>
+        </div>
+      </form>
+
+      <p>Result: <span id="result-count">0</span></p>
+    </div>
+
+    <div class="auto-scroll--g">
+      <table class="content__table--g">
+        <thead class="content__thead--g b">
+          <tr class="content__tr--g">
+            <th class="content__th--g" title="number">n.o</th>
+            <th class="content__th--g">sku</th>
+            <th class="content__th--g">variation image</th>
+            <th class="content__th--g">variation id</th>
+            <th class="content__th--g">serial-number</th>
+            <th class="content__th--g">IMEI-number</th>
+            <th class="content__th--g">receipt note id</th>
+            <th class="content__th--g">is sold</th>
+            <th class="content__th--g">actions</th>
+          </tr>
+        </thead>
+
+        <tbody class="content__tbody--g b" id="tbody">
+          <!-- <tr
+          class="content__tr--g"
+          data-instance-number="${idx+1}"
+          data-instance-sku="${instance.sku}"
+          data-variation-id="${instance.product_variation_id}"
+        >
+          <td data-cell="n.o" class="content__td--g">${idx+1}</td>
+          <td data-cell="sku" class="content__td--g">${instance.sku}</td>
+          <td data-cell="image" class="content__td--g">
+            <img
+              src="../uploads/default.webp"
+              min-width="66"
+              min-height="50"
+              class="content__img"
+              alt="smartwatch"
+              loading="lazy"
+            >
+          </td>
+          <td data-cell="variation id" class="content__td--g">${instance.product_variation_id}</td>
+          <td data-cell="serial-number" class="content__td--g">${instance.supplier_serial_number}</td>
+          <td data-cell="IMEI-number" class="content__td--g">${instance.supplier_imei_number}</td>
+          <td data-cell="receipt note id" class="content__td--g">${instance.goods_receipt_note_id}</td>
+          <td data-cell="is sold" class="content__td--g">${Boolean(instance.is_sold)}</td>
+          <td data-cell="actions" class="content__td--g">
+            <button class="js-delete-instance-btn">delete</button>
+            <button class="js-update-instance-btn">update</button>
+          </td>
+        </tr> -->
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <div class="backdrop--g" id="backdrop" style="display: none;"></div>
+
+  <footer class="footer--g">footer</footer>
+
+  <script type="module" src="./views/instances-management.js"></script>
+</body>
+</html>

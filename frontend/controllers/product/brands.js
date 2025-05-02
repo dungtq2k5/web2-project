@@ -12,72 +12,74 @@ let brandsList = [];
 
 async function fetchBrands(limit=null, offset=null) {
   const res = await fetchData(PRODUCTS_BRANDS_API_URL, limit, offset);
-  setBrandsList(res.data);
+  brandsList = res.data;
   isFetch = true;
 }
 
-function setBrandsList(list) {
-  brandsList = list;
-}
-
-export async function getBrandsList(limit=null, offset=null) {
+export async function getBrandsList(limit=null, offset=null) { // Return a copy
   if(!isFetch) {
-    console.log("fetch products' brands API");
+    console.log("Fetch products' brands API");
     await fetchBrands();
   }
 
   const start = offset || 0;
   const end = limit ? limit + start : brandsList.length;
-  return brandsList.slice(start, end);
+  return JSON.parse(JSON.stringify(brandsList.slice(start, end)));
 }
 
 export async function getBrand(id) {
+  if(!id) return undefined;
+
   const brandsList = await getBrandsList();
-  const brand = brandsList.find(brand => brand.id === id);
-
-  return brand || undefined;
+  return brandsList.find(brand => brand.id == id) || undefined;
 }
 
-export async function createBrand(brand, auth) {
-  const res = await sendData(PRODUCTS_BRANDS_API_URL, brand, auth);
+export async function createBrand(brand) {
+  const res = await sendData(PRODUCTS_BRANDS_API_URL, brand);
 
   if(res.success) {
     if(!isFetch) {
       await fetchBrands();
     } else {
-      const brandsList = await getBrandsList();
       brandsList.push(res.data);
-      setBrandsList(brandsList);
     }
   }
 
   return res;
 }
-export async function deleteBrand(id, auth) {
-  const res = await deleteData(PRODUCTS_BRANDS_API_URL, id, auth);
+
+export async function deleteBrand(id) {
+  const res = await deleteData(PRODUCTS_BRANDS_API_URL, id);
 
   if(res.success) {
     if(!isFetch) {
       await fetchBrands();
     } else {
-      const brandsList = await getBrandsList();
-      const newBrandsList = brandsList.filter(brand => brand.id !== id);
-      setBrandsList(newBrandsList);
+      const idx = brandsList.findIndex(brand => brand.id == id);
+      if(idx != -1) {
+        brandsList.splice(idx, 1);
+      } else {
+        console.warn(`Couldn't find brand with an id ${id} to delete`);
+      }
     }
   }
 
   return res;
 }
-export async function updateBrand(id, brand, auth) {
-  const res = await updateData(PRODUCTS_BRANDS_API_URL, id, brand, auth);
+
+export async function updateBrand(id, brand) {
+  const res = await updateData(PRODUCTS_BRANDS_API_URL, id, brand);
 
   if(res.success) {
     if(!isFetch) {
       await fetchBrands();
     } else {
-      const brandsList = await getBrandsList();
-      const newBrandsList = brandsList.map(brand => brand.id === id ? {...brand, ...res.data} : brand);
-      setBrandsList(newBrandsList);
+      const idx = brandsList.findIndex(brand => brand.id == id);
+      if(idx !== -1) {
+        brandsList[idx] = {...brandsList[idx], ...res.data};
+      } else {
+        console.warn(`Couldn't find brand with an id ${id} to update`);
+      }
     }
   }
 

@@ -77184,17 +77184,22 @@ const vnAddresses = [
   }
 ];
 
-export function getVNAddressesList() {
-  return vnAddresses;
+export function getVNAddressesList() { // Return a copy
+  return JSON.parse(JSON.stringify(vnAddresses));
 }
 
 export function getVNDistrictsList(cityCode) {
+  if(!cityCode) return undefined;
+
+  const vnAddresses = getVNAddressesList();
   const city = vnAddresses.find(city => city.code === cityCode);
 
   return city ? city.districts : undefined;
 }
 
 export function getVNWardsList(cityCode, districtCode) {
+  if(!cityCode || !districtCode) return undefined;
+
   const districtsList = getVNDistrictsList(cityCode);
   const wardsList = districtsList.find(district => district.code === districtCode);
 

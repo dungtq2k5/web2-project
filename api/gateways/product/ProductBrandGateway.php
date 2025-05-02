@@ -3,41 +3,31 @@
 class ProductBrandGateway {
   private PDO $conn;
 
-  public function __construct(Database $db) {
-    $this->conn = $db->getConnection();
+  public function __construct(PDO $db_conn) {
+    $this->conn = $db_conn;
   }
 
-  public function create(array $data): array | false {
-    $sql = "INSERT INTO product_brands (name) VALUES (:name)";
+  public function getAll(?int $limit=null, ?int $offset=null): array {
+    $sql = "SELECT id, name FROM product_brands WHERE is_deleted = false";
 
-    $stmt = $this->conn->prepare($sql);
-    $stmt->bindValue(":name", $data["name"], PDO::PARAM_STR);
-    $stmt->execute();
-
-    return $this->get($this->conn->lastInsertId());
-  }
-
-  public function getAll(?int $limit, ?int $offset): array | false {
-    if($limit && $offset) {
-      $sql = "SELECT * FROM product_brands LIMIT :limit OFFSET :offset";
-    } elseif($limit) {
-      $sql = "SELECT * FROM product_brands LIMIT :limit";
-    } elseif($offset) {
-      $sql = "SELECT * FROM product_brands LIMIT 18446744073709551615 OFFSET: offset";
-    } else {
-      $sql = "SELECT * FROM product_brands";
+    if($limit !== null && $offset !== null) {
+      $sql .= " LIMIT :limit OFFSET :offset";
+    } elseif($limit !== null) {
+      $sql .= " LIMIT :limit";
+    } elseif($offset !== null) {
+      $sql .= " LIMIT 18446744073709551615 OFFSET :offset";
     }
 
     $stmt = $this->conn->prepare($sql);
-    if($limit) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
-    if($offset) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
+    if($limit !== null) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
+    if($offset !== null) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
     $stmt->execute();
 
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
   }
 
   public function get(int $id): array | false {
-    $sql = "SELECT * FROM product_brands WHERE id = :id";
+    $sql = "SELECT id, name FROM product_brands WHERE id = :id AND is_deleted = false";
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":id", $id, PDO::PARAM_INT);
@@ -46,26 +36,89 @@ class ProductBrandGateway {
     return $stmt->fetch(PDO::FETCH_ASSOC);
   }
 
+  public function create(array $data): array | false {
+    $this->conn->beginTransaction();
+
+    try {
+      if(!$this->isNameUnique($data["name"])) { // Make sure unique constraints
+        throw new Exception("Brand name '{$data['name']}' already exists, please choose another one", 409);
+      }
+
+      $sql = "INSERT INTO product_brands (name) VALUES (:name)";
+
+      $stmt = $this->conn->prepare($sql);
+      $stmt->bindValue(":name", $data["name"], PDO::PARAM_STR);
+      $stmt->execute();
+
+      $id = $this->conn->lastInsertId();
+
+      $this->conn->commit();
+      return $this->get($id);
+
+    } catch(PDOException $e) {
+      $this->conn->rollBack();
+      throw $e; // Re-throw for centralized ErrorHandler
+    } catch(Exception $e) {
+      $this->conn->rollBack();
+      throw $e; // Re-throw for centralized ErrorHandler
+    }
+  }
+
   public function update(array $current, array $new): array | false {
-    $sql = "UPDATE product_brands SET name = :name WHERE id = :id";
+    $this->conn->beginTransaction();
 
-    $stmt = $this->conn->prepare($sql);
-    $stmt->bindValue(":name", $new["name"] ?? $current["name"], PDO::PARAM_STR);
-    $stmt->bindValue(":id", $current["id"], PDO::PARAM_INT);
-    $stmt->execute();
+    try {
+      $new_name = $new["name"];
 
-    return $this->get($current["id"]);
+      if( // Make sure unique constraints
+        $new_name &&
+        $new_name != $current["name"] &&
+        !$this->isNameUnique($new_name)
+      ) throw new Exception("Brand name '{$new['name']}' already exists, please choose another one", 409);
+
+      $sql = "UPDATE product_brands
+        SET name = :name
+        WHERE id = :id AND is_deleted = false
+      ";
+
+      $stmt = $this->conn->prepare($sql);
+      $stmt->bindValue(":name", $new_name ?? $current["name"], PDO::PARAM_STR);
+      $stmt->bindValue(":id", $current["id"], PDO::PARAM_INT);
+      $stmt->execute();
+
+      $this->conn->commit();
+      return $this->get($current["id"]);
+
+    } catch(PDOException $e) {
+      $this->conn->rollBack();
+      throw $e; // Re-throw for centralized ErrorHandler
+    } catch(Exception $e) {
+      $this->conn->rollBack();
+      throw $e; // Re-throw for centralized ErrorHandler
+    }
   }
 
   public function delete(int $id): bool {
-    if($this->hasConstrain($id)) return false;
+    $this->conn->beginTransaction();
 
-    $sql = "DELETE FROM product_brands WHERE id = :id";
-    $stmt = $this->conn->prepare($sql);
-    $stmt->bindValue(":id", $id, PDO::PARAM_INT);
-    $stmt->execute();
+    try {
+      $sql = $this->hasConstrain($id)
+        ? "UPDATE product_brands SET is_deleted = true WHERE id = :id AND is_deleted = false"
+        : "DELETE FROM product_brands WHERE id = :id";
 
-    return true;
+      $stmt = $this->conn->prepare($sql);
+      $stmt->bindValue(":id", $id, PDO::PARAM_INT);
+      $stmt->execute();
+
+      return $this->conn->commit();
+
+    } catch(PDOException $e) {
+      $this->conn->rollBack();
+      throw $e; // Re-throw for centralized ErrorHandler
+    } catch(Exception $e) {
+      $this->conn->rollBack();
+      throw $e; // Re-throw for centralized ErrorHandler
+    }
   }
 
   private function hasConstrain(int $id): bool {
@@ -78,5 +131,13 @@ class ProductBrandGateway {
     return (bool) $stmt->fetchColumn();
   }
 
+  private function isNameUnique(string $name): bool {
+    $sql = "SELECT EXISTS (SELECT 1 FROM product_brands WHERE name = :name AND is_deleted = false)";
 
+    $stmt = $this->conn->prepare($sql);
+    $stmt->bindValue(":name", $name, PDO::PARAM_STR);
+    $stmt->execute();
+
+    return !(bool) $stmt->fetchColumn();
+  }
 }
