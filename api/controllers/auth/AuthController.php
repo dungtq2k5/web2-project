@@ -79,7 +79,7 @@ class AuthController {
         ]);
         break;
 
-      default: // Signout
+      case "signout":
         if(!$this->auths->verifyJWT()) {
           $this->error_handler->sendErrorResponse(401, "You haven't been signin yet");
           break;
@@ -93,6 +93,10 @@ class AuthController {
           "success" => true,
           "message" => "Signout successful"
         ]);
+        break;
+
+      default:
+        $this->error_handler->sendErrorResponse(404, "Action not found");
     }
   }
 

@@ -34,8 +34,8 @@ if($method === "OPTIONS") { // Handle preflight requests
 $uri = trim(parse_url($_SERVER["REQUEST_URI"])["path"], "/"); //web2-project/api/...
 $uri_parts = explode("/", $uri);
 
-$limit = (isset($_GET["limit"]) && $_GET["limit"] !== "") ? abs((int) $_GET["limit"]) : null;
-$offset = (isset($_GET["offset"]) && $_GET["offset"] !== "") ? abs((int) $_GET["offset"]) : null;
+$limit = (isset($_GET["limit"]) && !empty($_GET["limit"])) ? abs((int) $_GET["limit"]) : null;
+$offset = (isset($_GET["offset"]) && !empty($_GET["offset"])) ? abs((int) $_GET["offset"]) : null;
 
 $id = is_numeric(end($uri_parts)) ? (int) end($uri_parts) : null;
 

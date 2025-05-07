@@ -56,7 +56,7 @@ function signinForm() {
       if(success) {
         console.log("Sign in success");
         console.log(getSigninUser());
-        // TODO go to admin page
+        window.location.href = "index.php?page=users-management"; // Redirect to admin page
         return;
       }
 
