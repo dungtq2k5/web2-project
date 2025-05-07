@@ -26,7 +26,7 @@ export const ORDERS_DELIVERY_STATES_API_URL  = ORDERS_API_URL + "/delivery_state
 export const RECEIPT_NOTES_API_URL = SOURCE_API_URL + "/goods_receipt_notes";
 
 // Path (relative to index.html)
-export const IMG_PATH = "../uploads";
+export const IMG_PATH = "../../uploads";
 export const PRODUCT_IMG_PATH = `${IMG_PATH}/products`;
 export const VARIATION_IMG_PATH = `${IMG_PATH}/variations`;
 export const DEFAULT_IMG_PATH = `${IMG_PATH}/default.webp`;

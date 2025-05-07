@@ -14,14 +14,11 @@ BACKEND - API:
 FRONTEND:
   - ❌ Using class for controller.
   - ❌ Fix issues when display msg overlap.
-  - ❌ Page not found UI.
-  - ❌ Table with floating header.
   - ❌ Update and re-render (using search instead).
-  - 🔥 Routing.
 
   - Auths:
     + ✅ Signin.
-    + 🔥 Signout.
+    + ✅ Signout.
 
   - Users management:
     + ✅ View users data.

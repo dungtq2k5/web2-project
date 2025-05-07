@@ -1,0 +1,52 @@
+<main>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Roles & Permissions Management</h2>
+    <div>
+      <button id="create-role-btn" class="btn btn-dark btn-sm">
+        <i class="uil uil-plus me-1"></i>Create New Role
+      </button>
+      <span id="crud-role-msg" class="ms-2 text-success"></span>
+    </div>
+  </div>
+
+  <!-- <div class="card mb-3">
+    <div class="card-body">
+      <form id="search-role-form" class="row g-3 align-items-center">
+        <div class="col-auto">
+          <label for="search-role-form-input" class="col-form-label">Search Roles:</label>
+        </div>
+        <div class="col">
+          <input type="text" id="search-role-form-input" class="form-control">
+        </div>
+        <div class="col-auto">
+          <button id="search-role-form-search-btn" type="submit" class="btn btn-dark btn-sm">Search</button>
+        </div>
+        <div class="col-auto">
+          <button id="search-role-form-clear-btn" type="reset" class="btn btn-outline-dark btn-sm">Clear Search</button>
+        </div>
+      </form>
+      <p class="mt-2 mb-0">Result: <span id="result-count">0</span></p>
+    </div>
+  </div> -->
+
+  <div class="table-responsive">
+    <table class="table table-striped table-hover table-bordered">
+      <thead class="table-dark">
+        <tr>
+          <th>#</th>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Users Assigned</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr><td colspan="5" class="text-center">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<div class="backdrop--g" id="backdrop" style="display: none;"></div>
+
+<script type="module" src="./controllers/roles-management.js"></script>

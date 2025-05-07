@@ -1,0 +1,70 @@
+<main>
+  <h2 class="mb-3">Analysis - Top Customers</h2>
+
+  <div class="card mb-4">
+    <div class="card-header">
+      Search Top Customers
+    </div>
+    <div class="card-body">
+      <form id="search-analysis-form">
+        <div class="row g-3 mb-3">
+          <div class="col-md-6">
+            <label for="analysis-order-from" class="form-label">Order From:</label>
+            <input name="order_from" id="analysis-order-from" type="datetime-local" class="form-control">
+          </div>
+          <div class="col-md-6">
+            <label for="analysis-order-to" class="form-label">Order To:</label>
+            <input name="order_to" id="analysis-order-to" type="datetime-local" class="form-control">
+          </div>
+        </div>
+
+        <div class="row g-3 mb-3 align-items-end">
+          <div class="col-md-4">
+            <label for="analysis-top-customers" class="form-label">Top Customers Display:</label>
+            <input
+              type="number"
+              name="top_customers"
+              id="analysis-top-customers"
+              min="1"
+              placeholder="all"
+              class="form-control"
+            >
+          </div>
+          <div class="col-md-4">
+            <label for="analysis-sort-by" class="form-label">Sort Total Spent By:</label>
+            <select name="sort_by" id="analysis-sort-by" class="form-select">
+              <option value="desc">Descending</option>
+              <option value="asc">Ascending</option>
+            </select>
+          </div>
+          <div class="col-md-4 btn-group-sm d-flex justify-content-end">
+            <button id="search-analysis-form-search-btn" type="submit" class="btn btn-dark me-2">Search</button>
+            <button id="search-analysis-form-clear-btn" type="reset" class="btn btn-outline-dark">Clear search</button>
+          </div>
+        </div>
+      </form>
+      <p class="mt-2 mb-0">Result: <span id="result-count">0</span></p>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-striped table-hover table-bordered">
+      <thead class="table-dark">
+        <tr>
+          <th>Top</th>
+          <th>User ID</th>
+          <th>User Email</th>
+          <th>Orders Received</th>
+          <th>Total Spent</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr><td colspan="5" class="text-center">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+
+<div class="backdrop--g" id="backdrop" style="display: none;"></div>
+
+<script type="module" src="./controllers/analysis.js"></script>

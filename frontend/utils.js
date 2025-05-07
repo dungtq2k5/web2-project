@@ -1,4 +1,4 @@
-import { AUTH_STORAGE, restricts } from "./settings.js";
+import { restricts } from "./settings.js";
 
 async function request(url, method="GET", data=null, headers={}) {
   try {
