@@ -122,7 +122,10 @@ class ProductBrandGateway {
   }
 
   private function hasConstrain(int $id): bool {
-    $sql = "SELECT EXISTS (SELECT 1 FROM products WHERE brand_id = :brand_id)";
+    $sql = "SELECT EXISTS (
+      SELECT 1 FROM products WHERE brand_id = :brand_id
+      LIMIT 1
+    )";
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":brand_id", $id, PDO::PARAM_INT);
@@ -132,7 +135,10 @@ class ProductBrandGateway {
   }
 
   private function isNameUnique(string $name): bool {
-    $sql = "SELECT EXISTS (SELECT 1 FROM product_brands WHERE name = :name AND is_deleted = false)";
+    $sql = "SELECT EXISTS (
+      SELECT 1 FROM product_brands WHERE name = :name AND is_deleted = false
+      LIMIT 1
+    )";
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":name", $name, PDO::PARAM_STR);

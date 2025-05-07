@@ -214,6 +214,7 @@ class UserAddressGateway {
   public function isUserAddress(int $usr_id, int $address_id): bool {
     $sql = "SELECT EXISTS (
       SELECT 1 FROM user_addresses WHERE id = :address_id AND user_id = :user_id
+      LIMIT 1
     )";
 
     $stmt = $this->conn->prepare($sql);
@@ -227,6 +228,7 @@ class UserAddressGateway {
   private function hasConstrain(int $id): bool {
     $sql = "SELECT EXISTS (
       SELECT 1 FROM orders WHERE delivery_address_id = :id
+      LIMIT 1
     )";
 
     $stmt = $this->conn->prepare($sql);

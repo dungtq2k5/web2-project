@@ -13,14 +13,6 @@ switch(true) {
     $controller->processRequest($method, $id, $limit, $offset);
     break;
 
-  case strpos($uri, SOURCE_URI . "/users/role_permissions") === 0:
-    $role_id = isset($_GET["role_id"]) ? (int) $_GET["role_id"] : null;
-    $permission_id = isset($_GET["permission_id"]) ? (int) $_GET["permission_id"] : null;
-    $gateway = new RolePermissionGateway($db_conn);
-    $controller = new RolePermissionController($gateway, $auths);
-    $controller->processRequest($method, $role_id, $permission_id, $limit, $offset);
-    break;
-
   case $uri === SOURCE_URI . "/users/permissions":
     $gateway = new PermissionGateway($db_conn);
     $controller = new PermissionController($gateway, $auths);

@@ -7,6 +7,7 @@ class Auths  {
   private ErrorHandler $error_handler;
   private PDO $conn;
   private Utils $utils;
+  private UserRoleGateway $user_role;
 
   protected array $jwt = [
     "name" => null,
@@ -42,6 +43,7 @@ class Auths  {
     $this->error_handler = new ErrorHandler;
     $this->conn = $db_conn;
     $this->utils = new Utils;
+    $this->user_role = new UserRoleGateway($db_conn);
 
     $this->jwt["token"] = $jwt;
     $this->jwt["name"] = $jwt_name;
@@ -85,7 +87,7 @@ class Auths  {
       die;
     }
 
-    $usr_roles = json_decode(json_encode($decoded->data->user_roles), true); // List of roles with id and name
+    $usr_roles = $this->user_role->getByUserId($usr_id); // Can't store roles in payload because of up to date problem
 
     return ($this->utils->hasRoleWithId($usr_roles, BUYER_ROLE_ID) && count($usr_roles) === 1)
       ? ["user_id" => $usr_id, "buyer_only" => true]
@@ -102,8 +104,7 @@ class Auths  {
       "nbf" => time(),                       // Not before time
       "exp" => time() + $this->jwt["exp"],   // Expiration time
       "data" => [                            // Custom data
-        "user_id" => $usr["id"],
-        "user_roles" => $usr["roles"]        // List of roles with id and name
+        "user_id" => $usr["id"]
       ],
     ];
 

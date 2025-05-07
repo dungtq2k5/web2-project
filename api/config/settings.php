@@ -25,33 +25,3 @@ const CORE_ROLES_ID = [
 ];
 
 const ADMIN_ID = 1;
-
-// Adjust these actions base on the permissions db
-const BUYER_ACTIONS_CODE = [ // A buyer can do these things but with their own so let another handle it
-  "read_user",
-  "update_user",
-  "delete_user",
-
-  "create_user_address",
-  "read_user_address",
-  "update_user_address",
-  "delete_user_address",
-
-  "create_cart",
-  "read_cart",
-  "update_cart",
-  "delete_cart",
-
-  "create_order",
-  "read_order",
-  "update_order",
-  "delete_order",
-
-  "read_order_delivery_state",
-
-  "read_product",
-  "read_product_os",
-  "read_product_brand",
-  "read_product_category",
-  "read_product_variation",
-];

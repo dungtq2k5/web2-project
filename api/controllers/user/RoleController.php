@@ -2,9 +2,11 @@
 
 class RoleController {
   private ErrorHandler $error_handler;
+  private Utils $utils;
 
   public function __construct(private RoleGateway $gateway, private Auths $auths) {
     $this->error_handler = new ErrorHandler;
+    $this->utils = new Utils;
   }
 
   public function processRequest(string $method, ?int $id=null, ?int $limit=null, ?int $offset=null): void {
@@ -23,7 +25,7 @@ class RoleController {
       return;
     }
 
-  switch($method) {
+    switch($method) {
       case "GET":
         $this->auths->verifyAction("READ_ROLE");
 
@@ -120,6 +122,11 @@ class RoleController {
     } else { //check fields that exist
       if(array_key_exists("name", $data) && empty($data["name"])) $errors[] = "name is empty";
     }
+
+    if(array_key_exists("permissions_id", $data) && (
+      !is_array($data["permissions_id"]) ||
+      !$this->utils->isListOfNumber($data["permissions_id"])
+    )) $errors[] = "permissions_id is empty or not a list of number(s)";
 
     return $errors;
   }

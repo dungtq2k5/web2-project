@@ -2,13 +2,17 @@
 
 class RoleGateway {
   private PDO $conn;
+  private RolePermissionGateway $role_permission;
+  private Utils $utils;
 
   public function __construct(PDO $db_conn) {
     $this->conn = $db_conn;
+    $this->role_permission = new RolePermissionGateway($db_conn);
+    $this->utils = new Utils;
   }
 
   public function getAll(?int $limit=null, ?int $offset=null): array {
-    $sql = "SELECT id, name FROM roles WHERE is_deleted = false";
+    $sql = "SELECT id, name, user_assigned FROM roles WHERE is_deleted = false";
 
     if($limit !== null && $offset !== null) {
       $sql .= " LIMIT :limit OFFSET :offset";
@@ -23,17 +27,28 @@ class RoleGateway {
     if($offset !== null) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
     $stmt->execute();
 
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $data = [];
+    while($role = $stmt->fetch(PDO::FETCH_ASSOC)) {
+      $role["permissions"] = $this->role_permission->getByRoleId($role["id"]);
+      $data[] = $role;
+    }
+
+    return $data;
   }
 
   public function get(int $id): array | false {
-    $sql = "SELECT id, name FROM roles WHERE id = :id AND is_deleted = false";
+    $sql = "SELECT id, name, user_assigned FROM roles WHERE id = :id AND is_deleted = false";
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":id", $id, PDO::PARAM_INT);
     $stmt->execute();
 
-    return $stmt->fetch(PDO::FETCH_ASSOC);
+    if($role = $stmt->fetch(PDO::FETCH_ASSOC)) {
+      $role["permissions"] = $this->role_permission->getByRoleId($id);
+      return $role;
+    }
+
+    return false;
   }
 
   public function create(array $data): array | false {
@@ -51,6 +66,10 @@ class RoleGateway {
       $stmt->execute();
 
       $id = $this->conn->lastInsertId();
+
+      if($data["permissions_id"]) {
+        $this->role_permission->createMultiple($id, $data["permissions_id"]);
+      }
 
       $this->conn->commit();
       return $this->get($id);
@@ -79,12 +98,19 @@ class RoleGateway {
         throw new Exception("Role name '{$new['name']}' already exists, please choose another one", 409);
       }
 
-      $sql = "UPDATE roles SET name = :name WHERE id = :id";
+      $sql = "UPDATE roles SET name = :name WHERE id = :id AND is_deleted = false";
 
       $stmt = $this->conn->prepare($sql);
       $stmt->bindValue(":name", $new_name ?? $current["name"], PDO::PARAM_STR);
       $stmt->bindValue(":id", $id, PDO::PARAM_INT);
       $stmt->execute();
+
+      if(
+        isset($new["permissions_id"]) &&
+        !$this->utils->compareArrays($new["permissions_id"], array_column($current["permissions"], "id"))
+      ) {
+        $this->role_permission->updateMultiple($id, $new["permissions_id"]);
+      }
 
       $this->conn->commit();
       return $this->get($id);
@@ -97,6 +123,7 @@ class RoleGateway {
       throw $e; // Re-throw for centralized ErrorHandler
     }
   }
+
   public function delete(int $id): bool {
     $this->conn->beginTransaction();
 
@@ -106,7 +133,7 @@ class RoleGateway {
       }
 
       $sql = $this->hasConstrain($id)
-        ? "UPDATE roles SET is_deleted = true WHERE id = :id"
+        ? "UPDATE roles SET is_deleted = true WHERE id = :id AND is_deleted = false"
         : "DELETE FROM roles WHERE id = :id";
 
       $stmt = $this->conn->prepare($sql);
@@ -126,9 +153,9 @@ class RoleGateway {
 
   private function hasConstrain(int $id): bool {
     $sql = "SELECT EXISTS (
-      SELECT 1 FROM user_roles WHERE role_id = :role_id
+     (SELECT 1 FROM user_roles WHERE role_id = :role_id LIMIT 1)
       UNION
-      SELECT 1 FROM role_permissions WHERE role_id = :role_id
+      (SELECT 1 FROM role_permissions WHERE role_id = :role_id LIMIT 1)
     )";
 
     $stmt = $this->conn->prepare($sql);
@@ -141,6 +168,7 @@ class RoleGateway {
   private function isNameUnique(string $name): bool {
     $sql = "SELECT EXISTS (
       SELECT 1 FROM roles WHERE name = :name AND is_deleted = false
+      LIMIT 1
     )";
 
     $stmt = $this->conn->prepare($sql);

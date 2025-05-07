@@ -8,7 +8,6 @@
 
 BACKEND - API:
   - ❌ Validate empty string with odd spaces (removeOddSpace).
-  - ❌ Validate user request (add to cart, ordering,...).
   - ❌ Improve error messages with help of Copilot.
   - ❌ Mod orders db when buyers change their addresses.
 
@@ -18,10 +17,10 @@ FRONTEND:
   - ❌ Page not found UI.
   - ❌ Table with floating header.
   - ❌ Update and re-render (using search instead).
-  - 🔥 Add validation for updating is_sold from true to false of product_instances if not.
+  - 🔥 Routing.
 
   - Auths:
-    + 🔥 Signin.
+    + ✅ Signin.
     + 🔥 Signout.
 
   - Users management:
@@ -65,16 +64,11 @@ FRONTEND:
 
   - ✅ Analysis.
 
-  - 🔥 Roles and permissions.
+  - ✅ Roles and permissions.
 
 
 DATABASE:
   - ❌ Add indexing for db (base on query at gateways function).
-
-UI FRIENDLINESS:
-  - ❌ Styling using Bootstrap.
-  - ❌ Address to long replace by "..." - add title.
-  - ❌ Replace "view button" to link btn + add title "click to view...".
 
 OVERALL:
   - ❌ Write descriptions for functions - especially in utils.

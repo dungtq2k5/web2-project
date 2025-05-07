@@ -8,7 +8,8 @@ export const SIGNUP_API_URL = AUTH_API_URL + "/signup";
 
 export const USERS_API_URL = SOURCE_API_URL + "/users";
 
-export const ROLES_API_URL = SOURCE_API_URL + "/users/roles";
+export const ROLES_API_URL = USERS_API_URL + "/roles";
+export const PERMISSIONS_API_URL = USERS_API_URL + "/permissions";
 
 export const CARTS_API_URL = SOURCE_API_URL + "/carts";
 
@@ -56,3 +57,16 @@ export const ORDER_COMPLETED_STATES = [
   ORDER_RETURNED_ID,
   ORDER_CANCELLED_ID
 ];
+
+// Adjust these roles id base on the roles db
+export const ADMIN_ROLE_ID = 1;
+export const BUYER_ROLE_ID = 2;
+
+export const CORE_ROLES_ID = [
+  ADMIN_ROLE_ID,
+  BUYER_ROLE_ID
+];
+
+export const ADMIN_ID = 1;
+
+export const AUTH_STORAGE = "auth_storage";

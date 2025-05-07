@@ -152,6 +152,7 @@ class GoodsReceiptNoteGateway {
   private function hasConstrain(int $id): bool {
     $sql = "SELECT EXISTS (
       SELECT 1 FROM product_instances WHERE goods_receipt_note_id = :goods_receipt_note_id
+      LIMIT 1
     )";
 
     $stmt = $this->conn->prepare($sql);

@@ -31,7 +31,7 @@ class AuthController {
         }
 
         // 2.Verify user in db
-        $usr = $this->usr_gateway->getByEmailPassword($data["email"], $data["password"]);
+        $usr = $this->usr_gateway->getByEmailPassword($data["email"], $data["password"], true);
         if(!$usr) {
           $this->error_handler->sendErrorResponse(401, "Invalid credentials");
           break;
@@ -61,7 +61,7 @@ class AuthController {
         }
 
         // 2.Create user
-        $usr = $this->usr_gateway->create($data);
+        $usr = $this->usr_gateway->create($data, true);
         unset($usr["password"]);
 
         // 3. Gen token

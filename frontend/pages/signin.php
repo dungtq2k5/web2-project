@@ -1,0 +1,44 @@
+<?php include_once "./components/header.php"; ?>
+
+<main class="d-flex justify-content-center align-items-center">
+  <div class="col-md-6 col-lg-4">
+    <form id="signin-form" class="form--g p-4 shadow rounded">
+      <h1 class="text-center mb-4">Sign In</h1>
+
+      <div class="mb-3">
+        <label for="email" class="form-label">Email address</label>
+        <input
+          type="email"
+          class="form-control"
+          name="email"
+          id="email"
+          autocomplete="email"
+          required
+        >
+        <span id="email-msg" class="text-danger d-block mt-1"></span>
+      </div>
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input
+          type="password"
+          class="form-control"
+          name="password"
+          id="password"
+          autocomplete="current-password"
+          required
+        >
+        <span id="password-msg" class="text-danger d-block mt-1"></span>
+      </div>
+
+      <span id="signin-form-msg" class="text-danger d-block mb-3"></span>
+
+      <button type="submit" id="submit" class="btn btn-dark w-100">Sign me in</button>
+    </form>
+  </div>
+</main>
+
+<div class="backdrop--g" id="backdrop" style="display: none;"></div>
+
+<script type="module" src="./controllers/signin.js"></script>
+
+<?php include_once "./components/footer.php"; ?>

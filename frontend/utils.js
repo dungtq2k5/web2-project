@@ -1,4 +1,4 @@
-import { restricts } from "./settings.js";
+import { AUTH_STORAGE, restricts } from "./settings.js";
 
 async function request(url, method="GET", data=null, headers={}) {
   try {
@@ -250,4 +250,63 @@ export function isValidIMEI(imei) {
   if(cleanedIMEI.length < 15 || !/^\d+$/.test(cleanedIMEI)) return false;
 
   return true;
+}
+
+export function isInterpretableNull(val) {
+  if(val === null) return true;
+
+  return val.toLowerCase() === "null";
+}
+
+function encodeDecodeData(data, action = 'encode') { // AI gen
+  try {
+    if(action === 'encode') {
+      const jsonString = JSON.stringify(data);
+
+      // Encode to UTF-8 and then map each character to its charCodeAt value
+      const utf8Bytes = new TextEncoder().encode(jsonString);
+      let binaryString = '';
+
+      utf8Bytes.forEach((byte) => {
+        binaryString += String.fromCharCode(byte);
+      });
+
+      return btoa(binaryString);
+
+    } else if(action === 'decode') {
+      const binaryString = atob(data);
+      const byteArray = new Uint8Array(binaryString.length);
+
+      for(let i=0; i<binaryString.length; i++) {
+        byteArray[i] = binaryString.charCodeAt(i);
+      }
+
+      // Decode the UTF-8 byte array back to a string
+      return JSON.parse(new TextDecoder().decode(byteArray));
+
+    } else {
+      console.error("Invalid action. Use 'encode' or 'decode'.");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error during data processing:", error);
+    return null;
+  }
+}
+
+export function saveToStorage(name, val) {
+  const valEncoded = encodeDecodeData(val);
+  localStorage.setItem(name, valEncoded);
+}
+
+export function getFromStorage(name) {
+  const val = localStorage.getItem(name);
+
+  if(!val) return null;
+
+  return encodeDecodeData(val, "decode");
+}
+
+export function removeStorage(name) {
+  localStorage.removeItem(name);
 }

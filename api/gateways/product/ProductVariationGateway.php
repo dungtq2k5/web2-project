@@ -268,9 +268,8 @@ class ProductVariationGateway {
     }
   }
 
+  // This function doesn't have own transaction, make sure cover it when use.
   public function updateStock(int $id, int $amount): bool {
-    $this->conn->beginTransaction();
-
     try {
       $sql = "UPDATE product_variations
         SET stock_quantity = stock_quantity + :amount
@@ -280,15 +279,11 @@ class ProductVariationGateway {
       $stmt = $this->conn->prepare($sql);
       $stmt->bindValue(":amount", $amount, PDO::PARAM_INT);
       $stmt->bindValue(":id", $id, PDO::PARAM_INT);
-      $stmt->execute();
-
-      return $this->conn->commit();
+      return $stmt->execute();
 
     } catch(PDOException $e) {
-      $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
-      $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
     }
   }
@@ -308,9 +303,9 @@ class ProductVariationGateway {
 
   private function hasConstrain(int $id): bool {
     $sql = "SELECT EXISTS (
-      SELECT 1 FROM carts WHERE product_variation_id = :product_variation_id
+      (SELECT 1 FROM carts WHERE product_variation_id = :product_variation_id LIMIT 1)
       UNION
-      SELECT 1 FROM product_instances WHERE product_variation_id = :product_variation_id
+      (SELECT 1 FROM product_instances WHERE product_variation_id = :product_variation_id LIMIT 1)
     )";
 
     $stmt = $this->conn->prepare($sql);
@@ -320,24 +315,19 @@ class ProductVariationGateway {
     return (bool) $stmt->fetchColumn();
   }
 
+  // This function doesn't have own transaction, make sure cover it when use.
   private function updateImg(int $id, string | null $img_name): bool {
-    $this->conn->commit();
-
     try {
       $sql = "UPDATE product_variations SET image_name = :image_name WHERE id = :id AND is_deleted = false";
 
       $stmt = $this->conn->prepare($sql);
       $stmt->bindValue(":image_name", $img_name, PDO::PARAM_STR);
       $stmt->bindValue(":id", $id, PDO::PARAM_INT);
-      $stmt->execute();
-
-      return $this->conn->commit();
+      return $stmt->execute();
 
     } catch(PDOException $e) {
-      $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
-      $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
     }
   }

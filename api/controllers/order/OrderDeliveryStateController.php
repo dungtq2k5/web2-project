@@ -35,34 +35,6 @@ class OrderDeliveryStateController {
         ]);
         break;
 
-      // case "PUT":
-      //   $this->auths->verifyAction("UPDATE_ORDER_DELIVERY_STATE");
-      //   $data = (array) json_decode(file_get_contents("php://input"));
-      //   $errors = $this->getValidationErrors($data, false);
-      //   if (!empty($errors)) {
-      //     $this->error_handler->sendErrorResponse(422, $errors);
-      //     break;
-      //   }
-
-      //   $data = $this->gateway->update($delivery_state, $data);
-
-      //   echo json_encode([
-      //     "success" => true,
-      //     "message" => "Delivery state id $id updated",
-      //     "data" => $data
-      //   ]);
-      //   break;
-
-      // case "DELETE":
-      //   $this->auths->verifyAction("DELETE_ORDER_DELIVERY_STATE");
-      //   $this->gateway->delete($id);
-
-      //   echo json_encode([
-      //     "success" => true,
-      //     "message" => "Delivery state id $id was deleted"
-      //   ]);
-      //   break;
-
       default:
         $this->error_handler->sendErrorResponse(405, "only allow GET method");
         header("Allow: GET");
@@ -82,40 +54,10 @@ class OrderDeliveryStateController {
         ]);
         break;
 
-      // case "POST":
-      //   $this->auths->verifyAction("CREATE_ORDER_DELIVERY_STATE");
-      //   $data = (array) json_decode(file_get_contents("php://input"));
-      //   $errors = $this->getValidationErrors($data);
-      //   if (!empty($errors)) {
-      //     $this->error_handler->sendErrorResponse(422, $errors);
-      //     break;
-      //   }
-
-      //   $data = $this->gateway->create($data);
-
-      //   http_response_code(201);
-      //   echo json_encode([
-      //     "susses" => true,
-      //     "message" => "Delivery state created",
-      //     "data" => $data
-      //   ]);
-      //   break;
-
       default:
         $this->error_handler->sendErrorResponse(405, "only allow GET method");
         header("Allow: GET");
     }
   }
 
-  // private function getValidationErrors(array $data, bool $new = true): array {
-  //   $errors = [];
-
-  //   if ($new) { //check all fields
-  //     if (empty($data["name"])) $errors[] = "name is required";
-  //   } else { //check fields that exist
-  //     if (array_key_exists("name", $data) && empty($data["name"])) $errors[] = "name is required";
-  //   }
-
-  //   return $errors;
-  // }
 }

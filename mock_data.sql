@@ -71,9 +71,9 @@ INSERT INTO order_delivery_states (id, name) VALUES
 (9, 'returned');
 
 
-INSERT INTO roles (id, name, is_deleted) VALUES
-(1, 'admin', '0'),
-(2, 'buyer', '0');
+INSERT INTO roles (id, name, user_assigned, is_deleted) VALUES
+(1, 'admin', 1, '0'),
+(2, 'buyer', 5, '0');
 
 
 INSERT INTO permissions (id, action_name, action_code) VALUES
@@ -142,9 +142,9 @@ INSERT INTO permissions (id, action_name, action_code) VALUES
 (50, 'create order', 'create_order'),
 (51, 'read order', 'read_order'),
 (52, 'update order', 'update_order'),
-(53, 'delete order', 'delete_order'),
+-- (53, 'delete order', 'delete_order'),
 
-(54, 'read order delivery state', 'read_order_delivery_state');
+(53, 'read order delivery state', 'read_order_delivery_state');
 
 
 INSERT INTO role_permissions (role_id, permission_id) VALUES
@@ -202,7 +202,6 @@ INSERT INTO role_permissions (role_id, permission_id) VALUES
 ('1', '51'),
 ('1', '52'),
 ('1', '53'),
-('1', '54'),
 
 -- Buyer
 ('2', '34'),
@@ -223,8 +222,6 @@ INSERT INTO role_permissions (role_id, permission_id) VALUES
 ('2', '51'),
 ('2', '52'),
 ('2', '53'),
-
-('2', '54'),
 
 ('2', '2'),
 ('2', '6'),
@@ -381,26 +378,26 @@ INSERT INTO product_variations (
   resolution_h_px, resolution_w_px, ram_bytes, rom_bytes, os_id, connectivity, battery_life_mah, water_resistance_value, water_resistance_unit,
   sensor, case_material, band_material, band_size_mm, band_color, weight_milligrams, release_date, stop_selling, is_deleted
 ) VALUES
-(1, 1, 45, '#000000', 6, 39900, 34900, NULL, 1.9, 'OLED', 396, 484, 1024000, 32768000, 1, 'Bluetooth, Wi-Fi', 308, 50, 'meters', 'Heart Rate, ECG', 'Aluminum', 'Silicone', 22, '#FFFFFF', 32000, '2022-09-16', 0, 0),
-(2, 1, 41, '#FFFFFF', 6, 34900, 29900, NULL, 1.7, 'OLED', 352, 430, 1024000, 32768000, 1, 'Bluetooth, Wi-Fi', 284, 50, 'meters', 'Heart Rate, ECG', 'Aluminum', 'Silicone', 20, '#000000', 29000, '2022-09-16', 0, 0),
+(1, 1, 45, '#000000', 6, 39900, 34900, NULL, 1.9, 'OLED', 396, 484, 1024000, 32768000, 1, 'Bluetooth, Wi-Fi', 308, 50, 'meters', 'Heart Rate, ECG', 'Aluminum', 'Silicone', 22, '#ffffff', 32000, '2022-09-16', 0, 0),
+(2, 1, 41, '#ffffff', 6, 34900, 29900, NULL, 1.7, 'OLED', 352, 430, 1024000, 32768000, 1, 'Bluetooth, Wi-Fi', 284, 50, 'meters', 'Heart Rate, ECG', 'Aluminum', 'Silicone', 20, '#000000', 29000, '2022-09-16', 0, 0),
 (3, 2, 44, '#808080', 6, 32900, 29900, NULL, 1.4, 'Super AMOLED', 450, 450, 1536000, 8192000, 19, 'Bluetooth, Wi-Fi', 361, 50, 'meters', 'Heart Rate, SpO2', 'Stainless Steel', 'Leather', 22, '#A52A2A', 28000, '2022-08-26', 0, 0),
-(4, 2, 40, '#0000FF', 6, 29900, 26900, NULL, 1.2, 'Super AMOLED', 396, 396, 1536000, 8192000, 19, 'Bluetooth, Wi-Fi', 284, 50, 'meters', 'Heart Rate, SpO2', 'Stainless Steel', 'Silicone', 20, '#FFD700', 26000, '2022-08-26', 0, 0),
+(4, 2, 40, '#0000ff', 6, 29900, 26900, NULL, 1.2, 'Super AMOLED', 396, 396, 1536000, 8192000, 19, 'Bluetooth, Wi-Fi', 284, 50, 'meters', 'Heart Rate, SpO2', 'Stainless Steel', 'Silicone', 20, '#ffd700', 26000, '2022-08-26', 0, 0),
 (5, 3, 40, '#FF4500', 6, 17900, 15900, NULL, 1.04, 'AMOLED', 260, 260, 0, 0, 4, 'Bluetooth', 200, 50, 'meters', 'Heart Rate, GPS', 'Plastic', 'Rubber', 18, '#32CD32', 24000, '2021-09-27', 0, 0),
-(6, 3, 40, '#8A2BE2', 6, 19900, 17900, NULL, 1.04, 'AMOLED', 260, 260, 0, 0, 4, 'Bluetooth', 200, 50, 'meters', 'Heart Rate, GPS', 'Plastic', 'Rubber', 18, '#FF69B4', 24000, '2021-09-27', 0, 0),
+(6, 3, 40, '#8a2be2', 6, 19900, 17900, NULL, 1.04, 'AMOLED', 260, 260, 0, 0, 4, 'Bluetooth', 200, 50, 'meters', 'Heart Rate, GPS', 'Plastic', 'Rubber', 18, '#FF69B4', 24000, '2021-09-27', 0, 0),
 (7, 4, 47, '#708090', 6, 69900, 64900, NULL, 1.3, 'MIP', 260, 260, 0, 0, 5, 'Bluetooth, GPS', 500, 100, 'meters', 'Heart Rate, Altimeter', 'Titanium', 'Nylon', 24, '#000000', 53000, '2022-01-18', 0, 0),
-(8, 4, 47, '#2F4F4F', 6, 74900, 69900, NULL, 1.3, 'MIP', 260, 260, 0, 0, 5, 'Bluetooth, GPS', 500, 100, 'meters', 'Heart Rate, Altimeter', 'Titanium', 'Silicone', 24, '#8B0000', 53000, '2022-01-18', 0, 0),
-(9, 5, 46, '#FFD700', 6, 39900, 36900, NULL, 1.43, 'AMOLED', 466, 466, 0, 0, 6, 'Bluetooth, GPS', 455, 50, 'meters', 'Heart Rate, SpO2', 'Stainless Steel', 'Leather', 22, '#8B4513', 42000, '2021-10-22', 0, 0),
-(10, 5, 46, '#DC143C', 6, 42900, 39900, NULL, 1.43, 'AMOLED', 466, 466, 0, 0, 6, 'Bluetooth, GPS', 455, 50, 'meters', 'Heart Rate, SpO2', 'Stainless Steel', 'Silicone', 22, '#000000', 42000, '2021-10-22', 0, 0),
-(11, 6, 40, '#FF6347', 6, 4990, 4590, NULL, 1.62, 'AMOLED', 192, 490, 0, 0, 17, 'Bluetooth', 180, 50, 'meters', 'Heart Rate, SpO2', 'Plastic', 'Rubber', 18, '#4682B4', 13000, '2022-05-24', 0, 0),
-(12, 6, 40, '#4682B4', 6, 5290, 4990, NULL, 1.62, 'AMOLED', 192, 490, 0, 0, 17, 'Bluetooth', 180, 50, 'meters', 'Heart Rate, SpO2', 'Plastic', 'Rubber', 18, '#FF6347', 13000, '2022-05-24', 0, 0),
-(13, 7, 46, '#000000', 6, 19900, 17900, NULL, 1.39, 'AMOLED', 454, 454, 0, 0, 7, 'Bluetooth, GPS', 475, 50, 'meters', 'Heart Rate, SpO2', 'Aluminum', 'Leather', 22, '#FFFFFF', 32000, '2022-09-01', 0, 0),
-(14, 7, 46, '#FFFFFF', 10, 21900, 19900, NULL, 1.39, 'AMOLED', 454, 454, 0, 0, 7, 'Bluetooth, GPS', 475, 50, 'meters', 'Heart Rate, SpO2', 'Aluminum', 'Silicone', 22, '#000000', 32000, '2022-09-01', 0, 0),
-(15, 8, 44, '#A9A9A9', 6, 29900, 27900, NULL, 1.28, 'AMOLED', 416, 416, 1024000, 8192000, 3, 'Bluetooth, Wi-Fi', 310, 30, 'meters', 'Heart Rate, SpO2', 'Stainless Steel', 'Leather', 22, '#8B4513', 36000, '2021-08-30', 0, 0),
+(8, 4, 47, '#2f4f4f', 6, 74900, 69900, NULL, 1.3, 'MIP', 260, 260, 0, 0, 5, 'Bluetooth, GPS', 500, 100, 'meters', 'Heart Rate, Altimeter', 'Titanium', 'Silicone', 24, '#8b0000', 53000, '2022-01-18', 0, 0),
+(9, 5, 46, '#ffd700', 6, 39900, 36900, NULL, 1.43, 'AMOLED', 466, 466, 0, 0, 6, 'Bluetooth, GPS', 455, 50, 'meters', 'Heart Rate, SpO2', 'Stainless Steel', 'Leather', 22, '#8B4513', 42000, '2021-10-22', 0, 0),
+(10, 5, 46, '#dc143c', 6, 42900, 39900, NULL, 1.43, 'AMOLED', 466, 466, 0, 0, 6, 'Bluetooth, GPS', 455, 50, 'meters', 'Heart Rate, SpO2', 'Stainless Steel', 'Silicone', 22, '#000000', 42000, '2021-10-22', 0, 0),
+(11, 6, 40, '#ff6347', 6, 4990, 4590, NULL, 1.62, 'AMOLED', 192, 490, 0, 0, 17, 'Bluetooth', 180, 50, 'meters', 'Heart Rate, SpO2', 'Plastic', 'Rubber', 18, '#4682b4', 13000, '2022-05-24', 0, 0),
+(12, 6, 40, '#4682b4', 6, 5290, 4990, NULL, 1.62, 'AMOLED', 192, 490, 0, 0, 17, 'Bluetooth', 180, 50, 'meters', 'Heart Rate, SpO2', 'Plastic', 'Rubber', 18, '#ff6347', 13000, '2022-05-24', 0, 0),
+(13, 7, 46, '#000000', 6, 19900, 17900, NULL, 1.39, 'AMOLED', 454, 454, 0, 0, 7, 'Bluetooth, GPS', 475, 50, 'meters', 'Heart Rate, SpO2', 'Aluminum', 'Leather', 22, '#ffffff', 32000, '2022-09-01', 0, 0),
+(14, 7, 46, '#ffffff', 10, 21900, 19900, NULL, 1.39, 'AMOLED', 454, 454, 0, 0, 7, 'Bluetooth, GPS', 475, 50, 'meters', 'Heart Rate, SpO2', 'Aluminum', 'Silicone', 22, '#000000', 32000, '2022-09-01', 0, 0),
+(15, 8, 44, '#a9a9a9', 6, 29900, 27900, NULL, 1.28, 'AMOLED', 416, 416, 1024000, 8192000, 3, 'Bluetooth, Wi-Fi', 310, 30, 'meters', 'Heart Rate, SpO2', 'Stainless Steel', 'Leather', 22, '#8B4513', 36000, '2021-08-30', 0, 0),
 (16, 8, 44, '#696969', 6, 31900, 29900, NULL, 1.28, 'AMOLED', 416, 416, 1024000, 8192000, 3, 'Bluetooth, Wi-Fi', 310, 30, 'meters', 'Heart Rate, SpO2', 'Stainless Steel', 'Silicone', 22, '#000000', 36000, '2021-08-30', 0, 0),
-(17, 9, 50, '#556B2F', 6, 49900, 46900, NULL, 1.32, 'MIP', 240, 240, 0, 0, 10, 'Bluetooth, GPS', 600, 100, 'meters', 'Altimeter, Barometer', 'Resin', 'Nylon', 24, '#8B0000', 67000, '2020-06-15', 0, 0),
-(18, 9, 50, '#8B0000', 7, 52900, 49900, NULL, 1.32, 'MIP', 240, 240, 0, 0, 10, 'Bluetooth, GPS', 600, 100, 'meters', 'Altimeter, Barometer', 'Resin', 'Silicone', 24, '#556B2F', 67000, '2020-06-15', 0, 0),
-(19, 10, 43, '#4682B4', 6, 59900, 56900, NULL, 1.2, 'AMOLED', 240, 240, 0, 0, 11, 'Bluetooth, GPS', 300, 100, 'meters', 'Heart Rate, SpO2', 'Titanium', 'Leather', 22, '#FFD700', 45000, '2021-05-20', 0, 0),
-(20, 10, 43, '#FFD700', 9, 62900, 59900, NULL, 1.2, 'AMOLED', 240, 240, 0, 0, 11, 'Bluetooth, GPS', 300, 100, 'meters', 'Heart Rate, SpO2', 'Titanium', 'Silicone', 22, '#4682B4', 45000, '2021-05-20', 0, 0);
+(17, 9, 50, '#556b2f', 6, 49900, 46900, NULL, 1.32, 'MIP', 240, 240, 0, 0, 10, 'Bluetooth, GPS', 600, 100, 'meters', 'Altimeter, Barometer', 'Resin', 'Nylon', 24, '#8b0000', 67000, '2020-06-15', 0, 0),
+(18, 9, 50, '#8b0000', 7, 52900, 49900, NULL, 1.32, 'MIP', 240, 240, 0, 0, 10, 'Bluetooth, GPS', 600, 100, 'meters', 'Altimeter, Barometer', 'Resin', 'Silicone', 24, '#556b2f', 67000, '2020-06-15', 0, 0),
+(19, 10, 43, '#4682b4', 6, 59900, 56900, NULL, 1.2, 'AMOLED', 240, 240, 0, 0, 11, 'Bluetooth, GPS', 300, 100, 'meters', 'Heart Rate, SpO2', 'Titanium', 'Leather', 22, '#ffd700', 45000, '2021-05-20', 0, 0),
+(20, 10, 43, '#ffd700', 9, 62900, 59900, NULL, 1.2, 'AMOLED', 240, 240, 0, 0, 11, 'Bluetooth, GPS', 300, 100, 'meters', 'Heart Rate, SpO2', 'Titanium', 'Silicone', 22, '#4682b4', 45000, '2021-05-20', 0, 0);
 
 /*
 1.
@@ -430,12 +427,12 @@ INSERT INTO product_instances (sku, product_variation_id, supplier_serial_number
 ('sw-app-s8-45-000000-sil-1746033627004', 1, 'SN1234567890014', NULL, NULL, 0, 0),
 ('sw-app-s8-45-000000-sil-1746033627005', 1, 'SN1234567890015', NULL, NULL, 0, 0),
 -- Variation id 2: 6
-('sw-app-s8-41-FFFFFF-sil-1746033628000', 2, 'SN1234567890020', NULL, NULL, 0, 0),
-('sw-app-s8-41-FFFFFF-sil-1746033628001', 2, 'SN1234567890021', NULL, NULL, 0, 0),
-('sw-app-s8-41-FFFFFF-sil-1746033628002', 2, 'SN1234567890022', NULL, NULL, 0, 0),
-('sw-app-s8-41-FFFFFF-sil-1746033628003', 2, 'SN1234567890023', NULL, NULL, 0, 0),
-('sw-app-s8-41-FFFFFF-sil-1746033628004', 2, 'SN1234567890024', NULL, NULL, 0, 0),
-('sw-app-s8-41-FFFFFF-sil-1746033628005', 2, 'SN1234567890025', NULL, NULL, 0, 0),
+('sw-app-s8-41-ffffff-sil-1746033628000', 2, 'SN1234567890020', NULL, NULL, 0, 0),
+('sw-app-s8-41-ffffff-sil-1746033628001', 2, 'SN1234567890021', NULL, NULL, 0, 0),
+('sw-app-s8-41-ffffff-sil-1746033628002', 2, 'SN1234567890022', NULL, NULL, 0, 0),
+('sw-app-s8-41-ffffff-sil-1746033628003', 2, 'SN1234567890023', NULL, NULL, 0, 0),
+('sw-app-s8-41-ffffff-sil-1746033628004', 2, 'SN1234567890024', NULL, NULL, 0, 0),
+('sw-app-s8-41-ffffff-sil-1746033628005', 2, 'SN1234567890025', NULL, NULL, 0, 0),
 -- Variation id 3: 6
 ('sw-sam-gw-44-808080-lea-1746033629000', 3, 'SN1234567890030', NULL, NULL, 0, 0),
 ('sw-sam-gw-44-808080-lea-1746033629001', 3, 'SN1234567890031', NULL, NULL, 0, 0),
@@ -444,26 +441,26 @@ INSERT INTO product_instances (sku, product_variation_id, supplier_serial_number
 ('sw-sam-gw-44-808080-lea-1746033629004', 3, 'SN1234567890034', NULL, NULL, 0, 0),
 ('sw-sam-gw-44-808080-lea-1746033629005', 3, 'SN1234567890035', NULL, NULL, 0, 0),
 -- Variation id 4: 6
-('sw-sam-gw-40-0000FF-sil-1746033630000', 4, 'SN1234567890040', NULL, NULL, 0, 0),
-('sw-sam-gw-40-0000FF-sil-1746033630001', 4, 'SN1234567890041', NULL, NULL, 0, 0),
-('sw-sam-gw-40-0000FF-sil-1746033630002', 4, 'SN1234567890042', NULL, NULL, 0, 0),
-('sw-sam-gw-40-0000FF-sil-1746033630003', 4, 'SN1234567890043', NULL, NULL, 0, 0),
-('sw-sam-gw-40-0000FF-sil-1746033630004', 4, 'SN1234567890044', NULL, NULL, 0, 0),
-('sw-sam-gw-40-0000FF-sil-1746033630005', 4, 'SN1234567890045', NULL, NULL, 0, 0),
+('sw-sam-gw-40-0000ff-sil-1746033630000', 4, 'SN1234567890040', NULL, NULL, 0, 0),
+('sw-sam-gw-40-0000ff-sil-1746033630001', 4, 'SN1234567890041', NULL, NULL, 0, 0),
+('sw-sam-gw-40-0000ff-sil-1746033630002', 4, 'SN1234567890042', NULL, NULL, 0, 0),
+('sw-sam-gw-40-0000ff-sil-1746033630003', 4, 'SN1234567890043', NULL, NULL, 0, 0),
+('sw-sam-gw-40-0000ff-sil-1746033630004', 4, 'SN1234567890044', NULL, NULL, 0, 0),
+('sw-sam-gw-40-0000ff-sil-1746033630005', 4, 'SN1234567890045', NULL, NULL, 0, 0),
 -- Variation id 5: 6
-('ft-fit-c5-40-FF4500-rub-1746033631000', 5, 'SN1234567890050', NULL, NULL, 0, 0),
-('ft-fit-c5-40-FF4500-rub-1746033631001', 5, 'SN1234567890051', NULL, NULL, 0, 0),
-('ft-fit-c5-40-FF4500-rub-1746033631002', 5, 'SN1234567890052', NULL, NULL, 0, 0),
-('ft-fit-c5-40-FF4500-rub-1746033631003', 5, 'SN1234567890053', NULL, NULL, 0, 0),
-('ft-fit-c5-40-FF4500-rub-1746033631004', 5, 'SN1234567890054', NULL, NULL, 0, 0),
-('ft-fit-c5-40-FF4500-rub-1746033631005', 5, 'SN1234567890055', NULL, NULL, 0, 0),
+('ft-fit-c5-40-ff4500-rub-1746033631000', 5, 'SN1234567890050', NULL, NULL, 0, 0),
+('ft-fit-c5-40-ff4500-rub-1746033631001', 5, 'SN1234567890051', NULL, NULL, 0, 0),
+('ft-fit-c5-40-ff4500-rub-1746033631002', 5, 'SN1234567890052', NULL, NULL, 0, 0),
+('ft-fit-c5-40-ff4500-rub-1746033631003', 5, 'SN1234567890053', NULL, NULL, 0, 0),
+('ft-fit-c5-40-ff4500-rub-1746033631004', 5, 'SN1234567890054', NULL, NULL, 0, 0),
+('ft-fit-c5-40-ff4500-rub-1746033631005', 5, 'SN1234567890055', NULL, NULL, 0, 0),
 -- Variation id 6: 6
-('ft-fit-c5-40-8A2BE2-rub-1746033632000', 6, 'SN1234567890060', NULL, NULL, 0, 0),
-('ft-fit-c5-40-8A2BE2-rub-1746033632001', 6, 'SN1234567890061', NULL, NULL, 0, 0),
-('ft-fit-c5-40-8A2BE2-rub-1746033632002', 6, 'SN1234567890062', NULL, NULL, 0, 0),
-('ft-fit-c5-40-8A2BE2-rub-1746033632003', 6, 'SN1234567890063', NULL, NULL, 0, 0),
-('ft-fit-c5-40-8A2BE2-rub-1746033632004', 6, 'SN1234567890064', NULL, NULL, 0, 0),
-('ft-fit-c5-40-8A2BE2-rub-1746033632005', 6, 'SN1234567890065', NULL, NULL, 0, 0),
+('ft-fit-c5-40-8a2be2-rub-1746033632000', 6, 'SN1234567890060', NULL, NULL, 0, 0),
+('ft-fit-c5-40-8a2be2-rub-1746033632001', 6, 'SN1234567890061', NULL, NULL, 0, 0),
+('ft-fit-c5-40-8a2be2-rub-1746033632002', 6, 'SN1234567890062', NULL, NULL, 0, 0),
+('ft-fit-c5-40-8a2be2-rub-1746033632003', 6, 'SN1234567890063', NULL, NULL, 0, 0),
+('ft-fit-c5-40-8a2be2-rub-1746033632004', 6, 'SN1234567890064', NULL, NULL, 0, 0),
+('ft-fit-c5-40-8a2be2-rub-1746033632005', 6, 'SN1234567890065', NULL, NULL, 0, 0),
 -- Variation id 7: 6
 ('ow-gar-f7-47-708090-nyl-1746033633000', 7, 'SN1234567890070', NULL, NULL, 0, 0),
 ('ow-gar-f7-47-708090-nyl-1746033633001', 7, 'SN1234567890071', NULL, NULL, 0, 0),
@@ -472,40 +469,40 @@ INSERT INTO product_instances (sku, product_variation_id, supplier_serial_number
 ('ow-gar-f7-47-708090-nyl-1746033633004', 7, 'SN1234567890074', NULL, NULL, 0, 0),
 ('ow-gar-f7-47-708090-nyl-1746033633005', 7, 'SN1234567890075', NULL, NULL, 0, 0),
 -- Variation id 8: 6
-('ow-gar-f7-47-2F4F4F-sil-1746033634000', 8, 'SN1234567890080', NULL, NULL, 0, 0),
-('ow-gar-f7-47-2F4F4F-sil-1746033634001', 8, 'SN1234567890081', NULL, NULL, 0, 0),
-('ow-gar-f7-47-2F4F4F-sil-1746033634002', 8, 'SN1234567890082', NULL, NULL, 0, 0),
-('ow-gar-f7-47-2F4F4F-sil-1746033634003', 8, 'SN1234567890083', NULL, NULL, 0, 0),
-('ow-gar-f7-47-2F4F4F-sil-1746033634004', 8, 'SN1234567890084', NULL, NULL, 0, 0),
-('ow-gar-f7-47-2F4F4F-sil-1746033634005', 8, 'SN1234567890085', NULL, NULL, 0, 0),
+('ow-gar-f7-47-2f4f4f-sil-1746033634000', 8, 'SN1234567890080', NULL, NULL, 0, 0),
+('ow-gar-f7-47-2f4f4f-sil-1746033634001', 8, 'SN1234567890081', NULL, NULL, 0, 0),
+('ow-gar-f7-47-2f4f4f-sil-1746033634002', 8, 'SN1234567890082', NULL, NULL, 0, 0),
+('ow-gar-f7-47-2f4f4f-sil-1746033634003', 8, 'SN1234567890083', NULL, NULL, 0, 0),
+('ow-gar-f7-47-2f4f4f-sil-1746033634004', 8, 'SN1234567890084', NULL, NULL, 0, 0),
+('ow-gar-f7-47-2f4f4f-sil-1746033634005', 8, 'SN1234567890085', NULL, NULL, 0, 0),
 -- Variation id 9: 6
-('sw-hua-gt-46-FFD700-lea-1746033635000', 9, 'SN1234567890090', NULL, NULL, 0, 0),
-('sw-hua-gt-46-FFD700-lea-1746033635001', 9, 'SN1234567890091', NULL, NULL, 0, 0),
-('sw-hua-gt-46-FFD700-lea-1746033635002', 9, 'SN1234567890092', NULL, NULL, 0, 0),
-('sw-hua-gt-46-FFD700-lea-1746033635003', 9, 'SN1234567890093', NULL, NULL, 0, 0),
-('sw-hua-gt-46-FFD700-lea-1746033635004', 9, 'SN1234567890094', NULL, NULL, 0, 0),
-('sw-hua-gt-46-FFD700-lea-1746033635005', 9, 'SN1234567890095', NULL, NULL, 0, 0),
+('sw-hua-gt-46-ffd700-lea-1746033635000', 9, 'SN1234567890090', NULL, NULL, 0, 0),
+('sw-hua-gt-46-ffd700-lea-1746033635001', 9, 'SN1234567890091', NULL, NULL, 0, 0),
+('sw-hua-gt-46-ffd700-lea-1746033635002', 9, 'SN1234567890092', NULL, NULL, 0, 0),
+('sw-hua-gt-46-ffd700-lea-1746033635003', 9, 'SN1234567890093', NULL, NULL, 0, 0),
+('sw-hua-gt-46-ffd700-lea-1746033635004', 9, 'SN1234567890094', NULL, NULL, 0, 0),
+('sw-hua-gt-46-ffd700-lea-1746033635005', 9, 'SN1234567890095', NULL, NULL, 0, 0),
 -- Variation id 10: 6
-('sw-hua-gt-46-DC143C-sil-1746033636000', 10, 'SN1234567890100', NULL, NULL, 0, 0),
-('sw-hua-gt-46-DC143C-sil-1746033636001', 10, 'SN1234567890101', NULL, NULL, 0, 0),
-('sw-hua-gt-46-DC143C-sil-1746033636002', 10, 'SN1234567890102', NULL, NULL, 0, 0),
-('sw-hua-gt-46-DC143C-sil-1746033636003', 10, 'SN1234567890103', NULL, NULL, 0, 0),
-('sw-hua-gt-46-DC143C-sil-1746033636004', 10, 'SN1234567890104', NULL, NULL, 0, 0),
-('sw-hua-gt-46-DC143C-sil-1746033636005', 10, 'SN1234567890105', NULL, NULL, 0, 0),
+('sw-hua-gt-46-dc143c-sil-1746033636000', 10, 'SN1234567890100', NULL, NULL, 0, 0),
+('sw-hua-gt-46-dc143c-sil-1746033636001', 10, 'SN1234567890101', NULL, NULL, 0, 0),
+('sw-hua-gt-46-dc143c-sil-1746033636002', 10, 'SN1234567890102', NULL, NULL, 0, 0),
+('sw-hua-gt-46-dc143c-sil-1746033636003', 10, 'SN1234567890103', NULL, NULL, 0, 0),
+('sw-hua-gt-46-dc143c-sil-1746033636004', 10, 'SN1234567890104', NULL, NULL, 0, 0),
+('sw-hua-gt-46-dc143c-sil-1746033636005', 10, 'SN1234567890105', NULL, NULL, 0, 0),
 -- Variation id 11: 6
-('ft-xia-mb-40-FF6347-rub-1746033637000', 11, 'SN1234567890110', NULL, NULL, 0, 0),
-('ft-xia-mb-40-FF6347-rub-1746033637001', 11, 'SN1234567890111', NULL, NULL, 0, 0),
-('ft-xia-mb-40-FF6347-rub-1746033637002', 11, 'SN1234567890112', NULL, NULL, 0, 0),
-('ft-xia-mb-40-FF6347-rub-1746033637003', 11, 'SN1234567890113', NULL, NULL, 0, 0),
-('ft-xia-mb-40-FF6347-rub-1746033637004', 11, 'SN1234567890114', NULL, NULL, 0, 0),
-('ft-xia-mb-40-FF6347-rub-1746033637005', 11, 'SN1234567890115', NULL, NULL, 0, 0),
+('ft-xia-mb-40-ff6347-rub-1746033637000', 11, 'SN1234567890110', NULL, NULL, 0, 0),
+('ft-xia-mb-40-ff6347-rub-1746033637001', 11, 'SN1234567890111', NULL, NULL, 0, 0),
+('ft-xia-mb-40-ff6347-rub-1746033637002', 11, 'SN1234567890112', NULL, NULL, 0, 0),
+('ft-xia-mb-40-ff6347-rub-1746033637003', 11, 'SN1234567890113', NULL, NULL, 0, 0),
+('ft-xia-mb-40-ff6347-rub-1746033637004', 11, 'SN1234567890114', NULL, NULL, 0, 0),
+('ft-xia-mb-40-ff6347-rub-1746033637005', 11, 'SN1234567890115', NULL, NULL, 0, 0),
 -- Variation id 12: 6
-('ft-xia-mb-40-4682B4-rub-1746033638000', 12, 'SN1234567890120', NULL, NULL, 0, 0),
-('ft-xia-mb-40-4682B4-rub-1746033638001', 12, 'SN1234567890121', NULL, NULL, 0, 0),
-('ft-xia-mb-40-4682B4-rub-1746033638002', 12, 'SN1234567890122', NULL, NULL, 0, 0),
-('ft-xia-mb-40-4682B4-rub-1746033638003', 12, 'SN1234567890123', NULL, NULL, 0, 0),
-('ft-xia-mb-40-4682B4-rub-1746033638004', 12, 'SN1234567890124', NULL, NULL, 0, 0),
-('ft-xia-mb-40-4682B4-rub-1746033638005', 12, 'SN1234567890125', NULL, NULL, 0, 0),
+('ft-xia-mb-40-4682b4-rub-1746033638000', 12, 'SN1234567890120', NULL, NULL, 0, 0),
+('ft-xia-mb-40-4682b4-rub-1746033638001', 12, 'SN1234567890121', NULL, NULL, 0, 0),
+('ft-xia-mb-40-4682b4-rub-1746033638002', 12, 'SN1234567890122', NULL, NULL, 0, 0),
+('ft-xia-mb-40-4682b4-rub-1746033638003', 12, 'SN1234567890123', NULL, NULL, 0, 0),
+('ft-xia-mb-40-4682b4-rub-1746033638004', 12, 'SN1234567890124', NULL, NULL, 0, 0),
+('ft-xia-mb-40-4682b4-rub-1746033638005', 12, 'SN1234567890125', NULL, NULL, 0, 0),
 -- Variation id 13: 6
 ('sw-ama-gr-46-000000-lea-1746033639000', 13, 'SN1234567890130', NULL, NULL, 0, 0),
 ('sw-ama-gr-46-000000-lea-1746033639001', 13, 'SN1234567890131', NULL, NULL, 0, 0),
@@ -514,23 +511,23 @@ INSERT INTO product_instances (sku, product_variation_id, supplier_serial_number
 ('sw-ama-gr-46-000000-lea-1746033639004', 13, 'SN1234567890134', NULL, NULL, 0, 0),
 ('sw-ama-gr-46-000000-lea-1746033639005', 13, 'SN1234567890135', NULL, NULL, 0, 0),
 -- Variation id 14: 10
-('sw-ama-gr-46-FFFFFF-sil-1746033640000', 14, 'SN1234567890140', NULL, NULL, 0, 0),
-('sw-ama-gr-46-FFFFFF-sil-1746033640001', 14, 'SN1234567890141', NULL, NULL, 0, 0),
-('sw-ama-gr-46-FFFFFF-sil-1746033640002', 14, 'SN1234567890142', NULL, NULL, 0, 0),
-('sw-ama-gr-46-FFFFFF-sil-1746033640003', 14, 'SN1234567890143', NULL, NULL, 0, 0),
-('sw-ama-gr-46-FFFFFF-sil-1746033640004', 14, 'SN1234567890144', NULL, NULL, 0, 0),
-('sw-ama-gr-46-FFFFFF-sil-1746033640005', 14, 'SN1234567890145', NULL, NULL, 0, 0),
-('sw-ama-gr-46-FFFFFF-sil-1746033640006', 14, 'SN1234567890146', NULL, NULL, 0, 0),
-('sw-ama-gr-46-FFFFFF-sil-1746033640007', 14, 'SN1234567890147', NULL, NULL, 0, 0),
-('sw-ama-gr-46-FFFFFF-sil-1746033640008', 14, 'SN1234567890148', NULL, NULL, 0, 0),
-('sw-ama-gr-46-FFFFFF-sil-1746033640009', 14, 'SN1234567890149', NULL, NULL, 0, 0),
+('sw-ama-gr-46-ffffff-sil-1746033640000', 14, 'SN1234567890140', NULL, NULL, 0, 0),
+('sw-ama-gr-46-ffffff-sil-1746033640001', 14, 'SN1234567890141', NULL, NULL, 0, 0),
+('sw-ama-gr-46-ffffff-sil-1746033640002', 14, 'SN1234567890142', NULL, NULL, 0, 0),
+('sw-ama-gr-46-ffffff-sil-1746033640003', 14, 'SN1234567890143', NULL, NULL, 0, 0),
+('sw-ama-gr-46-ffffff-sil-1746033640004', 14, 'SN1234567890144', NULL, NULL, 0, 0),
+('sw-ama-gr-46-ffffff-sil-1746033640005', 14, 'SN1234567890145', NULL, NULL, 0, 0),
+('sw-ama-gr-46-ffffff-sil-1746033640006', 14, 'SN1234567890146', NULL, NULL, 0, 0),
+('sw-ama-gr-46-ffffff-sil-1746033640007', 14, 'SN1234567890147', NULL, NULL, 0, 0),
+('sw-ama-gr-46-ffffff-sil-1746033640008', 14, 'SN1234567890148', NULL, NULL, 0, 0),
+('sw-ama-gr-46-ffffff-sil-1746033640009', 14, 'SN1234567890149', NULL, NULL, 0, 0),
 -- Variation id 15: 6
-('hy-fos-g6-44-A9A9A9-lea-1746033641000', 15, 'SN1234567890150', NULL, NULL, 0, 0),
-('hy-fos-g6-44-A9A9A9-lea-1746033641001', 15, 'SN1234567890151', NULL, NULL, 0, 0),
-('hy-fos-g6-44-A9A9A9-lea-1746033641002', 15, 'SN1234567890152', NULL, NULL, 0, 0),
-('hy-fos-g6-44-A9A9A9-lea-1746033641003', 15, 'SN1234567890153', NULL, NULL, 0, 0),
-('hy-fos-g6-44-A9A9A9-lea-1746033641004', 15, 'SN1234567890154', NULL, NULL, 0, 0),
-('hy-fos-g6-44-A9A9A9-lea-1746033641005', 15, 'SN1234567890155', NULL, NULL, 0, 0),
+('hy-fos-g6-44-a9a9a9-lea-1746033641000', 15, 'SN1234567890150', NULL, NULL, 0, 0),
+('hy-fos-g6-44-a9a9a9-lea-1746033641001', 15, 'SN1234567890151', NULL, NULL, 0, 0),
+('hy-fos-g6-44-a9a9a9-lea-1746033641002', 15, 'SN1234567890152', NULL, NULL, 0, 0),
+('hy-fos-g6-44-a9a9a9-lea-1746033641003', 15, 'SN1234567890153', NULL, NULL, 0, 0),
+('hy-fos-g6-44-a9a9a9-lea-1746033641004', 15, 'SN1234567890154', NULL, NULL, 0, 0),
+('hy-fos-g6-44-a9a9a9-lea-1746033641005', 15, 'SN1234567890155', NULL, NULL, 0, 0),
 -- Variation id 16: 6
 ('hy-fos-g6-44-696969-sil-1746033642000', 16, 'SN1234567890160', NULL, NULL, 0, 0),
 ('hy-fos-g6-44-696969-sil-1746033642001', 16, 'SN1234567890161', NULL, NULL, 0, 0),
@@ -539,37 +536,90 @@ INSERT INTO product_instances (sku, product_variation_id, supplier_serial_number
 ('hy-fos-g6-44-696969-sil-1746033642004', 16, 'SN1234567890164', NULL, NULL, 0, 0),
 ('hy-fos-g6-44-696969-sil-1746033642005', 16, 'SN1234567890165', NULL, NULL, 0, 0),
 -- Variation id 17: 6
-('ow-cas-pt-50-556B2F-nyl-1746033643000', 17, 'SN1234567890170', NULL, NULL, 0, 0),
-('ow-cas-pt-50-556B2F-nyl-1746033643001', 17, 'SN1234567890171', NULL, NULL, 0, 0),
-('ow-cas-pt-50-556B2F-nyl-1746033643002', 17, 'SN1234567890172', NULL, NULL, 0, 0),
-('ow-cas-pt-50-556B2F-nyl-1746033643003', 17, 'SN1234567890173', NULL, NULL, 0, 0),
-('ow-cas-pt-50-556B2F-nyl-1746033643004', 17, 'SN1234567890174', NULL, NULL, 0, 0),
-('ow-cas-pt-50-556B2F-nyl-1746033643005', 17, 'SN1234567890175', NULL, NULL, 0, 0),
+('ow-cas-pt-50-556b2f-nyl-1746033643000', 17, 'SN1234567890170', NULL, NULL, 0, 0),
+('ow-cas-pt-50-556b2f-nyl-1746033643001', 17, 'SN1234567890171', NULL, NULL, 0, 0),
+('ow-cas-pt-50-556b2f-nyl-1746033643002', 17, 'SN1234567890172', NULL, NULL, 0, 0),
+('ow-cas-pt-50-556b2f-nyl-1746033643003', 17, 'SN1234567890173', NULL, NULL, 0, 0),
+('ow-cas-pt-50-556b2f-nyl-1746033643004', 17, 'SN1234567890174', NULL, NULL, 0, 0),
+('ow-cas-pt-50-556b2f-nyl-1746033643005', 17, 'SN1234567890175', NULL, NULL, 0, 0),
 -- Variation id 18: 7
-('ow-cas-pt-50-8B0000-sil-1746033644000', 18, 'SN1234567890180', NULL, NULL, 0, 0),
-('ow-cas-pt-50-8B0000-sil-1746033644001', 18, 'SN1234567890181', NULL, NULL, 0, 0),
-('ow-cas-pt-50-8B0000-sil-1746033644002', 18, 'SN1234567890182', NULL, NULL, 0, 0),
-('ow-cas-pt-50-8B0000-sil-1746033644003', 18, 'SN1234567890183', NULL, NULL, 0, 0),
-('ow-cas-pt-50-8B0000-sil-1746033644004', 18, 'SN1234567890184', NULL, NULL, 0, 0),
-('ow-cas-pt-50-8B0000-sil-1746033644005', 18, 'SN1234567890185', NULL, NULL, 0, 0),
-('ow-cas-pt-50-8B0000-sil-1746033644006', 18, 'SN1234567890186', NULL, NULL, 0, 0),
+('ow-cas-pt-50-8b0000-sil-1746033644000', 18, 'SN1234567890180', NULL, NULL, 0, 0),
+('ow-cas-pt-50-8b0000-sil-1746033644001', 18, 'SN1234567890181', NULL, NULL, 0, 0),
+('ow-cas-pt-50-8b0000-sil-1746033644002', 18, 'SN1234567890182', NULL, NULL, 0, 0),
+('ow-cas-pt-50-8b0000-sil-1746033644003', 18, 'SN1234567890183', NULL, NULL, 0, 0),
+('ow-cas-pt-50-8b0000-sil-1746033644004', 18, 'SN1234567890184', NULL, NULL, 0, 0),
+('ow-cas-pt-50-8b0000-sil-1746033644005', 18, 'SN1234567890185', NULL, NULL, 0, 0),
+('ow-cas-pt-50-8b0000-sil-1746033644006', 18, 'SN1234567890186', NULL, NULL, 0, 0),
 -- Variation id 19: 6
-('ow-suu-s9-43-4682B4-lea-1746033645000', 19, 'SN1234567890190', NULL, NULL, 0, 0),
-('ow-suu-s9-43-4682B4-lea-1746033645001', 19, 'SN1234567890191', NULL, NULL, 0, 0),
-('ow-suu-s9-43-4682B4-lea-1746033645002', 19, 'SN1234567890192', NULL, NULL, 0, 0),
-('ow-suu-s9-43-4682B4-lea-1746033645003', 19, 'SN1234567890193', NULL, NULL, 0, 0),
-('ow-suu-s9-43-4682B4-lea-1746033645004', 19, 'SN1234567890194', NULL, NULL, 0, 0),
-('ow-suu-s9-43-4682B4-lea-1746033645005', 19, 'SN1234567890195', NULL, NULL, 0, 0),
--- Variation id 20: 9
-('ow-suu-s9-43-FFD700-sil-1746033646000', 20, 'SN1234567890200', NULL, NULL, 0, 0),
-('ow-suu-s9-43-FFD700-sil-1746033646001', 20, 'SN1234567890201', NULL, NULL, 0, 0),
-('ow-suu-s9-43-FFD700-sil-1746033646002', 20, 'SN1234567890202', NULL, NULL, 0, 0),
-('ow-suu-s9-43-FFD700-sil-1746033646003', 20, 'SN1234567890203', NULL, NULL, 0, 0),
-('ow-suu-s9-43-FFD700-sil-1746033646004', 20, 'SN1234567890204', NULL, NULL, 0, 0),
-('ow-suu-s9-43-FFD700-sil-1746033646005', 20, 'SN1234567890205', NULL, NULL, 0, 0),
-('ow-suu-s9-43-FFD700-sil-1746033646006', 20, 'SN1234567890205', NULL, NULL, 0, 0),
-('ow-suu-s9-43-FFD700-sil-1746033646007', 20, 'SN1234567890205', NULL, NULL, 0, 0),
-('ow-suu-s9-43-FFD700-sil-1746033646008', 20, 'SN1234567890205', NULL, NULL, 0, 0),
-('ow-suu-s9-43-FFD700-sil-1746033646009', 20, 'SN1234567890205', NULL, NULL, 0, 0);
+('ow-suu-s9-43-4682b4-lea-1746033645000', 19, 'SN1234567890190', NULL, NULL, 0, 0),
+('ow-suu-s9-43-4682b4-lea-1746033645001', 19, 'SN1234567890191', NULL, NULL, 0, 0),
+('ow-suu-s9-43-4682b4-lea-1746033645002', 19, 'SN1234567890192', NULL, NULL, 0, 0),
+('ow-suu-s9-43-4682b4-lea-1746033645003', 19, 'SN1234567890193', NULL, NULL, 0, 0),
+('ow-suu-s9-43-4682b4-lea-1746033645004', 19, 'SN1234567890194', NULL, NULL, 0, 0),
+('ow-suu-s9-43-4682b4-lea-1746033645005', 19, 'SN1234567890195', NULL, NULL, 0, 0),
+-- Variation id 20: 10
+('ow-suu-s9-43-ffd700-sil-1746033646000', 20, 'SN1234567890200', NULL, NULL, 0, 0),
+('ow-suu-s9-43-ffd700-sil-1746033646001', 20, 'SN1234567890201', NULL, NULL, 0, 0),
+('ow-suu-s9-43-ffd700-sil-1746033646002', 20, 'SN1234567890202', NULL, NULL, 0, 0),
+('ow-suu-s9-43-ffd700-sil-1746033646003', 20, 'SN1234567890203', NULL, NULL, 0, 0),
+('ow-suu-s9-43-ffd700-sil-1746033646004', 20, 'SN1234567890204', NULL, NULL, 0, 0),
+('ow-suu-s9-43-ffd700-sil-1746033646005', 20, 'SN1234567890205', NULL, NULL, 0, 0),
+('ow-suu-s9-43-ffd700-sil-1746033646006', 20, 'SN1234567890205', NULL, NULL, 0, 0),
+('ow-suu-s9-43-ffd700-sil-1746033646007', 20, 'SN1234567890205', NULL, NULL, 0, 0),
+('ow-suu-s9-43-ffd700-sil-1746033646008', 20, 'SN1234567890205', NULL, NULL, 0, 0),
+('ow-suu-s9-43-ffd700-sil-1746033646009', 20, 'SN1234567890205', NULL, NULL, 0, 0);
+
+-- MOCKING CARTS, ORDERS, AND RELATED UPDATES 🛒🛍️📦
+
+-- Mock Carts Data
+INSERT INTO carts (user_id, product_variation_id, quantity) VALUES
+(2, 1, 1), -- User 2, Apple Watch Series 8 (Var ID 1), Qty 1. Var 1 Stock: 6 -> 6 (cart doesn't reduce stock until order)
+(2, 3, 1), -- User 2, Samsung Galaxy Watch 5 (Var ID 3), Qty 1. Var 3 Stock: 6 -> 6
+(3, 5, 2); -- User 3, Fitbit Charge 5 (Var ID 5), Qty 2. Var 5 Stock: 6 -> 6
+
+-- Mock Orders Data
+-- Order 1: User 4. Order ID will be 1.
+INSERT INTO orders (id, user_id, total_cents, delivery_address_id, delivery_state_id, order_date, estimate_received_date, received_date) VALUES
+(1, 4, 109800, 9, 1, '2025-05-01 10:00:00', '2025-05-05 10:00:00', NULL);
+
+-- Order Items for Order 1
+INSERT INTO order_items (product_instance_sku, order_id, price_cents) VALUES
+('ow-gar-f7-47-708090-nyl-1746033633000', 1, 69900), -- Garmin Fenix 7 (Var ID 7). Price from product_variations.
+('sw-hua-gt-46-ffd700-lea-1746033635000', 1, 39900); -- Huawei Watch GT 3 (Var ID 9). Price from product_variations.
+
+-- Update Product Instances and Variation Stock for Order 1
+UPDATE product_instances SET is_sold = 1 WHERE sku = 'ow-gar-f7-47-708090-nyl-1746033633000';
+UPDATE product_variations SET stock_quantity = stock_quantity - 1 WHERE id = 7; -- Var 7 Stock: 6 -> 5
+
+UPDATE product_instances SET is_sold = 1 WHERE sku = 'sw-hua-gt-46-ffd700-lea-1746033635000';
+UPDATE product_variations SET stock_quantity = stock_quantity - 1 WHERE id = 9; -- Var 9 Stock: 6 -> 5
+
+
+-- Order 2: User 5. Order ID will be 2.
+INSERT INTO orders (id, user_id, total_cents, delivery_address_id, delivery_state_id, order_date, estimate_received_date, received_date) VALUES
+(2, 5, 43800, 11, 2, '2025-05-02 11:00:00', '2025-05-06 11:00:00', NULL);
+
+-- Order Items for Order 2
+INSERT INTO order_items (product_instance_sku, order_id, price_cents) VALUES
+('sw-ama-gr-46-ffffff-sil-1746033640000', 2, 21900), -- Amazfit GTR 4 (Var ID 14). Price from product_variations.
+('sw-ama-gr-46-ffffff-sil-1746033640001', 2, 21900); -- Amazfit GTR 4 (Var ID 14). Price from product_variations.
+
+-- Update Product Instances and Variation Stock for Order 2
+UPDATE product_instances SET is_sold = 1 WHERE sku = 'sw-ama-gr-46-ffffff-sil-1746033640000';
+UPDATE product_instances SET is_sold = 1 WHERE sku = 'sw-ama-gr-46-ffffff-sil-1746033640001';
+UPDATE product_variations SET stock_quantity = stock_quantity - 2 WHERE id = 14; -- Var 14 Stock: 10 -> 8
+
+
+-- Order 3: User 6 (Delivered). Order ID will be 3.
+INSERT INTO orders (id, user_id, total_cents, delivery_address_id, delivery_state_id, order_date, estimate_received_date, received_date) VALUES
+(3, 6, 62900, 14, 6, '2025-04-28 09:00:00', '2025-05-02 09:00:00', '2025-05-01 14:00:00');
+
+-- Order Items for Order 3
+INSERT INTO order_items (product_instance_sku, order_id, price_cents) VALUES
+('ow-suu-s9-43-ffd700-sil-1746033646000', 3, 62900); -- Suunto 9 Peak (Var ID 20). Price from product_variations.
+
+-- Update Product Instances and Variation Stock for Order 3
+UPDATE product_instances SET is_sold = 1 WHERE sku = 'ow-suu-s9-43-ffd700-sil-1746033646000';
+UPDATE product_variations SET stock_quantity = stock_quantity - 1 WHERE id = 20; -- Var 20 Stock: 9 -> 8
 
 SET foreign_key_checks = 1;

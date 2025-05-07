@@ -13,12 +13,12 @@ CREATE TABLE users (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   is_deleted BOOLEAN NOT NULL DEFAULT 0
 );
-ALTER TABLE users ADD INDEX idx_email(email);
 
 -- roles
 CREATE TABLE roles (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(155) NOT NULL,
+  user_assigned INT NOT NULL DEFAULT 0,
   is_deleted BOOLEAN NOT NULL DEFAULT 0
 );
 
@@ -62,9 +62,6 @@ CREATE TABLE user_addresses (
   is_deleted BOOLEAN NOT NULL DEFAULT 0,
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
-ALTER TABLE user_addresses ADD INDEX idx_user_id(user_id);
-ALTER TABLE user_addresses ADD INDEX idx_user_id_is_default(user_id, is_default);
-
 
 -- providers
 CREATE TABLE providers (
@@ -90,8 +87,6 @@ CREATE TABLE goods_receipt_notes (
   FOREIGN KEY (provider_id) REFERENCES providers(id),
   FOREIGN KEY (staff_id) REFERENCES users(id)
 );
-ALTER TABLE goods_receipt_notes ADD INDEX idx_provider_id(provider_id);
-ALTER TABLE goods_receipt_notes ADD INDEX idx_staff_id(staff_id);
 
 -- product_brands
 CREATE TABLE product_brands (
@@ -121,10 +116,7 @@ CREATE TABLE products (
   FOREIGN KEY (brand_id) REFERENCES product_brands(id),
   FOREIGN KEY (category_id) REFERENCES product_categories(id)
 );
-ALTER TABLE products ADD INDEX idx_name_model(name, model);
-ALTER TABLE products ADD INDEX idx_stop_selling(stop_selling);
-ALTER TABLE products ADD INDEX idx_brand_id(brand_id);
-ALTER TABLE products ADD INDEX idx_category_id(category_id);
+
 
 -- product_os
 CREATE TABLE product_os (
@@ -166,10 +158,6 @@ CREATE TABLE product_variations (
   FOREIGN KEY (product_id) REFERENCES products(id),
   FOREIGN KEY (os_id) REFERENCES product_os(id)
 );
-ALTER TABLE product_variations ADD INDEX idx_price_cents(price_cents);
-ALTER TABLE product_variations ADD INDEX idx_product_id(product_id);
-ALTER TABLE product_variations ADD INDEX idx_os_id(os_id);
-ALTER TABLE product_variations ADD INDEX idx_stop_selling(stop_selling);
 
 
 -- product_instances
@@ -184,10 +172,7 @@ CREATE TABLE product_instances (
   FOREIGN KEY (product_variation_id) REFERENCES product_variations(id),
   FOREIGN KEY (goods_receipt_note_id) REFERENCES goods_receipt_notes(id)
 );
-ALTER TABLE product_instances ADD INDEX idx_product_variation_id(product_variation_id);
-ALTER TABLE product_instances ADD INDEX idx_is_sold(is_sold);
-ALTER TABLE product_instances ADD INDEX idx_variation_id_is_sold(product_variation_id, is_sold);
-ALTER TABLE product_instances ADD INDEX idx_goods_id(goods_receipt_note_id);
+
 
 -- carts
 CREATE TABLE carts (
@@ -198,8 +183,6 @@ CREATE TABLE carts (
   FOREIGN KEY (product_variation_id) REFERENCES product_variations(id),
   PRIMARY KEY (user_id, product_variation_id)
 );
-ALTER TABLE carts ADD INDEX idx_user_id(user_id);
-ALTER TABLE carts ADD INDEX idx_product_variation_id(product_variation_id);
 
 
 -- order_delivery_states
@@ -222,9 +205,6 @@ CREATE TABLE orders (
   FOREIGN KEY (delivery_address_id) REFERENCES user_addresses(id),
   FOREIGN KEY (delivery_state_id) REFERENCES order_delivery_states(id)
 );
-ALTER TABLE orders ADD INDEX idx_user_id(user_id);
-ALTER TABLE orders ADD INDEX idx_delivery_address_id(delivery_address_id);
-ALTER TABLE orders ADD INDEX idx_delivery_state_id(delivery_state_id);
 
 -- order_items
 CREATE TABLE order_items (
@@ -234,4 +214,3 @@ CREATE TABLE order_items (
   FOREIGN KEY (order_id) REFERENCES orders(id),
   FOREIGN KEY (product_instance_sku) REFERENCES product_instances(sku)
 );
-ALTER TABLE order_items ADD INDEX idx_order_id(order_id);
