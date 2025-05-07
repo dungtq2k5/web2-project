@@ -4,7 +4,7 @@ import {
   getVariation,
   getVariationsList,
   updateVariation
-} from "../models/product/variations.js";
+} from "../../models/product/variations.js";
 import {
   DEFAULT_IMG_PATH,
   DISPLAY_MSG_TIMEOUT,
@@ -22,10 +22,10 @@ import {
   isValidIMEI,
   convertUtcToLocalDatetime
 } from "../../utils.js";
-import { getOSList } from "../models/product/os.js";
+import { getOSList } from "../../models/product/os.js";
 import { closeForm, closePopup } from "./components.js";
-import { createInstance } from "../models/product/instances.js";
-import { hasPermission } from "../models/auth.js";
+import { createInstance } from "../../models/product/instances.js";
+import { hasPermission } from "../../models/auth.js";
 
 
 const crudVariationMsg = $("#crud-variation-msg");
@@ -80,7 +80,7 @@ async function renderVariationsData(variationsList=null) {
     const variations = variationsList || await getVariationsList();
 
     tbody.html(() => {
-      let dataHTML;
+      let dataHTML = "";
 
       variations.forEach((variation, idx) => {
         idx++;

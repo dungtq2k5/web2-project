@@ -1,6 +1,6 @@
-import { getUser } from "../models/users.js";
-import { getVariation } from "../models/product/variations.js";
-import { getProduct } from "../models/product/products.js";
+import { getUser } from "../../models/users.js";
+import { getVariation } from "../../models/product/variations.js";
+import { getProduct } from "../../models/product/products.js";
 import {
   enableBgScroll,
   disableBgScroll,
@@ -12,7 +12,7 @@ import {
   VARIATION_IMG_PATH,
   DEFAULT_IMG_PATH
 } from "../../settings.js";
-import { getOrderItem } from "../models/orders.js";
+import { getOrderItem } from "../../models/orders.js";
 
 /**
  * Render a popup also handle await UI.

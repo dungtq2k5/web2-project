@@ -1,4 +1,4 @@
-import { signin, getSigninUser } from "../models/auth.js";
+import { signin, getSigninUser } from "../../models/auth.js";
 import {
   filterTextInputsInFormData,
   isValidEmail,

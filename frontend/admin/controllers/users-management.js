@@ -5,8 +5,8 @@ import {
   getUser,
   updateUser,
   getFilterUsersList
-} from "../models/users.js";
-import { getRolesList } from "../models/roles.js";
+} from "../../models/users.js";
+import { getRolesList } from "../../models/roles.js";
 import {
   disableBgScroll,
   isValidEmail,
@@ -18,7 +18,7 @@ import {
 } from "../../utils.js";
 import { closeForm, closePopup } from "./components.js";
 import { DISPLAY_MSG_TIMEOUT } from "../../settings.js";
-import { hasPermission } from "../models/auth.js";
+import { hasPermission } from "../../models/auth.js";
 
 const crudUserMsg = $("#crud-user-msg");
 const backdrop = $("#backdrop");
@@ -74,7 +74,7 @@ async function renderUsersData(usersList=null) {
     const users = usersList || await getUsersList();
 
     tbody.html(() => {
-      let dataHTML;
+      let dataHTML = "";
 
       users.forEach((user, idx) => {
         idx++;

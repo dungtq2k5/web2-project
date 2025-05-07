@@ -1,5 +1,5 @@
-import { updateData, deleteData } from "../../utils.js";
-import { CARTS_API_URL } from "../../settings.js";
+import { updateData, deleteData } from "../utils.js";
+import { CARTS_API_URL } from "../settings.js";
 
 
 export async function updateCart(cart) { //{user_id, product_variation_id, quantity}

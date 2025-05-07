@@ -1,4 +1,4 @@
-import { PRODUCTS_INSTANCES_API_URL } from "../../../settings.js";
+import { PRODUCTS_INSTANCES_API_URL } from "../../settings.js";
 import {
   deleteData,
   fetchData,
@@ -6,7 +6,7 @@ import {
   sendData,
   updateData,
   isInterpretableNull
-} from "../../../utils.js";
+} from "../../utils.js";
 import { getReceiptNote } from "../receipt-notes.js";
 import { softUpdateVariationStock } from "./variations.js";
 

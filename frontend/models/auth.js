@@ -2,13 +2,13 @@ import {
   AUTH_STORAGE,
   SIGNIN_API_URL,
   SIGNOUT_API_URL
-} from "../../settings.js";
+} from "../settings.js";
 import {
   getFromStorage,
   removeStorage,
   saveToStorage,
   sendData
-} from "../../utils.js";
+} from "../utils.js";
 
 
 export function getSigninUser() {

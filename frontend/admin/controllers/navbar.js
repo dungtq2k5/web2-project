@@ -1,4 +1,4 @@
-import { getSigninUser, signout } from "../models/auth.js";
+import { getSigninUser, signout } from "../../models/auth.js";
 
 
 const user = getSigninUser();

@@ -1,5 +1,5 @@
-import { ORDERS_API_URL } from "../../settings.js";
-import { fetchData, updateData, convertLocalToUtcDatetime } from "../../utils.js";
+import { ORDERS_API_URL } from "../settings.js";
+import { fetchData, updateData, convertLocalToUtcDatetime } from "../utils.js";
 
 
 let isFetch = false;

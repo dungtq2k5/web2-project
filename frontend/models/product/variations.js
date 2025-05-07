@@ -1,4 +1,4 @@
-import { PRODUCTS_VARIATIONS_API_URL } from "../../../settings.js";
+import { PRODUCTS_VARIATIONS_API_URL } from "../../settings.js";
 import {
   fetchData,
   sendData,
@@ -6,7 +6,7 @@ import {
   updateData,
   removeOddSpace,
   convertLocalToUtcDatetime
-} from "../../../utils.js";
+} from "../../utils.js";
 
 
 let isFetch = false;

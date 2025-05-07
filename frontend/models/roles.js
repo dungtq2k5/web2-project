@@ -1,10 +1,10 @@
-import { CORE_ROLES_ID, ROLES_API_URL } from "../../settings.js";
+import { CORE_ROLES_ID, ROLES_API_URL } from "../settings.js";
 import {
   deleteData,
   fetchData,
   sendData,
   updateData
-} from "../../utils.js";
+} from "../utils.js";
 
 
 let isFetch = false;

@@ -1,12 +1,12 @@
-import { hasPermission } from "../models/auth.js";
+import { hasPermission } from "../../models/auth.js";
 import {
   getInstance,
   getInstancesList,
   updateInstance,
   deleteInstance,
   getFilterInstancesList
-} from "../models/product/instances.js";
-import { getVariation } from "../models/product/variations.js";
+} from "../../models/product/instances.js";
+import { getVariation } from "../../models/product/variations.js";
 import {
   DEFAULT_IMG_PATH,
   VARIATION_IMG_PATH,
@@ -70,7 +70,7 @@ async function renderInstancesData(instancesList=null) {
   try {
     const instances = instancesList || await getInstancesList();
 
-    let dataHTML = ""; // Changed from let dataHTML;
+    let dataHTML = "";
 
     for(const [idx, instance] of instances.entries()) {
       const variation = await getVariation(instance.product_variation_id);

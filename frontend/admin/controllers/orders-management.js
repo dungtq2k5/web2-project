@@ -2,10 +2,10 @@ import {
   getFilterOrdersList,
   getOrdersList,
   updateOrder
-} from "../models/orders.js";
-import { getProduct } from "../models/product/products.js";
-import { getVariation } from "../models/product/variations.js";
-import { getState, getStatesList } from "../models/order-delivery-states.js";
+} from "../../models/orders.js";
+import { getProduct } from "../../models/product/products.js";
+import { getVariation } from "../../models/product/variations.js";
+import { getState, getStatesList } from "../../models/order-delivery-states.js";
 import {
   closeForm,
   renderProductVariationDetailPopup,
@@ -28,7 +28,7 @@ import {
   ORDER_CANCELLED_ID,
   ORDER_SHIPPED_ID
 } from "../../settings.js";
-import { hasPermission } from "../models/auth.js";
+import { hasPermission } from "../../models/auth.js";
 
 
 const crudOrderMsg = $("#crud-order-msg");
@@ -97,7 +97,7 @@ async function renderOrdersData(ordersList=null) {
   try {
     const orders = ordersList || await getOrdersList();
 
-    let dataHTML;
+    let dataHTML = "";
 
     for(const [idx, order] of orders.entries()) {
       let itemsHTML = `<ul class="list-unstyled mb-0">`;

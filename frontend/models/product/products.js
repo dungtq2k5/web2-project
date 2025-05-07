@@ -1,11 +1,11 @@
-import { PRODUCTS_API_URL } from "../../../settings.js";
+import { PRODUCTS_API_URL } from "../../settings.js";
 import {
   deleteData,
   fetchData,
   updateData,
   sendData,
   removeOddSpace
-} from "../../../utils.js";
+} from "../../utils.js";
 
 
 let isFetch = false;

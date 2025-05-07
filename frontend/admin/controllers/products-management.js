@@ -5,10 +5,10 @@ import {
   updateProduct,
   createProduct,
   getFilterProductsList
-} from "../models/product/products.js";
-import { getBrandsList } from "../models/product/brands.js";
-import { getCategoriesList } from "../models/product/categories.js";
-import { createVariation, getVariationsByProductId } from "../models/product/variations.js";
+} from "../../models/product/products.js";
+import { getBrandsList } from "../../models/product/brands.js";
+import { getCategoriesList } from "../../models/product/categories.js";
+import { createVariation, getVariationsByProductId } from "../../models/product/variations.js";
 import {
   disableBgScroll,
   isValidImg,
@@ -25,8 +25,8 @@ import {
   PRODUCT_IMG_PATH,
   DISPLAY_MSG_TIMEOUT
 } from "../../settings.js";
-import { getOSList } from "../models/product/os.js";
-import { hasPermission } from "../models/auth.js";
+import { getOSList } from "../../models/product/os.js";
+import { hasPermission } from "../../models/auth.js";
 
 
 const crudProductMsg = $("#crud-product-msg");
@@ -83,7 +83,7 @@ async function renderProductsData(productsList=null) {
   try {
     const products = productsList || await getProductsList();
 
-    let dataHTML = ""; // Added initialization for dataHTML
+    let dataHTML = "";
 
     for(const [idx, product] of products.entries()) {
       const variations = await getVariationsByProductId(product.id);

@@ -1,10 +1,10 @@
-import { getFilterOrdersList, getOrder } from "../models/orders.js";
+import { getFilterOrdersList, getOrder } from "../../models/orders.js";
 import {
   DEFAULT_IMG_PATH,
   ORDER_RECEIVED_ID,
   VARIATION_IMG_PATH
 } from "../../settings.js";
-import { getUser } from "../models/users.js";
+import { getUser } from "../../models/users.js";
 import {
   convertLocalToUtcDatetime,
   convertUtcToLocalDatetime,
@@ -12,8 +12,8 @@ import {
   formatAddress
 } from "../../utils.js";
 import { closePopup, renderUserDetailPopup } from "./components.js";
-import { getVariation } from "../models/product/variations.js";
-import { getProduct } from "../models/product/products.js";
+import { getVariation } from "../../models/product/variations.js";
+import { getProduct } from "../../models/product/products.js";
 
 
 const backdrop = $("#backdrop");
@@ -62,7 +62,7 @@ async function renderUsersReceivedOrdersData(list) {
     const usersOrders = list || await getUsersReceivedOrdersList();
 
     tbody.html(() => {
-      let dataHTML;
+      let dataHTML = "";
 
       usersOrders.forEach((userOrders, idx) => {
         const receivedOrdersHTML = userOrders.received_orders.map(order => {

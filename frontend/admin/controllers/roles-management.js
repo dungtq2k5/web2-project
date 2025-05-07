@@ -4,15 +4,15 @@ import {
   deleteRole,
   getRole,
   updateRole
-} from "../models/roles.js";
+} from "../../models/roles.js";
 import {
   disableBgScroll,
   filterTextInputsInFormData
 } from "../../utils.js";
-import { getPermissionsList } from "../models/permissions.js";
+import { getPermissionsList } from "../../models/permissions.js";
 import { closeForm, closePopup } from "./components.js";
 import { DISPLAY_MSG_TIMEOUT } from "../../settings.js";
-import { hasPermission } from "../models/auth.js";
+import { hasPermission } from "../../models/auth.js";
 
 const crudRoleMsg = $("#crud-role-msg");
 const backdrop = $("#backdrop");

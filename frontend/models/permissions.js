@@ -1,5 +1,5 @@
-import { PERMISSIONS_API_URL } from "../../settings.js";
-import { fetchData } from "../../utils.js";
+import { PERMISSIONS_API_URL } from "../settings.js";
+import { fetchData } from "../utils.js";
 
 
 let isFetch = false;

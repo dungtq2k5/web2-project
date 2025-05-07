@@ -1,5 +1,5 @@
-import { ORDERS_DELIVERY_STATES_API_URL } from "../../settings.js";
-import { fetchData } from "../../utils.js";
+import { ORDERS_DELIVERY_STATES_API_URL } from "../settings.js";
+import { fetchData } from "../utils.js";
 
 
 let isFetch = false;

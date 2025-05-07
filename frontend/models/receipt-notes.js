@@ -1,5 +1,5 @@
-import { fetchData } from "../../utils.js";
-import { RECEIPT_NOTES_API_URL } from "../../settings.js";
+import { fetchData } from "../utils.js";
+import { RECEIPT_NOTES_API_URL } from "../settings.js";
 
 
 let isFetch = false;

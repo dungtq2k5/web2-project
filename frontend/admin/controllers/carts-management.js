@@ -4,9 +4,9 @@ import {
   updateUserCart,
   deleteUserCart,
   getFilterUsersList
-} from "../models/users.js";
-import { getVariation } from "../models/product/variations.js";
-import { getProduct } from "../models/product/products.js";
+} from "../../models/users.js";
+import { getVariation } from "../../models/product/variations.js";
+import { getProduct } from "../../models/product/products.js";
 import {
   renderUserDetailPopup,
   renderProductVariationDetailPopup,
@@ -19,7 +19,7 @@ import {
   DEFAULT_IMG_PATH,
   VARIATION_IMG_PATH
 } from "../../settings.js";
-import { hasPermission } from "../models/auth.js";
+import { hasPermission } from "../../models/auth.js";
 
 
 const crudCartMsg = $("#crud-cart-msg");
@@ -64,19 +64,23 @@ export default function renderUsersCartsManagePage() {
 }
 
 async function renderCartsData(usersList=null) {
-  tbody.html("<tr><td colspan='9' class='text-center p-3'>Loading data...</td></tr>");
+  tbody.html("<tr><td colspan='5' class='text-center p-3'>Loading data...</td></tr>");
 
   try {
     const users = usersList || await getUsersList();
 
-    let dataHTML;
+    let dataHTML = "";
 
     for(const [idx, user] of users.entries()) {
-      let cartItemsHTML = `<ul class="list-unstyled mb-0">`;
+      let cartItemsHTML = "";
       if (user.cart && user.cart.length > 0) {
         for(const [, item] of user.cart.entries()) {
           const variation = await getVariation(item.product_variation_id);
+          if(!variation) continue;
+
           const product = await getProduct(variation.product_id);
+          if(!product) continue;
+
           const variationImg = variation.image_name ? `${VARIATION_IMG_PATH}/${variation.image_name}` : DEFAULT_IMG_PATH;
 
           cartItemsHTML += `
@@ -111,9 +115,6 @@ async function renderCartsData(usersList=null) {
             </li>
           `;
         }
-        cartItemsHTML += `</ul>`;
-      } else {
-        cartItemsHTML = "<p class=\"text-muted text-center p-2\">Empty cart</p>";
       }
 
 
@@ -138,10 +139,16 @@ async function renderCartsData(usersList=null) {
             }
           </td>
           <td data-cell="user email" class="p-2">${user.email}</td>
-          <td data-cell="user cart" class="p-2">${cartItemsHTML}</td>
+          <td data-cell="user cart" class="p-2">
+            ${
+              cartItemsHTML
+                ? `<ul class="list-unstyled mb-0">${cartItemsHTML}</ul>`
+                : "<p class='text-muted text-center p-2'>Empty cart</p>"
+            }
+          </td>
           <td data-cell="actions" class="text-center p-2">
             ${
-              user.cart.length > 0 && canUpdate
+              cartItemsHTML && canUpdate
               ? `<button
                   class="js-mod-cart-btn btn btn-info btn-sm"
                   data-user-id="${user.id}"
@@ -155,7 +162,7 @@ async function renderCartsData(usersList=null) {
       `;
     }
 
-    tbody.html(dataHTML || "<tr><td colspan='9' class='text-center p-3'>No data</td></tr>");
+    tbody.html(dataHTML || "<tr><td colspan='5' class='text-center p-3'>No data</td></tr>");
 
     if(canRead) {
       tbody.find(".js-view-detail-item-btn").click(e => {
@@ -195,7 +202,7 @@ async function renderCartsData(usersList=null) {
 
   } catch(error) {
     console.error(`Error: ${error.message}`);
-    tbody.html(`<tr><td colspan='9' class='text-center p-3 table-danger">Error loading data: ${error.message}</td></tr>`);
+    tbody.html(`<tr><td colspan='5' class='text-center p-3 table-danger">Error loading data: ${error.message}</td></tr>`);
   }
 }
 

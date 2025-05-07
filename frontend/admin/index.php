@@ -7,7 +7,7 @@
 ?>
 
 <script type="module">
-  import { getSigninUser } from "./models/auth.js";
+  import { getSigninUser } from "../models/auth.js";
 
   const defaultPhpPage = "<?php echo $default_page; ?>";
   const currentPhpPage = "<?php echo $page ?>"; // Magic happen here...
@@ -27,9 +27,9 @@
 <?php
   $page_path = "./pages/{$page}.html";
 
-  include_once "./components/header.html";
+  include_once "../components/header.html";
 
-  if($page !== "signin") include_once "./components/navbar.html";
+  if($page !== "signin") include_once "../components/navbar.html";
 
   if(file_exists($page_path)) {
     include_once $page_path;
@@ -44,4 +44,4 @@
     ";
   }
 
-  include_once "./components/footer.html";
+  include_once "../components/footer.html";

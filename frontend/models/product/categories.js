@@ -1,5 +1,5 @@
-import { PRODUCTS_CATEGORIES_API_URL } from "../../../settings.js";
-import { deleteData, fetchData, sendData, updateData } from "../../../utils.js";
+import { PRODUCTS_CATEGORIES_API_URL } from "../../settings.js";
+import { deleteData, fetchData, sendData, updateData } from "../../utils.js";
 
 let isFetch = false;
 let categoriesList = [];

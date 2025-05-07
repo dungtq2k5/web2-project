@@ -1,4 +1,4 @@
-import { ADMIN_ID, USERS_API_URL } from "../../settings.js";
+import { ADMIN_ID, USERS_API_URL } from "../settings.js";
 import { updateCart, deleteCart } from "./carts.js"
 import {
   deleteData,
@@ -6,7 +6,7 @@ import {
   sendData,
   updateData,
   removeOddSpace
-} from "../../utils.js";
+} from "../utils.js";
 import { getVariation } from "./product/variations.js";
 import { getProduct } from "./product/products.js";
 import { getSigninUser } from "./auth.js";
