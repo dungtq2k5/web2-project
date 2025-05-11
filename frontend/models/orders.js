@@ -1,5 +1,5 @@
 import { ORDERS_API_URL } from "../settings.js";
-import { fetchData, updateData, convertLocalToUtcDatetime } from "../utils.js";
+import { fetchData, updateData, convertLocalToUtcDatetime, sendData } from "../utils.js";
 
 
 let isFetch = false;
@@ -57,6 +57,7 @@ export async function getFilterOrdersList(
   street=null,
   delStateId=null,
   sortByAddress=false,
+  sortByDate=false,
   limit=null,
   offset=null
 ) {
@@ -68,7 +69,8 @@ export async function getFilterOrdersList(
     ward === null &&
     street === null &&
     delStateId === null &&
-    sortByAddress === false
+    sortByAddress === false &&
+    sortByDate === false
   ) return await getOrdersList(limit, offset);
 
   const ordersList = await getOrdersList();
@@ -102,6 +104,8 @@ export async function getFilterOrdersList(
 
   if(sortByAddress) filterOrdersList = await sortOrdersListByAddress(filterOrdersList);
 
+  if(sortByDate) filterOrdersList = await sortOrdersListByDate(filterOrdersList);
+
   const start = offset || 0;
   const end = limit ? start + limit : filterOrdersList.length;
   return filterOrdersList.slice(start, end);
@@ -130,6 +134,15 @@ export async function sortOrdersListByAddress(list=null) { // Sort by city > dis
   });
 }
 
+export async function sortOrdersListByDate(list=null) { // Sort by order date
+  const orders = list || await getOrdersList();
+
+  return orders
+    .map(order => ({ ...order, order_date_timestamp: new Date(order.order_date).getTime() }))
+    .sort((orderA, orderB) => orderB.order_date_timestamp - orderA.order_date_timestamp)
+    .map(({ order_date_timestamp, ...order }) => order);
+}
+
 export async function getOrderItem(orderId, variationId) {
   if(!orderId || !variationId) return undefined;
 
@@ -137,4 +150,20 @@ export async function getOrderItem(orderId, variationId) {
   if(!order) return undefined;
 
   return order.items.find(item => item.product_variation_id == variationId) || undefined;
+}
+
+// {user_id, delivery_address_id, items}
+// items: [{product_variation_id, quantity}]
+export async function createOrder(order) {
+  const res = await sendData(ORDERS_API_URL, order);
+
+  if(res.success) {
+    if(!isFetch) {
+      await fetchOrders();
+    } else {
+      ordersList.push(res.data);
+    }
+  }
+
+  return res;
 }

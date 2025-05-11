@@ -102,21 +102,42 @@ export async function updateProduct(id, product) {
   return res;
 }
 
-export async function getFilterProductsList(valSearch=null, limit=null, offset=null) {
-  if(!valSearch) return await getProductsList(limit, offset);
+export async function getFilterProductsList(
+  valSearch=null,
+  categoryId=null,
+  brandId=null,
+  priceFrom=null,
+  priceTo=null,
+  stopSelling=null,
+  limit=null,
+  offset=null
+) {
+  if(
+    valSearch === null &&
+    categoryId === null &&
+    brandId === null &&
+    priceFrom === null &&
+    priceTo === null &&
+    stopSelling === null
+  ) return await getProductsList(limit, offset);
 
   const productsList = await getProductsList();
-  const formattedValSearch = removeOddSpace(valSearch.toLowerCase());
+  if(valSearch) valSearch = removeOddSpace(valSearch.toLowerCase());
 
   const filteredProductsList = productsList.filter(product => {
+    if(categoryId && product.category.id != categoryId) return false;
+    if(brandId && product.brand.id != brandId) return false;
+    if(priceFrom && product.average_price_cents < priceFrom) return false;
+    if(priceTo && product.average_price_cents > priceTo) return false;
+    if(stopSelling !== null && product.stop_selling != stopSelling) return false;
+    if(valSearch === null) return true;
+
     return (
-      String(product.id).includes(formattedValSearch) ||
-      product.name.toLowerCase().includes(formattedValSearch) ||
-      product.model.toLowerCase().includes(formattedValSearch) ||
-      product.brand.name.toLowerCase().includes(formattedValSearch) ||
-      product.category.name.toLowerCase().includes(formattedValSearch) ||
-      product.description.toLowerCase().includes(formattedValSearch) ||
-      String(Boolean(product.stop_selling)).includes(formattedValSearch)
+      product.name.toLowerCase().includes(valSearch) ||
+      product.model.toLowerCase().includes(valSearch) ||
+      product.brand.name.toLowerCase().includes(valSearch) ||
+      product.category.name.toLowerCase().includes(valSearch) ||
+      product.description.toLowerCase().includes(valSearch)
     )
   });
 
@@ -130,4 +151,12 @@ async function getByNameAndModel(name, model) {
 
   const products = await getProductsList();
   return products.find(product => product.name === name && product.model === model) || undefined;
+}
+
+export async function getAvailableProductsList(limit=null, offset=null) {
+  const availableProducts = (await getProductsList()).filter(product => !product.stop_selling);
+
+  const start = offset || 0;
+  const end = limit ? limit + start : availableProducts.length;
+  return availableProducts.slice(start, end);
 }

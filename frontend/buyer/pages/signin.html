@@ -1,0 +1,36 @@
+<main>
+  <form id="signin-form">
+    <h1>Sign In</h1>
+
+    <div>
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" autocomplete="email" />
+      <span id="email-msg"></span>
+    </div>
+    <div>
+      <label for="password">Password</label>
+      <input
+        type="password"
+        id="password"
+        name="password"
+        autocomplete="current-password"
+      />
+      <span id="password-msg"></span>
+    </div>
+
+    <div>
+      <button type="submit" id="submit">Sign Me In</button>
+      <span id="signin-form-msg"></span>
+    </div>
+
+    <div>
+      <div>
+        <p>Don't have an account?</p>
+        <a href="./index.php?page=signup">Signup now</a>
+      </div>
+      <a href="./index.php?page=home">Back to homepage</a>
+    </div>
+  </form>
+</main>
+
+<script type="module" src="./controllers/signin.js"></script>

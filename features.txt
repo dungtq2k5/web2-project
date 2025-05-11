@@ -12,9 +12,9 @@ BACKEND - API:
   - ❌ Mod orders db when buyers change their addresses.
 
 FRONTEND:
-  - ❌ Using class for controller.
+  - ❌ Using class for controller if needed.
   - ❌ Fix issues when display msg overlap.
-  - ❌ Update and re-render (using search instead).
+  - ❌ Update and re-render (using search instead) if needed.
 
   - Auths:
     + ✅ Signin.
@@ -63,9 +63,13 @@ FRONTEND:
 
   - ✅ Roles and permissions.
 
+  - ❌ Handle signin/signout between admin and buyer.
+  - ❌ Title logo, icon for website
+
 
 DATABASE:
   - ❌ Add indexing for db (base on query at gateways function).
+  - ❌ Make sure all unique of watch_size_mm of each product variations.
 
 OVERALL:
   - ❌ Write descriptions for functions - especially in utils.

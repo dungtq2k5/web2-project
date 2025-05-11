@@ -43,6 +43,8 @@ class AuthController {
           $this->error_handler->sendErrorResponse(200, $error_msg);
         } else {
           unset($usr["password"]);
+          unset($usr["cart"]);
+          unset($usr["addresses"]);
           echo json_encode([
             "success" => true,
             "message" => "Signin successful",
@@ -63,6 +65,8 @@ class AuthController {
         // 2.Create user
         $usr = $this->usr_gateway->create($data, true);
         unset($usr["password"]);
+        unset($usr["cart"]);
+        unset($usr["addresses"]);
 
         // 3. Gen token
         if($this->auths->verifyJWT()) {   // Check if a valid token exists

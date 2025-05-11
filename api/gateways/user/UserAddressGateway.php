@@ -78,7 +78,7 @@ class UserAddressGateway {
         phone_number,
         is_default
       ) VALUES (
-        :name
+        :name,
         :user_id,
         :street,
         :apartment_number,

@@ -1,5 +1,5 @@
 <?php
-  $default_page = "users-management";
+  $default_page = "home";
 
   $page = isset($_GET["page"]) && !empty($_GET["page"])
     ? $_GET["page"]
@@ -7,18 +7,19 @@
 ?>
 
 <script type="module">
-  import { getSigninUser } from "../models/auth.js";
+  import { getSigninUser }  from "../models/auth.js";
 
   const defaultPhpPage = "<?php echo $default_page; ?>";
   const currentPhpPage = "<?php echo $page ?>"; // Magic happen here...
   const signinPage = "signin";
+  const signupPage = "signup";
 
   if(getSigninUser()) {
-    if(currentPhpPage === signinPage) {
+    if([signinPage, signupPage].includes(currentPhpPage)) {
       window.location.href = `index.php?page=${defaultPhpPage}`;
     }
   } else {
-    if(currentPhpPage !== signinPage) {
+    if(![signinPage, signupPage, "home", "product-detail"].includes(currentPhpPage)) {
       window.location.href = `index.php?page=${signinPage}`;
     }
   }
@@ -29,7 +30,7 @@
 
   include_once "./components/header.html";
 
-  if($page !== "signin") include_once "./components/navbar.html";
+  if(!in_array($page, ["signin", "signup"])) include_once "./components/navbar.html";
 
   if(file_exists($page_path)) {
     include_once $page_path;

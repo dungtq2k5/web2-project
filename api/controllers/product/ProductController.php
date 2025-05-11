@@ -27,7 +27,7 @@ class ProductController {
 
     switch($method) {
       case "GET":
-        $this->auths->verifyAction("READ_PRODUCT");
+        // $this->auths->verifyAction("READ_PRODUCT");
 
         echo json_encode([
           "success" => true,
@@ -89,7 +89,7 @@ class ProductController {
   private function processCollectionRequest(string $method, ?int $limit=null, ?int $offset=null): void {
     switch($method) {
       case "GET":
-        $this->auths->verifyAction("READ_PRODUCT");
+        // $this->auths->verifyAction("READ_PRODUCT");
 
         $data = $this->gateway->getAll($limit, $offset);
 

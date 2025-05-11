@@ -1,0 +1,86 @@
+<main>
+  <h2>All smartwatches</h2>
+
+  <div>
+    <section>
+      <!-- Search box -->
+      <form id="search-form">
+        <h2>Filter products</h2>
+
+        <div>
+          <label for="search-input">Search product</label>
+          <input type="text" name="search_input" id="search-input" />
+        </div>
+
+        <div>
+          <label for="search-category">Category</label>
+          <select name="search_category" id="search-category"></select>
+        </div>
+
+        <div>
+          <label for="search-brand">Brand</label>
+          <select name="search_brand" id="search-brand"></select>
+        </div>
+
+        <div>
+          <p>Prices:</p>
+          <div>
+            <label for="search-price-from">From</label>
+            <input
+              type="number"
+              name="search_price_from"
+              id="search-price-from"
+              placeholder="no filtered"
+            />
+          </div>
+          <div>
+            <label for="search-price-to">To</label>
+            <input
+              type="number"
+              name="search_price_to"
+              id="search-price-to"
+              placeholder="no filtered"
+            />
+          </div>
+        </div>
+
+        <div>
+          <button type="submit" id="search-btn">Search</button>
+          <button type="reset" id="reset-search-btn">Clear search</button>
+        </div>
+      </form>
+    </section>
+
+    <section>
+      <!-- Display product cards -->
+      <div id="products-container">
+        <div>
+          <img
+            src="../../uploads/default.webp"
+            style="width: 100px"
+            alt="Product Image"
+          />
+          <p>${product.name}</p>
+          <p>${product.description}</p>
+          <p>&#36;${product.average_price_cents} USD</p>
+        </div>
+        <!-- ....-->
+      </div>
+
+      <!-- Pagination-->
+      <div>
+        <button id="go-back">
+          <i class="uil uil-arrow-left"></i>
+        </button>
+
+        <ul id="pagination"></ul>
+
+        <button id="go-forward">
+          <i class="uil uil-arrow-right"></i>
+        </button>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script type="module" src="./controllers/home.js"></script>

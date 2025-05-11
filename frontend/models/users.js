@@ -12,7 +12,7 @@ import { getProduct } from "./product/products.js";
 import { getSigninUser } from "./auth.js";
 
 
-let isFetch = false; //make sure when render data
+let isFetch = false; // Make sure when render data
 let usersList = [];
 
 async function fetchUsers(limit=null, offset=null) {

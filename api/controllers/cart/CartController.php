@@ -74,11 +74,6 @@ class CartController {
       case "DELETE":
         $auth = $this->auths->verifyAction("DELETE_CART");
 
-        if(!$product_variation_id) {
-          $this->error_handler->sendErrorResponse(422, "product_variation_id is required");
-          break;
-        }
-
         if($auth["buyer_only"] && $auth["user_id"] != $usr_id) { // Buyer can only change their own resources
           $this->error_handler->sendErrorResponse(403, "Forbidden: You do not own this resource");
           break;

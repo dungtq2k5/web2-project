@@ -18,7 +18,10 @@ spl_autoload_register(function ($class) use ($classMap): void {
 $error_handler = new ErrorHandler;
 set_exception_handler([$error_handler, "handleException"]);
 
-header("Access-Control-Allow-Origin: " . $_ENV["DOMAIN_FRONTEND"]);                          // Allow your origin
+$allowed_origins = array_map('trim', explode(',', $_ENV["DOMAINS_FRONTEND"]));
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+
+if(in_array($origin, $allowed_origins)) header("Access-Control-Allow-Origin: $origin");      // Allow CORS
 header("Access-Control-Allow-Credentials: true");                                            // Allow cookies
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");                     // Allowed request methods
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-HTTP-Method-Override"); // Allowed headers

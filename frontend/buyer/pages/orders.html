@@ -1,0 +1,31 @@
+<main>
+  <h2>Orders</h2>
+
+  <!--
+        (1, 'order placed'),
+        (2, 'order confirmed'),
+        (3, 'processing'),
+        (4, 'shipped'),
+        (5, 'out for delivery'),
+        (6, 'delivered'),
+        (7, 'received'),
+        (8, 'canceled'),
+        (9, 'returned');
+      -->
+  <div>
+    <ul id="order-sections">
+      <li><button id="orders-all">All</button></li>
+      <li><button id="orders-to-ship">To ship</button></li>
+      <li><button id="orders-to-receive">To receive</button></li>
+      <li><button id="orders-completed">Completed</button></li>
+      <li><button id="orders-cancelled">Cancelled</button></li>
+      <li><button id="orders-returned">Returned/Refund</button></li>
+    </ul>
+
+    <ul id="orders-container"></ul>
+  </div>
+</main>
+
+<div id="backdrop" class="backdrop--g" style="display: none"></div>
+
+<script type="module" src="./controllers/orders.js"></script>

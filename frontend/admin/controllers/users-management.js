@@ -265,7 +265,9 @@ async function renderCreateUserForm() {
         if(!formData.get("full_name")) {
           fullnameMsg.text("* required");
           allValid = false;
-        } else fullnameMsg.text("");
+        } else {
+          fullnameMsg.text("");
+        }
 
         if(!formData.get("email")) {
           emailMsg.text("* required");
@@ -273,7 +275,9 @@ async function renderCreateUserForm() {
         } else if(!isValidEmail(formData.get("email"))) {
           emailMsg.text("invalid email");
           allValid = false;
-        } else emailMsg.text("");
+        } else {
+          emailMsg.text("");
+        }
 
         if(!formData.get("phone_number")) {
           phoneNumberMsg.text("* required");
@@ -281,7 +285,9 @@ async function renderCreateUserForm() {
         } else if(!isValidVNPhoneNumber(formData.get("phone_number"))) {
           phoneNumberMsg.text("invalid phone number");
           allValid = false;
-        } else phoneNumberMsg.text("");
+        } else {
+          phoneNumberMsg.text("");
+        }
 
         if(!formData.get("password")) {
           passwordMsg.text("* required");
@@ -289,7 +295,9 @@ async function renderCreateUserForm() {
         } else if(!isValidPassword(formData.get("password"))) {
           passwordMsg.text("invalid password");
           allValid = false;
-        } else passwordMsg.text("");
+        } else {
+          passwordMsg.text("");
+        }
 
         return allValid;
       }

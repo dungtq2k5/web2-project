@@ -1,4 +1,4 @@
-import { restricts } from "./settings.js";
+import { restricts, TTL } from "./settings.js";
 
 async function request(url, method="GET", data=null, headers={}) {
   try {
@@ -294,19 +294,65 @@ function encodeDecodeData(data, action = 'encode') { // AI gen
   }
 }
 
-export function saveToStorage(name, val) {
+export function saveToStorage(key, val, ttl=TTL) { // time to live 1 hour as a default
+  const now = new Date();
   const valEncoded = encodeDecodeData(val);
-  localStorage.setItem(name, valEncoded);
+
+  localStorage.setItem(
+    key,
+    JSON.stringify({val: valEncoded, expiry: now.getTime() + ttl})
+  );
 }
 
-export function getFromStorage(name) {
-  const val = localStorage.getItem(name);
+export function getFromStorage(key) {
+  const valStr = localStorage.getItem(key);
 
-  if(!val) return null;
+  if(!valStr) return null;
+
+  const {val, expiry} = JSON.parse(valStr);
+  const now = new Date();
+
+  if(now.getTime() > expiry) {
+    localStorage.removeItem(key);
+    return null;
+  }
 
   return encodeDecodeData(val, "decode");
 }
 
-export function removeStorage(name) {
-  localStorage.removeItem(name);
+export function removeStorage(key) {
+  localStorage.removeItem(key);
+}
+
+export function centsToDollars(cents) {
+  if(cents === null || cents === undefined) return null;
+
+  if(typeof cents !== "number") {
+    console.error("Invalid input: cents should be a number");
+    return null;
+  }
+
+  return (cents / 100).toFixed(2);
+}
+
+export function bytesToMB(bytes) {
+  if(bytes === null || bytes === undefined) return null;
+
+  if(typeof bytes !== "number") {
+    console.error("Invalid input: bytes should be a number");
+    return null;
+  }
+
+  return (bytes / (1024 * 1024)).toFixed(2);
+}
+
+export function mgToGrams(mg) {
+  if(mg === null || mg === undefined) return null;
+
+  if(typeof mg !== "number") {
+    console.error("Invalid input: mg should be a number");
+    return null;
+  }
+
+  return (mg / 1000).toFixed(2);
 }

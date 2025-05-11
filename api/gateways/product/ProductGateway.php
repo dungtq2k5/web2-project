@@ -15,7 +15,13 @@ class ProductGateway {
   }
 
   public function getAll(?int $limit=null, ?int $offset=null): array {
-    $sql = "SELECT * FROM products WHERE is_deleted = false";
+    $sql = "SELECT p.*,
+        (SELECT COALESCE(AVG(p_v.price_cents), 0)
+        FROM product_variations AS p_v
+        WHERE p_v.product_id = p.id AND p_v.is_deleted = false) AS average_price_cents
+      FROM products AS p
+      WHERE p.is_deleted = false
+    ";
 
     if($limit !== null && $offset !== null) {
       $sql .= " LIMIT :limit OFFSET :offset";
@@ -45,7 +51,15 @@ class ProductGateway {
   }
 
   public function get(int $id): array | false {
-    $sql = "SELECT * FROM products WHERE id = :id AND is_deleted = false";
+    $sql = "SELECT p.*, COALESCE(AVG(p_v.price_cents), 0) AS average_price_cents
+      FROM products AS p
+      INNER JOIN product_variations AS p_v ON p.id = p_v.product_id
+      WHERE
+        p.id = :id AND
+        p.is_deleted = false AND
+        p_v.is_deleted = false
+      GROUP BY p.id
+    ";
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":id", $id, PDO::PARAM_INT);
@@ -207,7 +221,7 @@ class ProductGateway {
       $stmt = $this->conn->prepare($sql);
       $stmt->bindValue(":image_name", $img_name, PDO::PARAM_STR);
       $stmt->bindValue(":id", $id, PDO::PARAM_INT);
-      
+
       return $stmt->execute();
 
     } catch(PDOException $e) {

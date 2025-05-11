@@ -1,7 +1,9 @@
 import {
   AUTH_STORAGE,
+  BUYER_ROLE_ID,
   SIGNIN_API_URL,
-  SIGNOUT_API_URL
+  SIGNOUT_API_URL,
+  SIGNUP_API_URL
 } from "../settings.js";
 import {
   getFromStorage,
@@ -45,6 +47,21 @@ export async function signout() {
   return res;
 }
 
+export async function signup(user) {
+  if(getSigninUser()) {
+    return {
+      success: false,
+      message: "You have already been signin, no need to do it again. If you want to signup with another account, please signout first"
+    }
+  }
+
+  const res = await sendData(SIGNUP_API_URL, user);
+
+  if(res.success) saveToStorage(AUTH_STORAGE, res.data);
+
+  return res;
+}
+
 export function hasPermission(actionCode) {
   if(!actionCode) return false;
 
@@ -58,6 +75,11 @@ export function hasPermission(actionCode) {
     }
   }
   return false;
+}
+
+export function isBuyer() {
+  const user = getSigninUser();
+  return user && user.roles.some(role => role.id == BUYER_ROLE_ID);
 }
 
 export const login = signin;

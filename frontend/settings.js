@@ -8,6 +8,8 @@ export const SIGNUP_API_URL = AUTH_API_URL + "/signup";
 
 export const USERS_API_URL = SOURCE_API_URL + "/users";
 
+export const ADDRESSES_API_URL = USERS_API_URL + "/addresses";
+
 export const ROLES_API_URL = USERS_API_URL + "/roles";
 export const PERMISSIONS_API_URL = USERS_API_URL + "/permissions";
 
@@ -31,7 +33,7 @@ export const PRODUCT_IMG_PATH = `${IMG_PATH}/products`;
 export const VARIATION_IMG_PATH = `${IMG_PATH}/variations`;
 export const DEFAULT_IMG_PATH = `${IMG_PATH}/default.webp`;
 
-// Restrict
+// Restrict, relevant to Backend
 export const restricts = {
   img: {
     allowedTypes: ["image/webp"],
@@ -40,9 +42,13 @@ export const restricts = {
     maxHeight: 2400
   }
 }
+export const TTL = 3600000; // 1 hour
 
 // Others
 export const DISPLAY_MSG_TIMEOUT = 5_000; // 5 seconds
+export const DISPLAY_MSG_TIMEOUT_SHORT = 2_000; // 2 seconds
+export const AUTH_STORAGE = "auth_storage";
+export const PRODUCTS_PER_PAGE = 3;
 
 // Adjust these values according to your db
 export const ORDER_PLACED_ID = 1;
@@ -68,5 +74,3 @@ export const CORE_ROLES_ID = [
 ];
 
 export const ADMIN_ID = 1;
-
-export const AUTH_STORAGE = "auth_storage";

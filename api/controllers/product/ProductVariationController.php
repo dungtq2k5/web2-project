@@ -27,7 +27,7 @@ class ProductVariationController {
 
     switch($method) {
       case "GET":
-        $this->auths->verifyAction("READ_PRODUCT_VARIATION");
+        // $this->auths->verifyAction("READ_PRODUCT_VARIATION");
 
         echo json_encode([
           "success" => true,
@@ -88,7 +88,7 @@ class ProductVariationController {
   private function processCollectionRequest(string $method, ?int $limit=null, ?int $offset=null): void {
     switch($method) {
       case "GET":
-        $this->auths->verifyAction("READ_PRODUCT_VARIATION");
+        // $this->auths->verifyAction("READ_PRODUCT_VARIATION");
 
         $data = $this->gateway->getAll($limit, $offset);
 

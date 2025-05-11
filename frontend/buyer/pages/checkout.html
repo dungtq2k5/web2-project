@@ -1,0 +1,97 @@
+<main>
+  <h2><i class="uil uil-shield-check"></i> Secure checkout</h2>
+
+  <div>
+    <div>
+      <!-- Account -->
+      <div>
+        <h2>Account</h2>
+        <p>
+          You are signed in as <span id="email-account">N/A</span>. We'll use
+          your email address to send your order confirmation.
+        </p>
+      </div>
+
+      <!-- Checkout form -->
+      <form id="checkout-form">
+        <!-- Shipping address -->
+        <div>
+          <label for="checkout-address">Shipping to</label>
+          <select name="delivery_address_id" id="checkout-address"></select>
+          <button type="button" id="create-address-btn">
+            <i class="uil uil-plus"></i>Create new address
+          </button>
+          <span id="address-msg"></span>
+        </div>
+
+        <!-- Payment method -->
+        <div>
+          <label for="checkout-method">Payment Method</label>
+          <select id="checkout-method">
+            <option value="1">Cash on delivery</option>
+            <option value="2">Credit card</option>
+            <option value="3">Debit card</option>
+          </select>
+          <!-- Credit card form if select card payment -->
+          <div id="checkout-card-form" style="display: none">
+            <h2>Fill your card information</h2>
+
+            <div>
+              <label for="checkout-card-number">Card Number</label>
+              <input
+                type="text"
+                id="checkout-card-number"
+                name="card_number"
+                placeholder="1234 5678 9012 3456"
+              />
+              <span id="card-number-msg"></span>
+            </div>
+
+            <div>
+              <label for="checkout-card-expiry-date">Expiry Date</label>
+              <input
+                type="text"
+                id="checkout-card-expiry-date"
+                name="card_expiry_date"
+                placeholder="MM/YY"
+              />
+              <span id="card-expiry-date-msg"></span>
+            </div>
+
+            <div>
+              <label for="checkout-card-cvc">CVC</label>
+              <input
+                type="text"
+                id="checkout-card-cvc"
+                name="card_cvc"
+                placeholder="123"
+              />
+              <span id="card-cvc-msg"></span>
+            </div>
+
+            <div>
+              <label for="checkout-card-holder-name">Card holder name</label>
+              <input
+                type="text"
+                id="checkout-card-holder-name"
+                name="card_holder_name"
+                placeholder="John Doe"
+              />
+              <span id="card-holder-name-msg"></span>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" id="checkout-submit-btn">Place order</button>
+        <span id="checkout-msg"></span>
+      </form>
+    </div>
+
+    <!-- Order summary -->
+    <div id="order-summary"></div>
+  </div>
+</main>
+
+<div id="backdrop" class="backdrop--g" style="display: none"></div>
+
+<script type="module" src="./controllers/checkout.js"></script>

@@ -36,9 +36,18 @@ export async function getVariation(id) {
   return variationsList.find(variation => variation.id == id) || undefined;
 }
 
-export async function getVariationsByProductId(id) {
+export async function getVariationsByProductId(id, stopSelling=null) {
+  if(!id) return [];
+
   const variationsList = await getVariationsList();
-  return variationsList.filter(variation => variation.product_id == id);
+
+  return variationsList.filter(variation => {
+    if(variation.product_id != id) return false;
+
+    if(stopSelling !== null && variation.stop_selling != stopSelling) return false;
+
+    return true;
+  });
 }
 
 export async function createVariation(variation) {

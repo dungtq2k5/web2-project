@@ -126,18 +126,24 @@ class CartGateway {
     }
   }
 
-  public function delete(int $user_id, int $product_variation_id): bool {
+  public function delete(int $user_id, ?int $product_variation_id=null): int {
     $this->conn->beginTransaction();
 
     try {
-      $sql = "DELETE FROM carts WHERE user_id = :user_id AND product_variation_id = :product_variation_id";
+      $sql = "DELETE FROM carts WHERE user_id = :user_id";
+
+      if($product_variation_id) {
+        $sql .= " AND product_variation_id = :product_variation_id";
+      }
 
       $stmt = $this->conn->prepare($sql);
       $stmt->bindValue(":user_id", $user_id, PDO::PARAM_INT);
-      $stmt->bindValue(":product_variation_id", $product_variation_id, PDO::PARAM_INT);
+      if($product_variation_id) $stmt->bindValue(":product_variation_id", $product_variation_id, PDO::PARAM_INT);
       $stmt->execute();
 
-      return $this->conn->commit();
+      $this->conn->commit();
+
+      return $stmt->rowCount();
 
     } catch(PDOException $e) {
       $this->conn->rollBack();
@@ -149,7 +155,7 @@ class CartGateway {
   }
 
   public function getByUserId(int $user_id, ?int $limit=null, ?int $offset=null): array {
-    $sql = "SELECT product_variation_id, quantity FROM carts WHERE user_id = :user_id";
+    $sql = "SELECT * FROM carts WHERE user_id = :user_id";
 
     if($limit !== null && $offset !== null) {
       $sql .= " LIMIT :limit OFFSET :offset";
