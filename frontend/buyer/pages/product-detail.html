@@ -1,10 +1,50 @@
-<main>
-  <div id="product-container"></div>
+<main class="container">
+  <div id="product-container" class="row g-4">
+    <!-- Product details will be loaded here by JS -->
+    <!-- Example structure for JS to fill:
+    <div class="col-md-6">
+      <img src="..." alt="Smartwatch product" class="img-fluid rounded shadow-sm">
+    </div>
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-body">
+          <h2 class="card-title">Product Name</h2>
+          <p class="card-text text-muted">Product Description</p>
+          <p class="fs-4 fw-bold text-primary">&#36;Price USD</p>
+
+          <div class="mb-3">
+            <h3 class="fs-6">Watch size:</h3>
+            <ul class="list-inline">
+              <li class="list-inline-item"><button class="btn btn-sm btn-outline-dark">40MM</button></li>
+              <li class="list-inline-item"><button class="btn btn-sm btn-dark">44MM</button></li>
+            </ul>
+          </div>
+
+          <div class="d-grid gap-2 d-md-flex">
+            <button id="add-cart-btn" class="btn btn-primary"><i class="uil uil-shopping-cart-alt"></i> Add to cart</button>
+            <button id="buy-now-btn" class="btn btn-success"><i class="uil uil-money-bill"></i> Buy now</button>
+          </div>
+          <span id="add-cart-msg" class="form-text d-block mt-2"></span>
+        </div>
+      </div>
+    </div>
+    -->
+  </div>
 
   <!-- Variation specs -->
-  <div>
-    <h3>Specifications</h3>
-    <ul id="product-specs"></ul>
+  <div class="mt-5">
+    <h3 class="mb-3"><i class="uil uil-clipboard-notes"></i> Specifications</h3>
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <ul id="product-specs" class="list-group list-group-flush">
+          <!-- Specs will be loaded here by JS -->
+          <!-- Example structure for JS to fill:
+          <li class="list-group-item">Model: XYZ123</li>
+          <li class="list-group-item">Brand: Garmin</li>
+          -->
+        </ul>
+      </div>
+    </div>
   </div>
 </main>
 

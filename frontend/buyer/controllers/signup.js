@@ -20,7 +20,7 @@ function signupForm() {
   form.submit(async e => {
     e.preventDefault();
     submitBtn.prop("disabled", true);
-    submitBtn.text("Validating...");
+    submitBtn.html(`<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Validating...`);
 
     const formData = filterTextInputsInFormData(new FormData(form[0]));
 
@@ -72,6 +72,7 @@ function signupForm() {
 
       if(res.success) {
         console.log("Signup successful");
+        submitBtn.html(`<i class="uil uil-check-circle"></i> Success! Redirecting...`);
         window.location.href = "./index.php?page=signin";
         return;
       }
@@ -80,7 +81,7 @@ function signupForm() {
     }
 
     submitBtn.prop("disabled", false);
-    submitBtn.text("Sign Up");
+    submitBtn.html(`<i class="uil uil-check-circle"></i> Sign Up`);
   });
 }
 

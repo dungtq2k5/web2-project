@@ -43,18 +43,19 @@ async function renderProducts(renderLimit, renderOffset) {
       : DEFAULT_IMG_PATH;
 
     return `
-      <div
-        class="product-card"
-        data-product-id="${product.id}"
-      >
-        <img src="${productImg}" style="width: 100px;" alt="Smartwatch product" />
-        <p>${product.name}</p>
-        <p>${product.description}</p>
-        <p>&#36;${centsToDollars(parseInt(product.average_price_cents))} USD</p>
+      <div class="col">
+        <div class="card h-100 shadow-sm product-card" data-product-id="${product.id}" style="cursor: pointer;">
+          <img src="${productImg}" class="card-img-top p-3" style="max-height: 200px; object-fit: contain;" alt="${product.name}" />
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title fs-6">${product.name}</h5>
+            <p class="card-text small text-muted flex-grow-1">${product.description.substring(0, 70)}${product.description.length > 70 ? '...' : ''}</p>
+            <p class="card-text fw-bold fs-5 mt-auto mb-0">&#36;${centsToDollars(parseInt(product.average_price_cents))} USD</p>
+          </div>
+        </div>
       </div>
   `}).join("");
 
-  productsContainer.html(dataHTML || "<p>No products available</p>");
+  productsContainer.html(dataHTML || '<div class="col-12"><p class="text-center p-5">No products available matching your criteria.</p></div>');
 
   productsContainer.find(".product-card").click(e => {
     const productId = $(e.currentTarget).data("product-id");
@@ -74,17 +75,34 @@ function updateNavButtonStates() {
 
 function renderPageNumbers() {
   const pagesHTML = [];
-  for (let p = 0; p < maxPages; p++) {
-    pagesHTML.push(`
-      <li>
+  let startPage = Math.max(1, currentPage - 2);
+  let endPage = Math.min(maxPages, currentPage + 2);
+
+  if (currentPage <= 3) {
+    endPage = Math.min(maxPages, 5);
+  }
+  if (currentPage > maxPages - 3) {
+    startPage = Math.max(1, maxPages - 4);
+  }
+
+  const prevButtonLi = paginationContainer.find("li:first-child");
+  const nextButtonLi = paginationContainer.find("li:last-child");
+
+  paginationContainer.empty().append(prevButtonLi);
+
+  for (let p = startPage; p <= endPage; p++) {
+    const pageItem = $(`
+      <li class="page-item ${p === currentPage ? "active" : ""}">
         <button
-          class="page-btn ${p + 1 === currentPage ? "btn btn-dark btn-sm" : "btn btn-outline-dark btn-sm"}"
-          data-page="${p + 1}"
-        >${p + 1}</button>
+          class="page-link page-btn"
+          data-page="${p}"
+        >${p}</button>
       </li>
     `);
+    paginationContainer.append(pageItem);
   }
-  paginationContainer.html(pagesHTML.join(""));
+
+  paginationContainer.append(nextButtonLi);
 
   paginationContainer.find(".page-btn").click(async (e) => {
     const clickedButton = $(e.currentTarget);
@@ -174,18 +192,18 @@ async function renderSearchForm() {
   const searchCategory = form.find("#search-category");
   const searchBrand = form.find("#search-brand");
 
-  searchCategory.html(`<option value="-1">Loading categories...</option>`);
-  searchBrand.html(`<option value="-1">Loading brands...</option>`);
+  searchCategory.html(`<option value="-1" selected>Loading categories...</option>`);
+  searchBrand.html(`<option value="-1" selected>Loading brands...</option>`);
 
   try {
     const categories = await getCategoriesList();
-    const categoriesHTML = `<option value="-1">All</option>` + categories.map(category => (`
+    const categoriesHTML = `<option value="-1" selected>All Categories</option>` + categories.map(category => (`
       <option value="${category.id}">${category.name}</option>
     `)).join("");
     searchCategory.html(categoriesHTML);
 
     const brands = await getBrandsList();
-    const brandsHTML = `<option value="-1">All</option>` + brands.map(brand => (`
+    const brandsHTML = `<option value="-1" selected>All Brands</option>` + brands.map(brand => (`
       <option value="${brand.id}">${brand.name}</option>
     `)).join("");
     searchBrand.html(brandsHTML);
@@ -199,7 +217,7 @@ async function renderSearchForm() {
   searchBtn.click(async e => {
     e.preventDefault();
 
-    searchBtn.prop("disabled", true).html("Searching...");
+    searchBtn.prop("disabled", true).html(`<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Searching...`);
     goBackBtn.prop("disabled", true);
     goForwardBtn.prop("disabled", true);
     if(paginationContainer.find(".page-btn").length) {
@@ -219,22 +237,21 @@ async function renderSearchForm() {
     await updatePaginationState(filteredProductsList);
     await renderProducts(limit, offset);
 
-    searchBtn.prop("disabled", false).html("Search");
+    searchBtn.prop("disabled", false).html(`<i class="uil uil-search"></i> Search`);
   });
 
   clearBtn.click(async () => {
-    clearBtn.prop("disabled", true).html("Clearing...");
+    clearBtn.prop("disabled", true).html(`<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Clearing...`);
     goBackBtn.prop("disabled", true);
     goForwardBtn.prop("disabled", true);
     if(paginationContainer.find(".page-btn").length) {
         paginationContainer.find(".page-btn").prop("disabled", true);
     }
-    form[0].reset();
 
     await updatePaginationState(null);
     await renderProducts(limit, offset);
 
-    clearBtn.prop("disabled", false).html("Clear search");
+    clearBtn.prop("disabled", false).html(`<i class="uil uil-times-circle"></i> Clear search`);
   });
 }
 

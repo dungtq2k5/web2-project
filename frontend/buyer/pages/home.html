@@ -1,86 +1,81 @@
-<main>
-  <h2>All smartwatches</h2>
+<main class="container">
+  <h2 class="mb-4">All Smartwatches</h2>
 
-  <div>
-    <section>
+  <div class="row">
+    <section class="col-lg-3 mb-4">
       <!-- Search box -->
-      <form id="search-form">
-        <h2>Filter products</h2>
+      <form id="search-form" class="p-3 border rounded bg-white shadow-sm sticky-top" style="top: 70px;"> <!-- Adjust top for navbar height -->
+        <h3 class="h5 mb-3"><i class="uil uil-filter"></i> Filter Products</h3>
 
-        <div>
-          <label for="search-input">Search product</label>
-          <input type="text" name="search_input" id="search-input" />
+        <div class="mb-3">
+          <label for="search-input" class="form-label">Search Product</label>
+          <input type="text" name="search_input" id="search-input" class="form-control form-control-sm" placeholder="e.g., Fenix 7" />
         </div>
 
-        <div>
-          <label for="search-category">Category</label>
-          <select name="search_category" id="search-category"></select>
+        <div class="mb-3">
+          <label for="search-category" class="form-label">Category</label>
+          <select name="search_category" id="search-category" class="form-select form-select-sm">
+            <!-- Options loaded by JS -->
+          </select>
         </div>
 
-        <div>
-          <label for="search-brand">Brand</label>
-          <select name="search_brand" id="search-brand"></select>
+        <div class="mb-3">
+          <label for="search-brand" class="form-label">Brand</label>
+          <select name="search_brand" id="search-brand" class="form-select form-select-sm">
+            <!-- Options loaded by JS -->
+          </select>
         </div>
 
-        <div>
-          <p>Prices:</p>
-          <div>
-            <label for="search-price-from">From</label>
-            <input
-              type="number"
-              name="search_price_from"
-              id="search-price-from"
-              placeholder="no filtered"
-            />
+        <div class="row g-2 mb-3">
+          <div class="col">
+            <label for="search-price-from" class="form-label">Price From</label>
+            <input type="number" name="search_price_from" id="search-price-from" class="form-control form-control-sm" placeholder="Min" />
           </div>
-          <div>
-            <label for="search-price-to">To</label>
-            <input
-              type="number"
-              name="search_price_to"
-              id="search-price-to"
-              placeholder="no filtered"
-            />
+          <div class="col">
+            <label for="search-price-to" class="form-label">Price To</label>
+            <input type="number" name="search_price_to" id="search-price-to" class="form-control form-control-sm" placeholder="Max" />
           </div>
         </div>
 
-        <div>
-          <button type="submit" id="search-btn">Search</button>
-          <button type="reset" id="reset-search-btn">Clear search</button>
+        <div class="d-grid gap-2 btn-group-sm">
+          <button type="submit" id="search-btn" class="btn btn-dark">Search</button>
+          <button type="reset" id="reset-search-btn" class="btn btn-outline-dark">Clear search</button>
         </div>
       </form>
     </section>
 
-    <section>
-      <!-- Display product cards -->
-      <div id="products-container">
-        <div>
-          <img
-            src="../../uploads/default.webp"
-            style="width: 100px"
-            alt="Product Image"
-          />
-          <p>${product.name}</p>
-          <p>${product.description}</p>
-          <p>&#36;${product.average_price_cents} USD</p>
-        </div>
-        <!-- ....-->
+    <section class="col-lg-9">
+      <!-- Products list -->
+      <div id="products-container" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        <!-- Products will be loaded here by JS -->
       </div>
 
-      <!-- Pagination-->
-      <div>
-        <button id="go-back">
-          <i class="uil uil-arrow-left"></i>
+      <!-- Pagination -->
+      <nav aria-label="Page navigation" class="mt-4 d-flex justify-content-center">
+        <ul id="pagination" class="pagination" style="
+          --bs-pagination-color: var(--bs-dark);
+          --bs-pagination-border-color: var(--bs-dark);
+          --bs-pagination-hover-color: var(--bs-white);
+          --bs-pagination-hover-bg: var(--bs-dark);
+          --bs-pagination-hover-border-color: var(--bs-dark);
+          --bs-pagination-active-bg: var(--bs-dark);
+          --bs-pagination-active-border-color: var(--bs-dark);
+          --bs-pagination-active-color: var(--bs-white);
+        ">
+          <li class="page-item">
+        <button id="go-back" class="page-link" aria-label="Previous">
+          <span aria-hidden="true">&laquo;</span>
         </button>
-
-        <ul id="pagination"></ul>
-
-        <button id="go-forward">
-          <i class="uil uil-arrow-right"></i>
+          </li>
+          <!-- Page numbers will be inserted here by JS -->
+          <li class="page-item">
+        <button id="go-forward" class="page-link" aria-label="Next">
+          <span aria-hidden="true">&raquo;</span>
         </button>
-      </div>
+          </li>
+        </ul>
+      </nav>
     </section>
   </div>
 </main>
-
 <script type="module" src="./controllers/home.js"></script>

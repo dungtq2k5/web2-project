@@ -17,7 +17,7 @@ function signinForm() {
   form.submit(async e => {
     e.preventDefault();
     submitBtn.prop("disabled", true);
-    submitBtn.text("Validating...");
+    submitBtn.html(`<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Validating...`);
 
     const formData = filterTextInputsInFormData(new FormData(form[0]));
 
@@ -56,10 +56,13 @@ function signinForm() {
       if(success) {
         if(!isBuyer()) {
           msg.text("Sorry, you have been blocked by the admin");
+          submitBtn.html(`<i class="uil uil-arrow-right"></i> Sign Me In`); // Reset button text
+          submitBtn.prop("disabled", false); // Re-enable button
           return;
         }
         console.log("Sign in success");
         console.log(getSigninUser());
+        submitBtn.html(`<i class="uil uil-check-circle"></i> Success! Redirecting...`);
         window.location.href = "./index.php?page=home";
         return;
       }
@@ -67,7 +70,7 @@ function signinForm() {
       msg.text(errorMsg);
     }
 
-    submitBtn.text("Sign Me In");
+    submitBtn.html(`<i class="uil uil-arrow-right"></i> Sign Me In`);
     submitBtn.prop("disabled", false);
   });
 }

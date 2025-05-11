@@ -1,59 +1,54 @@
-<main>
-  <form id="signup-form">
-    <h1>Sign Up</h1>
+<main class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+          <h1 class="card-title text-center mb-4 fs-3"><i class="uil uil-user-plus"></i> Sign Up</h1>
+          <form id="signup-form">
+            <div class="mb-3">
+              <label for="full-name" class="form-label"><i class="uil uil-user"></i> Full name</label>
+              <input type="text" id="full-name" name="full_name" class="form-control form-control-sm" autocomplete="name" />
+              <div id="full-name-msg" class="form-text text-danger"></div>
+            </div>
 
-    <div>
-      <label for="full-name">Full name</label>
-      <input type="text" id="full-name" name="full_name" autocomplete="name" />
-      <span id="full-name-msg"></span>
-    </div>
+            <div class="mb-3">
+              <label for="email" class="form-label"><i class="uil uil-envelope"></i> Email</label>
+              <input type="email" id="email" name="email" class="form-control form-control-sm" autocomplete="email" />
+              <div id="email-msg" class="form-text text-danger"></div>
+            </div>
 
-    <div>
-      <label for="email">Email</label>
-      <input type="email" id="email" name="email" autocomplete="email" />
-      <span id="email-msg"></span>
-    </div>
+            <div class="mb-3">
+              <label for="phone-number" class="form-label"><i class="uil uil-phone"></i> Phone number</label>
+              <input type="tel" id="phone-number" name="phone_number" class="form-control form-control-sm" autocomplete="tel" />
+              <div class="form-text">Only accept VN phone number.</div>
+              <div id="phone-msg" class="form-text text-danger"></div>
+            </div>
 
-    <div>
-      <label for="phone-number">Phone number</label>
-      <input
-        type="tel"
-        id="phone-number"
-        name="phone_number"
-        autocomplete="tel"
-      />
-      <span>Only accept VN phone number.</span>
-      <span id="phone-msg"></span>
-    </div>
+            <div class="mb-3">
+              <label for="password" class="form-label"><i class="uil uil-lock"></i> Password</label>
+              <input type="password" id="password" name="password" class="form-control form-control-sm" autocomplete="new-password" />
+              <div class="form-text">Password must be at least 15 characters and include numbers and letters.</div>
+              <div id="password-msg" class="form-text text-danger"></div>
+            </div>
 
-    <div>
-      <label for="password">Password</label>
-      <input
-        type="password"
-        id="password"
-        name="password"
-        autocomplete="new-password"
-      />
-      <span
-        >Password must has a least 15 characters contains number and
-        letter.</span
-      >
-      <span id="password-msg"></span>
-    </div>
+            <div class="d-grid mb-3">
+              <button type="submit" id="submit" class="btn btn-dark btn-sm"><i class="uil uil-check-circle"></i> Sign Up</button>
+            </div>
+            <div id="signup-form-msg" class="form-text text-danger text-center"></div>
+          </form>
 
-    <div>
-      <button type="submit" id="submit">Sign Up</button>
-      <span id="signup-form-msg"></span>
-    </div>
+          <hr>
 
-    <div>
-      <div>
-        <p>Already have an account?</p>
-        <a href="./index.php?page=signin">Signin now</a>
+          <div class="text-center btn-group-sm">
+            <p class="mb-1">Already have an account?</p>
+            <a href="./index.php?page=signin" class="btn btn-outline-dark mb-2">Sign In Now</a>
+            <br>
+            <a href="./index.php?page=home" class="btn btn-link"><i class="uil uil-estate"></i> Back to Homepage</a>
+          </div>
+        </div>
       </div>
-      <a href="./index.php?page=home">Back to homepage</a>
     </div>
-  </form>
+  </div>
 </main>
 
 <script type="module" src="./controllers/signup.js"></script>

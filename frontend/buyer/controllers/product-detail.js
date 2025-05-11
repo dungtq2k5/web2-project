@@ -12,7 +12,7 @@ import {
 } from "../../utils.js";
 import { createCart, getCart, updateCart } from "../../models/carts.js";
 import { getSigninUser } from "../../models/auth.js";
-
+import { updateCartQuantityDisplay } from "./navbar.js";
 
 const user = getSigninUser();
 
@@ -22,23 +22,23 @@ const productId = new URLSearchParams(window.location.search).get("id");
 console.log("Product ID:", productId);
 
 async function renderProduct(variationId=null) {
-  productsContainer.html("<p>Loading product...</p>");
-  productSpecsContainer.html("<p>Loading specifications...</p>");
+  productsContainer.html(`<div class="col-12 text-center p-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p>Loading product...</p></div>`);
+  productSpecsContainer.html(`<li class="list-group-item text-center"><div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Loading...</span></div> Loading specifications...</li>`);
 
   try {
     const product = await getProduct(productId);
     console.log("Product:", product);
     if(!product || product.stop_selling) {
-      productsContainer.html("<p>Product not found</p>");
-      productSpecsContainer.html("<p>Product not found</p>");
+      productsContainer.html(`<div class="col-12"><p class="alert alert-warning text-center">Product not found or no longer available.</p></div>`);
+      productSpecsContainer.html(`<li class="list-group-item text-center">Product not found.</li>`);
       return;
     }
 
     const variations = await getVariationsByProductId(productId, false);
     console.log("Variations:", variations);
     if(variations.length === 0) {
-      productsContainer.html("<p>No variations available</p>");
-      productSpecsContainer.html("<p>No variations available</p>");
+      productsContainer.html(`<div class="col-12"><p class="alert alert-info text-center">No variations available for this product.</p></div>`);
+      productSpecsContainer.html(`<li class="list-group-item text-center">No variations available.</li>`);
       return;
     }
 
@@ -51,61 +51,69 @@ async function renderProduct(variationId=null) {
       : DEFAULT_IMG_PATH;
 
     const sizesHTML = variations.map(variation => (
-      `<li>
+      `<li class="list-inline-item">
           <button
-            class="btn ${variation.id == defaultVariation.id ? "btn-dark" : ""} js-variation-size"
+            class="btn btn-sm ${variation.id == defaultVariation.id ? "btn-dark" : "btn-outline-dark"} js-variation-size"
             data-variation-id="${variation.id}"
           >${variation.watch_size_mm}MM</button>
         </li>`
     )).join("");
 
     const productsHTML = `
-      <img src="${variationImg}" alt="Smartwatch product">
+      <div class="col-md-6 text-center">
+        <img src="${variationImg}" alt="${product.name} - ${defaultVariation.watch_size_mm}MM" class="img-fluid rounded shadow-sm mb-3" style="max-height: 400px; object-fit: contain;">
+      </div>
+      <div class="col-md-6">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h2 class="card-title h3">${product.name}</h2>
+            <p class="card-text text-muted small">${product.description}</p>
+            <p class="fs-4 fw-bold text-primary mb-3">&#36;${centsToDollars(parseInt(defaultVariation.price_cents))} USD</p>
 
-      <div>
-        <div>
-          <h2>${product.name}</h2>
-          <p>${product.description}</p>
-          <p>&#36;${centsToDollars(parseInt(defaultVariation.price_cents))} USD</p>
+            <div class="mb-3">
+              <h3 class="fs-6 mb-2">Watch size:</h3>
+              <ul class="list-inline">${sizesHTML}</ul>
+            </div>
+
+            <div class="d-grid gap-2 d-md-flex btn-group-sm" data-variation-id="${defaultVariation.id}">
+              <button id="add-cart-btn" class="btn btn-dark flex-grow-1"><i class="uil uil-shopping-cart-alt"></i> Add to cart</button>
+              <button id="buy-now-btn" class="btn btn-outline-dark flex-grow-1 js-buy-now-btn"><i class="uil uil-money-bill"></i> Buy now</button>
+            </div>
+            <span id="add-cart-msg" class="form-text d-block mt-2 text-danger"></span>
+          </div>
         </div>
-
-        <div>
-          <h3>Watch size:</h3>
-          <ul>${sizesHTML}</ul>
-        </div>
-
-        <div data-variation-id="${defaultVariation.id}">
-          <button id="add-cart-btn">Add to cart</button>
-          <button id="buy-now-btn">Buy now</button>
-          <span id="add-cart-msg"></span>
-        </div>
-
       </div>
     `;
 
-    const specsHTML = `
-      <li>Model: ${product.model}</li>
-      <li>Brand: ${product.brand.name}</li>
-      <li>Category: ${product.category.name}</li>
+    const specsArray = [
+      { label: "Model", value: product.model },
+      { label: "Brand", value: product.brand.name },
+      { label: "Category", value: product.category.name },
+      { label: "Watch size", value: `${defaultVariation.watch_size_mm}MM` },
+      { label: "Watch color", value: `<input type="color" value="${defaultVariation.watch_color}" disabled class="form-control form-control-color form-control-sm d-inline-block" style="width: 30px; height: 20px; vertical-align: middle;">` },
+      { label: "Display size", value: `${defaultVariation.display_size_mm}mm` },
+      { label: "Display type", value: defaultVariation.display_type },
+      { label: "Resolution", value: `${defaultVariation.resolution_h_px}px x ${defaultVariation.resolution_w_px}px` },
+      { label: "Memory (RAM x ROM)", value: `${bytesToMB(defaultVariation.ram_bytes)}MB x ${bytesToMB(defaultVariation.rom_bytes)}MB` },
+      { label: "OS", value: defaultVariation.os.name },
+      { label: "Connectivity", value: defaultVariation.connectivity },
+      { label: "Battery", value: `${defaultVariation.battery_life_mah}mAh` },
+      { label: "Water resistance", value: `${defaultVariation.water_resistance_value} ${defaultVariation.water_resistance_unit}` },
+      { label: "Sensor", value: defaultVariation.sensor },
+      { label: "Case material", value: defaultVariation.case_material },
+      { label: "Band material", value: defaultVariation.band_material },
+      { label: "Band size", value: `${defaultVariation.band_size_mm}mm` },
+      { label: "Band color", value: `<input type="color" value="${defaultVariation.band_color}" disabled class="form-control form-control-color form-control-sm d-inline-block" style="width: 30px; height: 20px; vertical-align: middle;">` },
+      { label: "Weight", value: `${mgToGrams(defaultVariation.weight_milligrams)}g` },
+      { label: "Release date", value: new Date(defaultVariation.release_date).toLocaleDateString() }
+    ];
 
-      <li>Watch size: ${defaultVariation.watch_size_mm}</li>
-      <li>Watch color: <input type="color" value="${defaultVariation.watch_color}"></li>
-      <li>Display size: ${defaultVariation.display_size_mm}mm</li>
-      <li>Display type: ${defaultVariation.display_type}</li>
-      <li>Resolution: ${defaultVariation.resolution_h_px}px x ${defaultVariation.resolution_w_px}px</li>
-      <li>Memory: ${bytesToMB(defaultVariation.ram_bytes)}MB x ${bytesToMB(defaultVariation.rom_bytes)}MB</li>
-      <li>OS: ${defaultVariation.os.name}</li>
-      <li>Connectivity: ${defaultVariation.connectivity}</li>
-      <li>Battery: ${defaultVariation.battery_life_mah}mah</li>
-      <li>Water resistance: ${defaultVariation.water_resistance_value} ${defaultVariation.water_resistance_unit}</li>
-      <li>Sensor: ${defaultVariation.sensor}</li>
-      <li>Case material: ${defaultVariation.case_material}</li>
-      <li>Band material: ${defaultVariation.band_material}</li>
-      <li>Band size: ${defaultVariation.band_size_mm}mm</li>
-      <li>Band color: <input type="color" value="${defaultVariation.band_color}"></li>
-      <li>Weight: ${mgToGrams(defaultVariation.weight_milligrams)}mg</li>
-      <li>Release at: ${defaultVariation.release_date}</li>
-    `;
+    const specsHTML = specsArray.map(spec => (
+      `<li class="list-group-item d-flex justify-content-between align-items-center">
+        <span class="fw-medium">${spec.label}:</span>
+        <span>${spec.value}</span>
+      </li>`
+    )).join("");
 
     productsContainer.html(productsHTML);
     productSpecsContainer.html(specsHTML);
@@ -120,12 +128,12 @@ async function renderProduct(variationId=null) {
     const addCartBtn = productsContainer.find("#add-cart-btn");
     addCartBtn.click(async e => {
       if(!user) {
-        window.location.href = "./index.html?page=signin";
+        window.location.href = "./index.php?page=signin";
         return;
       }
 
       addCartBtn.prop("disabled", true);
-      addCartBtn.text("Adding to cart...");
+      addCartBtn.html(`<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Adding...`);
 
       const variationId = $(e.currentTarget).closest("[data-variation-id]").data("variation-id");
       console.log(`Add to cart variation ID: ${variationId}`);
@@ -145,33 +153,55 @@ async function renderProduct(variationId=null) {
         });
 
       if(res.success) {
-        addCartBtn.html(`<i class="uil uil-check"></i> Added to cart`);
+        addCartBtn.html(`<i class="uil uil-check"></i> Added`);
+        await updateCartQuantityDisplay();
         setTimeout(() => {
-          addCartBtn.html("Add to cart");
+          addCartBtn.html(`<i class="uil uil-shopping-cart-alt"></i> Add to cart`);
           addCartBtn.prop("disabled", false);
         }, DISPLAY_MSG_TIMEOUT_SHORT);
         return;
       }
 
       productsContainer.find("#add-cart-msg").text(`Error adding to cart: ${res.message}`);
-      addCartBtn.html("Add to cart");
+      addCartBtn.html(`<i class="uil uil-shopping-cart-alt"></i> Add to cart`);
       addCartBtn.prop("disabled", false);
     });
 
-    productsContainer.find(".js-buy-now-btn").click(e => {
+    productsContainer.find(".js-buy-now-btn").click(async e => {
       if(!user) {
-        window.location.href = "./index.html?page=signin";
+        window.location.href = "./index.php?page=signin";
         return;
       }
 
       const variationId = $(e.currentTarget).closest("[data-variation-id]").data("variation-id");
       console.log(`Buy now variation ID: ${variationId}`);
-      // TODO Buy now logic here, handle by session storage
+
+      const buyNowBtn = $(e.currentTarget);
+      buyNowBtn.prop("disabled", true).html(`<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...`);
+
+      const existCart = await getCart(user.id, variationId);
+      const cartData = {
+        user_id: user.id,
+        product_variation_id: variationId,
+        quantity: existCart ? existCart.quantity + 1 : 1
+      };
+
+      const cartRes = existCart ? await updateCart(cartData) : await createCart(cartData);
+
+      if (cartRes.success) {
+        await updateCartQuantityDisplay();
+        sessionStorage.setItem('buyNowVariationId', variationId);
+        window.location.href = "./index.php?page=checkout";
+      } else {
+        productsContainer.find("#add-cart-msg").text(`Error processing "Buy Now": ${cartRes.message}`);
+        buyNowBtn.prop("disabled", false).html(`<i class="uil uil-money-bill"></i> Buy now`);
+      }
     });
 
   } catch (error) {
     console.error("Error rendering product:", error);
-    productsContainer.html("<p>Error loading product</p>");
+    productsContainer.html(`<div class="col-12"><p class="alert alert-danger text-center">Error loading product details. Please try again later.</p></div>`);
+    productSpecsContainer.html(`<li class="list-group-item text-center">Error loading specifications.</li>`);
   }
 }
 
