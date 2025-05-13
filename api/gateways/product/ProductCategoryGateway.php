@@ -55,13 +55,11 @@ class ProductCategoryGateway {
       $this->conn->commit();
       return $this->get($id);
 
-    } catch(PDOException $e) {
-      $this->conn->rollBack();
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
     }
+
   }
 
   public function update(array $current, array $new): array | false {
@@ -89,9 +87,6 @@ class ProductCategoryGateway {
       $this->conn->commit();
       return $this->get($current["id"]);
 
-    } catch(PDOException $e) {
-      $this->conn->rollBack();
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
@@ -112,9 +107,6 @@ class ProductCategoryGateway {
 
       return $this->conn->commit();
 
-    } catch(PDOException $e) {
-      $this->conn->rollBack();
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
@@ -122,7 +114,10 @@ class ProductCategoryGateway {
   }
 
   private function hasConstrain(int $id): bool {
-    $sql = "SELECT EXISTS (SELECT 1 FROM products WHERE category_id = :category_id)";
+    $sql = "SELECT EXISTS (
+      SELECT 1 FROM products WHERE category_id = :category_id
+      LIMIT 1
+    )";
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":category_id", $id, PDO::PARAM_INT);
@@ -132,7 +127,10 @@ class ProductCategoryGateway {
   }
 
   private function isNameUnique(string $name): bool {
-    $sql = "SELECT EXISTS (SELECT 1 FROM product_categories WHERE name = :name AND is_deleted = false)";
+    $sql = "SELECT EXISTS (
+      SELECT 1 FROM product_categories WHERE name = :name AND is_deleted = false
+      LIMIT 1
+    )";
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":name", $name, PDO::PARAM_STR);

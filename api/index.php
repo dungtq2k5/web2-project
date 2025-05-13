@@ -1,5 +1,5 @@
 <?php
-//API v1.3
+//API v2.3
 
 declare(strict_types=1);
 require_once "./config/settings.php";
@@ -18,7 +18,10 @@ spl_autoload_register(function ($class) use ($classMap): void {
 $error_handler = new ErrorHandler;
 set_exception_handler([$error_handler, "handleException"]);
 
-header("Access-Control-Allow-Origin: " . $_ENV["DOMAIN_FRONTEND"]);                          // Allow your origin
+$allowed_origins = array_map('trim', explode(',', $_ENV["DOMAINS_FRONTEND"]));
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+
+if(in_array($origin, $allowed_origins)) header("Access-Control-Allow-Origin: $origin");      // Allow CORS
 header("Access-Control-Allow-Credentials: true");                                            // Allow cookies
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");                     // Allowed request methods
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-HTTP-Method-Override"); // Allowed headers
@@ -34,8 +37,8 @@ if($method === "OPTIONS") { // Handle preflight requests
 $uri = trim(parse_url($_SERVER["REQUEST_URI"])["path"], "/"); //web2-project/api/...
 $uri_parts = explode("/", $uri);
 
-$limit = (isset($_GET["limit"]) && $_GET["limit"] !== "") ? abs((int) $_GET["limit"]) : null;
-$offset = (isset($_GET["offset"]) && $_GET["offset"] !== "") ? abs((int) $_GET["offset"]) : null;
+$limit = (isset($_GET["limit"]) && !empty($_GET["limit"])) ? abs((int) $_GET["limit"]) : null;
+$offset = (isset($_GET["offset"]) && !empty($_GET["offset"])) ? abs((int) $_GET["offset"]) : null;
 
 $id = is_numeric(end($uri_parts)) ? (int) end($uri_parts) : null;
 

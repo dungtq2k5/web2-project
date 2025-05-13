@@ -31,7 +31,7 @@ class AuthController {
         }
 
         // 2.Verify user in db
-        $usr = $this->usr_gateway->getByEmailPassword($data["email"], $data["password"]);
+        $usr = $this->usr_gateway->getByEmailPassword($data["email"], $data["password"], true);
         if(!$usr) {
           $this->error_handler->sendErrorResponse(401, "Invalid credentials");
           break;
@@ -43,6 +43,8 @@ class AuthController {
           $this->error_handler->sendErrorResponse(200, $error_msg);
         } else {
           unset($usr["password"]);
+          unset($usr["cart"]);
+          unset($usr["addresses"]);
           echo json_encode([
             "success" => true,
             "message" => "Signin successful",
@@ -61,8 +63,10 @@ class AuthController {
         }
 
         // 2.Create user
-        $usr = $this->usr_gateway->create($data);
+        $usr = $this->usr_gateway->create($data, true);
         unset($usr["password"]);
+        unset($usr["cart"]);
+        unset($usr["addresses"]);
 
         // 3. Gen token
         if($this->auths->verifyJWT()) {   // Check if a valid token exists
@@ -79,7 +83,7 @@ class AuthController {
         ]);
         break;
 
-      default: // Signout
+      case "signout":
         if(!$this->auths->verifyJWT()) {
           $this->error_handler->sendErrorResponse(401, "You haven't been signin yet");
           break;
@@ -93,6 +97,10 @@ class AuthController {
           "success" => true,
           "message" => "Signout successful"
         ]);
+        break;
+
+      default:
+        $this->error_handler->sendErrorResponse(404, "Action not found");
     }
   }
 

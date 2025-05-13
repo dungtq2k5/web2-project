@@ -6,6 +6,7 @@ class UserGateway {
   private UserAddressGateway $user_address;
   private CartGateway $cart;
   private Utils $utils;
+  private RolePermissionGateway $role_permission;
 
   public function __construct(PDO $db_conn) {
     $this->conn = $db_conn;
@@ -13,6 +14,7 @@ class UserGateway {
     $this->user_address = new UserAddressGateway($db_conn);
     $this->cart = new CartGateway($db_conn);
     $this->utils = new Utils;
+    $this->role_permission = new RolePermissionGateway($db_conn);
   }
 
   public function getAll(?int $limit=null, ?int $offset=null): array {
@@ -44,7 +46,7 @@ class UserGateway {
     return $data;
   }
 
-  public function get(int $id): array | false {
+  public function get(int $id, bool $permission_include=false): array | false {
     $sql = "SELECT * FROM users WHERE id = :id AND is_deleted = false";
 
     $stmt = $this->conn->prepare($sql);
@@ -53,9 +55,18 @@ class UserGateway {
 
     if($user = $stmt->fetch(PDO::FETCH_ASSOC)) {
       unset($user["is_deleted"]);
-      $user["addresses"] = $this->user_address->getByUserId($user["id"]);
-      $user["roles"] = $this->user_role->getByUserId($user["id"]);
-      $user["cart"] = $this->cart->getByUserId($user["id"]);
+      $user["addresses"] = $this->user_address->getByUserId($id);
+      $user["roles"] = $this->user_role->getByUserId($id);
+      $user["cart"] = $this->cart->getByUserId($id);
+
+      if($permission_include) {
+        foreach($user["roles"] as &$role) {
+          $role["permissions"] = array_column(
+            $this->role_permission->getByRoleIdMinimal($role["id"]),
+            "action_code"
+          );
+        }
+      }
 
       return $user;
     }
@@ -63,7 +74,7 @@ class UserGateway {
     return false;
   }
 
-  public function create(array $data): array | false {
+  public function create(array $data, bool $permission_include=false): array | false {
     $this->conn->beginTransaction();
 
     try {
@@ -83,18 +94,15 @@ class UserGateway {
 
       $id = $this->conn->lastInsertId();
 
-      if($data["roles_id"]) {
+      if(isset($data["roles_id"])) {
         $this->user_role->createMultiple($id, $data["roles_id"]);
       } else {
         $this->user_role->createMultiple($id, [BUYER_ROLE_ID]); // Default when a user is created is a buyer
       }
 
       $this->conn->commit();
-      return $this->get($id);
+      return $this->get($id, $permission_include);
 
-    } catch(PDOException $e) {
-      $this->conn->rollBack();
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
@@ -145,9 +153,6 @@ class UserGateway {
       $this->conn->commit();
       return $this->get($id);
 
-    } catch(PDOException $e) {
-      $this->conn->rollBack();
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
@@ -172,16 +177,13 @@ class UserGateway {
 
       return $this->conn->commit();
 
-    } catch(PDOException $e) {
-      $this->conn->rollBack();
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
     }
   }
 
-  public function getByEmailPassword(string $email, string $pwd): array | false | null {
+  public function getByEmailPassword(string $email, string $pwd, bool $permission_include=false): array | false {
     $sql = "SELECT id, password FROM users WHERE email = :email AND is_deleted = false";
 
     $stmt = $this->conn->prepare($sql);
@@ -193,20 +195,20 @@ class UserGateway {
       return false;
     }
 
-    return $this->get($usr["id"]);
+    return $this->get($usr["id"], $permission_include);
   }
 
   private function hasConstrain(int $id): bool {
     $sql = "SELECT EXISTS (
-      SELECT 1 FROM user_addresses WHERE user_id = :user_id
+      (SELECT 1 FROM user_addresses WHERE user_id = :user_id LIMIT 1)
       UNION
-      SELECT 1 FROM user_roles WHERE user_id = :user_id
+      (SELECT 1 FROM user_roles WHERE user_id = :user_id LIMIT 1)
       UNION
-      SELECT 1 FROM carts WHERE user_id = :user_id
+      (SELECT 1 FROM carts WHERE user_id = :user_id LIMIT 1)
       UNION
-      SELECT 1 FROM orders WHERE user_id = :user_id
+      (SELECT 1 FROM orders WHERE user_id = :user_id LIMIT 1)
       UNION
-      SELECT 1 FROM goods_receipt_notes WHERE staff_id = :user_id
+      (SELECT 1 FROM goods_receipt_notes WHERE staff_id = :user_id LIMIT 1)
     )";
 
     $stmt = $this->conn->prepare($sql);
@@ -219,6 +221,7 @@ class UserGateway {
   private function isEmailUnique(string $email): bool {
     $sql = "SELECT EXISTS (
       SELECT 1 FROM users WHERE email = :email AND is_deleted = false
+      LIMIT 1
     )";
 
     $stmt = $this->conn->prepare($sql);

@@ -133,9 +133,6 @@ class ProductInstanceGateway {
       $this->conn->commit();
       return $this->get($sku);
 
-    } catch(PDOException $e) {
-      $this->conn->rollBack();
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
@@ -212,9 +209,6 @@ class ProductInstanceGateway {
       $this->conn->commit();
       return $this->get($current["sku"]);
 
-    } catch(PDOException $e) {
-      $this->conn->rollBack();
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
@@ -239,9 +233,6 @@ class ProductInstanceGateway {
 
       return $this->conn->commit();
 
-    } catch(PDOException $e) {
-      $this->conn->rollBack();
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
@@ -249,7 +240,10 @@ class ProductInstanceGateway {
   }
 
   private function hasConstrain(string $sku): bool {
-    $sql = "SELECT EXISTS (SELECT 1 FROM order_items WHERE product_instance_sku = :sku)";
+    $sql = "SELECT EXISTS (
+      SELECT 1 FROM order_items WHERE product_instance_sku = :sku
+      LIMIT 1
+    )";
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":sku", $sku, PDO::PARAM_STR);
@@ -258,35 +252,11 @@ class ProductInstanceGateway {
     return (bool) $stmt->fetchColumn();
   }
 
-  // public function updateIsSoldToTrue(string $sku): bool { // Use this function with caution to avoid potential data inconsistency
-  //   $this->conn->beginTransaction();
-
-  //   try {
-  //     $product_variation_id = $this->get($sku)["product_variation_id"];
-
-  //     $sql = "UPDATE product_instances SET is_sold = true WHERE sku = :sku";
-
-  //     $stmt = $this->conn->prepare($sql);
-  //     $stmt->bindValue(":sku", $sku, PDO::PARAM_STR);
-  //     $stmt->execute();
-
-  //     $this->variation->updateStock($product_variation_id, -1);
-
-  //     return $this->conn->commit();
-
-  //   } catch(PDOException $e) {
-  //     $this->conn->rollBack();
-  //     throw $e; // Re-throw for centralized ErrorHandler
-  //   } catch(Exception $e) {
-  //     $this->conn->rollBack();
-  //     throw $e; // Re-throw for centralized ErrorHandler
-  //   }
-  // }
-
   private function isUniqueSerialNumber(string $serial_number): bool {
     $sql = "SELECT EXISTS (
       SELECT 1 FROM product_instances WHERE supplier_serial_number = :serial_number AND is_deleted = false
-      )";
+      LIMIT 1
+    )";
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":serial_number", $serial_number, PDO::PARAM_STR);
@@ -298,6 +268,7 @@ class ProductInstanceGateway {
   private function isUniqueIMEINumber(string $imei_number): bool {
     $sql = "SELECT EXISTS (
       SELECT 1 FROM product_instances WHERE supplier_imei_number = :imei_number AND is_deleted = false
+      LIMIT 1
       )";
 
     $stmt = $this->conn->prepare($sql);

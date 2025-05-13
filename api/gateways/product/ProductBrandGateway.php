@@ -55,9 +55,6 @@ class ProductBrandGateway {
       $this->conn->commit();
       return $this->get($id);
 
-    } catch(PDOException $e) {
-      $this->conn->rollBack();
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
@@ -89,9 +86,6 @@ class ProductBrandGateway {
       $this->conn->commit();
       return $this->get($current["id"]);
 
-    } catch(PDOException $e) {
-      $this->conn->rollBack();
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
@@ -112,9 +106,6 @@ class ProductBrandGateway {
 
       return $this->conn->commit();
 
-    } catch(PDOException $e) {
-      $this->conn->rollBack();
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
@@ -122,7 +113,10 @@ class ProductBrandGateway {
   }
 
   private function hasConstrain(int $id): bool {
-    $sql = "SELECT EXISTS (SELECT 1 FROM products WHERE brand_id = :brand_id)";
+    $sql = "SELECT EXISTS (
+      SELECT 1 FROM products WHERE brand_id = :brand_id
+      LIMIT 1
+    )";
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":brand_id", $id, PDO::PARAM_INT);
@@ -132,7 +126,10 @@ class ProductBrandGateway {
   }
 
   private function isNameUnique(string $name): bool {
-    $sql = "SELECT EXISTS (SELECT 1 FROM product_brands WHERE name = :name AND is_deleted = false)";
+    $sql = "SELECT EXISTS (
+      SELECT 1 FROM product_brands WHERE name = :name AND is_deleted = false
+      LIMIT 1
+    )";
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":name", $name, PDO::PARAM_STR);

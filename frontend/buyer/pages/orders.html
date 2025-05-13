@@ -1,0 +1,72 @@
+<main class="container">
+  <h2 class="mb-4"><i class="uil uil-receipt-alt"></i> My Orders</h2>
+
+  <!--
+        (1, 'order placed'),
+        (2, 'order confirmed'),
+        (3, 'processing'),
+        (4, 'shipped'),
+        (5, 'out for delivery'),
+        (6, 'delivered'),
+        (7, 'received'),
+        (8, 'canceled'),
+        (9, 'returned');
+      -->
+  <div>
+    <ul id="order-sections" class="nav nav-tabs mb-3">
+      <li class="nav-item">
+        <button class="nav-link active" id="orders-all" type="button" data-filter="all"><i class="uil uil-list-ul"></i> All</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" id="orders-to-ship" type="button" data-filter="to-ship"><i class="uil uil-box"></i> To Ship</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" id="orders-to-receive" type="button" data-filter="to-receive"><i class="uil uil-truck"></i> To Receive</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" id="orders-completed" type="button" data-filter="completed"><i class="uil uil-check-circle"></i> Completed</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" id="orders-cancelled" type="button" data-filter="cancelled"><i class="uil uil-ban"></i> Cancelled</button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link" id="orders-returned" type="button" data-filter="returned"><i class="uil uil-corner-up-left-alt"></i> Returned/Refund</button>
+      </li>
+    </ul>
+
+    <div id="orders-container" class="list-group">
+      <!-- Orders will be loaded here by JS -->
+      <!-- Example structure for JS:
+      <div class="list-group-item mb-3 shadow-sm">
+        <div class="d-flex w-100 justify-content-between">
+          <h5 class="mb-1">Order ID: #12345</h5>
+          <small class="text-muted">Status: Delivered</small>
+        </div>
+        <ul class="list-unstyled mt-2 mb-2">
+          <li class="d-flex align-items-center border-bottom py-2">
+            <img src="..." style="width: 50px; height: 50px; object-fit: contain;" class="me-3 rounded" alt="Product">
+            <div>
+              <p class="mb-0 fw-medium">Product Name - Size</p>
+              <small class="text-muted">Qty: 1</small>
+            </div>
+            <div class="ms-auto fw-bold">$Price</div>
+          </li>
+        </ul>
+        <div class="d-flex justify-content-between align-items-center">
+          <p class="mb-0">Order total: <strong class="text-primary">$Total USD</strong></p>
+          <div>
+            <button class="btn btn-sm btn-outline-primary js-view-detail-order">View Details</button>
+            <button class="btn btn-sm btn-success js-confirm-order-btn">Confirm Received</button>
+          </div>
+        </div>
+      </div>
+      -->
+    </div>
+  </div>
+</main>
+
+<div id="backdrop" class="backdrop--g" style="display: none">
+  <!-- Modal content for popups will be loaded here by JS -->
+</div>
+
+<script type="module" src="./controllers/orders.js"></script>

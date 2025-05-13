@@ -27,7 +27,7 @@ class ProductVariationController {
 
     switch($method) {
       case "GET":
-        $this->auths->verifyAction("READ_PRODUCT_VARIATION");
+        // $this->auths->verifyAction("READ_PRODUCT_VARIATION");
 
         echo json_encode([
           "success" => true,
@@ -38,7 +38,7 @@ class ProductVariationController {
       case "PUT":
         $this->auths->verifyAction("UPDATE_PRODUCT_VARIATION");
 
-        $content_type = $_SERVER["CONTENT_TYPE"];
+        $content_type = $_SERVER["CONTENT_TYPE"] ?? null;
 
         if(strpos($content_type, "application/json") !== false) {
           $data = (array) json_decode(file_get_contents("php://input"));
@@ -88,7 +88,7 @@ class ProductVariationController {
   private function processCollectionRequest(string $method, ?int $limit=null, ?int $offset=null): void {
     switch($method) {
       case "GET":
-        $this->auths->verifyAction("READ_PRODUCT_VARIATION");
+        // $this->auths->verifyAction("READ_PRODUCT_VARIATION");
 
         $data = $this->gateway->getAll($limit, $offset);
 
@@ -102,7 +102,7 @@ class ProductVariationController {
       case "POST":
         $this->auths->verifyAction("CREATE_PRODUCT_VARIATION");
 
-        $content_type = $_SERVER["CONTENT_TYPE"];
+        $content_type = $_SERVER["CONTENT_TYPE"] ?? null;
 
         if(strpos($content_type, "application/json") !== false) {
           $data = (array) json_decode(file_get_contents("php://input"));
@@ -151,8 +151,8 @@ class ProductVariationController {
       if(empty($data["display_type"])) $errors[] = "display_type is required";
       if(empty($data["resolution_h_px"]) || !is_numeric($data["resolution_h_px"])) $errors[] = "resolution_h_px is required with integer value";
       if(empty($data["resolution_w_px"]) || !is_numeric($data["resolution_w_px"])) $errors[] = "resolution_w_px is required with integer value";
-      if(empty($data["ram_bytes"]) || !is_numeric($data["ram_bytes"])) $errors[] = "ram_bytes is required with integer value";
-      if(empty($data["rom_bytes"]) || !is_numeric($data["rom_bytes"])) $errors[] = "rom_bytes is required with integer value";
+      if(!is_numeric($data["ram_bytes"]) || $data["ram_bytes"] < 0) $errors[] = "ram_bytes is required with integer value and must be greater or equal to 0";
+      if(!is_numeric($data["rom_bytes"]) || $data["rom_bytes"] < 0) $errors[] = "rom_bytes is required with integer value  and must be greater or equal to 0";
       if(empty($data["os_id"]) || !is_numeric($data["os_id"])) $errors[] = "os_id is required with integer value";
       if(empty($data["connectivity"])) $errors[] = "connectivity is required";
       if(empty($data["battery_life_mah"]) || !is_numeric($data["battery_life_mah"])) $errors[] = "battery_life_mah is required with integer value";
@@ -204,12 +204,12 @@ class ProductVariationController {
       ) $errors[] = "resolution_w_px is empty or not an integer";
       if(
         array_key_exists("ram_bytes", $data) &&
-        (empty($data["ram_bytes"]) || !is_numeric($data["ram_bytes"]))
-      ) $errors[] = "ram_bytes is empty or not an integer";
+        (!is_numeric($data["ram_bytes"]) || $data["ram_bytes"] < 0)
+      ) $errors[] = "ram_bytes must be an integer and greater or equal to 0";
       if(
         array_key_exists("rom_bytes", $data) &&
-        (empty($data["rom_bytes"]) || !is_numeric($data["rom_bytes"]))
-      ) $errors[] = "rom_bytes is empty or not an integer";
+        (!is_numeric($data["rom_bytes"]) || $data["rom_bytes"] < 0)
+      ) $errors[] = "rom_bytes must be an integer and greater or equal to 0";
       if(
         array_key_exists("os_id", $data) &&
         (empty($data["os_id"]) || !is_numeric($data["os_id"]))

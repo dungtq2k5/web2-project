@@ -25,7 +25,7 @@ class ProductOSController {
 
     switch($method) {
       case "GET":
-        $this->auths->verifyAction("READ_PRODUCT_OS");
+        // $this->auths->verifyAction("READ_PRODUCT_OS");
 
         echo json_encode([
           "success" => true,
@@ -74,7 +74,7 @@ class ProductOSController {
   private function processCollectionRequest(string $method, ?int $limit=null, ?int $offset=null): void {
     switch($method) {
       case "GET":
-        $this->auths->verifyAction("READ_PRODUCT_OS");
+        // $this->auths->verifyAction("READ_PRODUCT_OS");
 
         $data = $this->gateway->getAll($limit, $offset);
 

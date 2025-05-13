@@ -1,0 +1,37 @@
+<main class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+          <h1 class="card-title text-center mb-4 fs-3"><i class="uil uil-signin"></i> Sign In</h1>
+          <form id="signin-form">
+            <div class="mb-3">
+              <label for="email" class="form-label"><i class="uil uil-envelope"></i> Email</label>
+              <input type="email" id="email" name="email" class="form-control form-control-sm" autocomplete="email" />
+              <div id="email-msg" class="form-text text-danger"></div>
+            </div>
+            <div class="mb-3">
+              <label for="password" class="form-label"><i class="uil uil-lock"></i> Password</label>
+              <input type="password" id="password" name="password" class="form-control form-control-sm" autocomplete="current-password" />
+              <div id="password-msg" class="form-text text-danger"></div>
+            </div>
+
+            <div class="d-grid mb-3">
+              <button type="submit" id="submit" class="btn btn-dark btn-sm"><i class="uil uil-arrow-right"></i> Sign Me In</button>
+            </div>
+            <div id="signin-form-msg" class="form-text text-danger text-center"></div>
+          </form>
+          <hr>
+          <div class="text-center btn-group-sm">
+            <p class="mb-1">Don't have an account?</p>
+            <a href="./index.php?page=signup" class="btn btn-outline-dark mb-2">Sign Up Now</a>
+            <br>
+            <a href="./index.php?page=home" class="btn btn-link"><i class="uil uil-estate"></i> Back to Homepage</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script type="module" src="./controllers/signin.js"></script>

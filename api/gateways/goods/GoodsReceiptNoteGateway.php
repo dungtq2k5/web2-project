@@ -83,9 +83,6 @@ class GoodsReceiptNoteGateway {
       $this->conn->commit();
       return $this->get($id);
 
-    } catch(PDOException $e) {
-      $this->conn->rollBack();
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
@@ -117,9 +114,6 @@ class GoodsReceiptNoteGateway {
       $this->conn->commit();
       return $this->get($current["id"]);
 
-    } catch(PDOException $e) {
-      $this->conn->rollBack();
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
@@ -140,9 +134,6 @@ class GoodsReceiptNoteGateway {
 
       return $this->conn->commit();
 
-    } catch(PDOException $e) {
-      $this->conn->rollBack();
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
@@ -152,6 +143,7 @@ class GoodsReceiptNoteGateway {
   private function hasConstrain(int $id): bool {
     $sql = "SELECT EXISTS (
       SELECT 1 FROM product_instances WHERE goods_receipt_note_id = :goods_receipt_note_id
+      LIMIT 1
     )";
 
     $stmt = $this->conn->prepare($sql);

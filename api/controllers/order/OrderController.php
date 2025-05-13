@@ -56,6 +56,15 @@ class OrderController {
           break;
         }
 
+        if( // Buyer can only update certain of delivery states
+          $auth["buyer_only"] &&
+          array_key_exists("delivery_state_id", $data) &&
+          !in_array($data["delivery_state_id"], [ORDER_RECEIVED_ID, ORDER_RETURNED_ID, ORDER_CANCELLED_ID])
+        ) {
+          $this->error_handler->sendErrorResponse(403, "Forbidden: You do not own this resource");
+          break;
+        }
+
         $res = $this->gateway->update($order, $data);
 
         echo json_encode([
@@ -121,7 +130,6 @@ class OrderController {
 
     if($new) { // Create an order
       if(empty($data["user_id"]) || !is_numeric($data["user_id"])) $errors[] = "user_id is required and must be an integer";
-      // if(empty($data["total_cents"]) || !is_numeric($data["total_cents"])) $errors[] = "total_cents is required and must be an integer";
       if(empty($data["delivery_address_id"]) || !is_numeric($data["delivery_address_id"])) $errors[] = "delivery_address_id is required and must be an integer";
 
       if(empty($data["items"])) {

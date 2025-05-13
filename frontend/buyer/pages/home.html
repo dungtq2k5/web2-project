@@ -1,0 +1,81 @@
+<main class="container">
+  <h2 class="mb-4">All Smartwatches</h2>
+
+  <div class="row">
+    <section class="col-lg-3 mb-4">
+      <!-- Search box -->
+      <form id="search-form" class="p-3 border rounded bg-white shadow-sm sticky-top" style="top: 70px;"> <!-- Adjust top for navbar height -->
+        <h3 class="h5 mb-3"><i class="uil uil-filter"></i> Filter Products</h3>
+
+        <div class="mb-3">
+          <label for="search-input" class="form-label">Search Product</label>
+          <input type="text" name="search_input" id="search-input" class="form-control form-control-sm" placeholder="e.g., Fenix 7" />
+        </div>
+
+        <div class="mb-3">
+          <label for="search-category" class="form-label">Category</label>
+          <select name="search_category" id="search-category" class="form-select form-select-sm">
+            <!-- Options loaded by JS -->
+          </select>
+        </div>
+
+        <div class="mb-3">
+          <label for="search-brand" class="form-label">Brand</label>
+          <select name="search_brand" id="search-brand" class="form-select form-select-sm">
+            <!-- Options loaded by JS -->
+          </select>
+        </div>
+
+        <div class="row g-2 mb-3">
+          <div class="col">
+            <label for="search-price-from" class="form-label">Price From</label>
+            <input type="number" name="search_price_from" id="search-price-from" class="form-control form-control-sm" placeholder="Min" />
+          </div>
+          <div class="col">
+            <label for="search-price-to" class="form-label">Price To</label>
+            <input type="number" name="search_price_to" id="search-price-to" class="form-control form-control-sm" placeholder="Max" />
+          </div>
+        </div>
+
+        <div class="d-grid gap-2 btn-group-sm">
+          <button type="submit" id="search-btn" class="btn btn-dark">Search</button>
+          <button type="reset" id="reset-search-btn" class="btn btn-outline-dark">Clear search</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="col-lg-9">
+      <!-- Products list -->
+      <div id="products-container" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        <!-- Products will be loaded here by JS -->
+      </div>
+
+      <!-- Pagination -->
+      <nav aria-label="Page navigation" class="mt-4 d-flex justify-content-center">
+        <ul id="pagination" class="pagination" style="
+          --bs-pagination-color: var(--bs-dark);
+          --bs-pagination-border-color: var(--bs-dark);
+          --bs-pagination-hover-color: var(--bs-white);
+          --bs-pagination-hover-bg: var(--bs-dark);
+          --bs-pagination-hover-border-color: var(--bs-dark);
+          --bs-pagination-active-bg: var(--bs-dark);
+          --bs-pagination-active-border-color: var(--bs-dark);
+          --bs-pagination-active-color: var(--bs-white);
+        ">
+          <li class="page-item">
+        <button id="go-back" class="page-link" aria-label="Previous">
+          <span aria-hidden="true">&laquo;</span>
+        </button>
+          </li>
+          <!-- Page numbers will be inserted here by JS -->
+          <li class="page-item">
+        <button id="go-forward" class="page-link" aria-label="Next">
+          <span aria-hidden="true">&raquo;</span>
+        </button>
+          </li>
+        </ul>
+      </nav>
+    </section>
+  </div>
+</main>
+<script type="module" src="./controllers/home.js"></script>

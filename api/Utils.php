@@ -201,7 +201,7 @@ class Utils {
     return false;
   }
 
-  public function toNull($value): ?string { // Convert from interpretable null to null, otherwise return the value
+  public function toNull($value): mixed { // Convert from interpretable null to null, otherwise return the value
     if($value === null) return null;
 
     if(is_string($value) && strtolower($value) === "null") return null;

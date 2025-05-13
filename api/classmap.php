@@ -58,9 +58,7 @@ return [
   "ProductInstanceController" => PRODUCT_CONTROLLER_PATH . "/ProductInstanceController.php",
 
   "UserController" => USER_CONTROLLER_PATH . "/UserController.php",
-  "UserRoleController" => USER_CONTROLLER_PATH . "/UserRoleController.php",
   "RoleController" => USER_CONTROLLER_PATH . "/RoleController.php",
-  "RolePermissionController" => USER_CONTROLLER_PATH . "/RolePermissionController.php",
   "PermissionController" => USER_CONTROLLER_PATH . "/PermissionController.php",
   "UserAddressController" => USER_CONTROLLER_PATH . "/UserAddressController.php",
 

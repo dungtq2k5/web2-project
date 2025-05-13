@@ -27,7 +27,7 @@ class ProductController {
 
     switch($method) {
       case "GET":
-        $this->auths->verifyAction("READ_PRODUCT");
+        // $this->auths->verifyAction("READ_PRODUCT");
 
         echo json_encode([
           "success" => true,
@@ -38,7 +38,7 @@ class ProductController {
       case "PUT":
         $this->auths->verifyAction("UPDATE_PRODUCT");
 
-        $content_type = $_SERVER["CONTENT_TYPE"];
+        $content_type = $_SERVER["CONTENT_TYPE"] ?? null;
 
         if(strpos($content_type, "application/json") !== false) {         // JSON data
           $data = (array) json_decode(file_get_contents("php://input"));
@@ -89,7 +89,7 @@ class ProductController {
   private function processCollectionRequest(string $method, ?int $limit=null, ?int $offset=null): void {
     switch($method) {
       case "GET":
-        $this->auths->verifyAction("READ_PRODUCT");
+        // $this->auths->verifyAction("READ_PRODUCT");
 
         $data = $this->gateway->getAll($limit, $offset);
 
@@ -103,7 +103,7 @@ class ProductController {
       case "POST":
         $this->auths->verifyAction("CREATE_PRODUCT");
 
-        $content_type = $_SERVER["CONTENT_TYPE"];
+        $content_type = $_SERVER["CONTENT_TYPE"] ?? null;
 
         if(strpos($content_type, "application/json") !== false) {         // JSON data
           $data = (array) json_decode(file_get_contents("php://input"));

@@ -68,7 +68,7 @@ class OrderGateway {
 
     try {
       $order_date = new DateTime('now', new DateTimeZone('UTC'));
-      $estimate_received_date = $data["estimate_received_date"];
+      $estimate_received_date = $data["estimate_received_date"] ?? null;
 
       if($estimate_received_date && new DateTime($estimate_received_date) <= $order_date) { // Ensure estimate_received_date > order_date
         throw new Exception("estimate_received_date cannot be earlier than or equal to order_date", 409);
@@ -112,9 +112,6 @@ class OrderGateway {
       $this->conn->commit();
       return $this->get($order_id);
 
-    } catch (PDOException $e) {
-      $this->conn->rollBack();
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch (Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
@@ -129,7 +126,7 @@ class OrderGateway {
         throw new Exception("Cannot update order that has already been received, returned or cancelled", 409);
       }
 
-      $new_delivery_state_id = $new["delivery_state_id"];
+      $new_delivery_state_id = $new["delivery_state_id"] ?? null;
       $current_delivery_state_id = $current["delivery_state_id"];
 
       if($new_delivery_state_id && $new_delivery_state_id != $current_delivery_state_id) {
@@ -147,7 +144,7 @@ class OrderGateway {
         }
       }
 
-      $new_estimate_received_date = $new["estimate_received_date"];
+      $new_estimate_received_date = $new["estimate_received_date"] ?? null;
       $current_estimate_received_date = $current["estimate_received_date"];
 
       if( // Ensure estimate_received_date > order_date
@@ -163,7 +160,7 @@ class OrderGateway {
 
       $delivery_state_id = $new_delivery_state_id ?? $current_delivery_state_id;
 
-      $new_delivery_address_id = $new["delivery_address_id"];
+      $new_delivery_address_id = $new["delivery_address_id"] ?? null;
       $current_delivery_address_id = $current["delivery_address"]["id"];
 
       if($new_delivery_address_id && $new_delivery_address_id != $current_delivery_address_id) {
@@ -205,9 +202,6 @@ class OrderGateway {
       $this->conn->commit();
       return $this->get($id);
 
-    } catch (PDOException $e) {
-      $this->conn->rollBack();
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch (Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler

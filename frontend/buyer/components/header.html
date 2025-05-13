@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Iconscout -->
+    <link
+      rel="stylesheet"
+      href="https://unicons.iconscout.com/release/v4.0.8/css/line.css"
+    />
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <!-- JQuery -->
+    <script
+      src="https://code.jquery.com/jquery-3.7.1.min.js"
+      integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="
+      crossorigin="anonymous"
+    ></script>
+    <!-- Custom CSS (Optional - for Garmin-like theme adjustments) -->
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+
+      main {
+        flex: 1;
+        margin: 1.5rem;
+        margin-top: 2rem;
+      }
+      .backdrop--g {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1050;
+        /* Ensure it's above other content */
+      }
+
+      .btn-dark:hover {
+        color: #212529;
+        /* Corresponds to text color of btn-outline-dark */
+        background-color: transparent;
+        /* Corresponds to background of btn-outline-dark */
+        border-color: #212529;
+        /* Corresponds to border color of btn-outline-dark */
+      }
+
+      .btn-info:hover {
+        color: #0dcaf0; /* Bootstrap info color */
+        background-color: transparent;
+        border-color: #0dcaf0;
+      }
+
+      .btn-warning:hover {
+        color: #ffc107; /* Bootstrap warning color */
+        background-color: transparent;
+        border-color: #ffc107;
+      }
+
+      .btn-danger:hover {
+        color: #dc3545; /* Bootstrap danger color */
+        background-color: transparent;
+        border-color: #dc3545;
+      }
+    </style>
+    <title>Garmin</title>
+  </head>
+
+  <body class="bg-light text-dark"></body>
+</html>

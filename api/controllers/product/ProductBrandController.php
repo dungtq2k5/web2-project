@@ -25,7 +25,7 @@ class ProductBrandController {
 
     switch($method) {
       case "GET":
-        $this->auths->verifyAction("READ_PRODUCT_BRAND");
+        // $this->auths->verifyAction("READ_PRODUCT_BRAND");
 
         echo json_encode([
           "success" => true,
@@ -74,7 +74,7 @@ class ProductBrandController {
   private function processCollectionRequest(string $method, ?int $limit=null, ?int $offset=null): void {
     switch($method) {
       case "GET":
-        $this->auths->verifyAction("READ_PRODUCT_BRAND");
+        // $this->auths->verifyAction("READ_PRODUCT_BRAND");
 
         $data = $this->gateway->getAll($limit, $offset);
 

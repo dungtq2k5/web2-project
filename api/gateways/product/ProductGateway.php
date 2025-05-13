@@ -15,7 +15,13 @@ class ProductGateway {
   }
 
   public function getAll(?int $limit=null, ?int $offset=null): array {
-    $sql = "SELECT * FROM products WHERE is_deleted = false";
+    $sql = "SELECT p.*,
+        (SELECT COALESCE(AVG(p_v.price_cents), 0)
+        FROM product_variations AS p_v
+        WHERE p_v.product_id = p.id AND p_v.is_deleted = false) AS average_price_cents
+      FROM products AS p
+      WHERE p.is_deleted = false
+    ";
 
     if($limit !== null && $offset !== null) {
       $sql .= " LIMIT :limit OFFSET :offset";
@@ -45,7 +51,15 @@ class ProductGateway {
   }
 
   public function get(int $id): array | false {
-    $sql = "SELECT * FROM products WHERE id = :id AND is_deleted = false";
+    $sql = "SELECT p.*, COALESCE(AVG(p_v.price_cents), 0) AS average_price_cents
+      FROM products AS p
+      INNER JOIN product_variations AS p_v ON p.id = p_v.product_id
+      WHERE
+        p.id = :id AND
+        p.is_deleted = false AND
+        p_v.is_deleted = false
+      GROUP BY p.id
+    ";
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":id", $id, PDO::PARAM_INT);
@@ -94,9 +108,6 @@ class ProductGateway {
       $this->conn->commit();
       return $this->get($id);
 
-    } catch(PDOException $e) {
-      $this->conn->rollBack();
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
@@ -150,9 +161,6 @@ class ProductGateway {
       $this->conn->commit();
       return $this->get($id);
 
-    } catch(PDOException $e) {
-      $this->conn->rollBack();
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
@@ -177,9 +185,6 @@ class ProductGateway {
 
       return $this->conn->commit();
 
-    } catch(PDOException $e) {
-      $this->conn->rollBack();
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch (Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
@@ -189,6 +194,7 @@ class ProductGateway {
   private function hasConstrain(int $id): bool {
     $sql = "SELECT EXISTS (
       SELECT 1 FROM product_variations WHERE product_id = :product_id
+      LIMIT 1
     )";
 
     $stmt = $this->conn->prepare($sql);
@@ -198,24 +204,18 @@ class ProductGateway {
     return (bool) $stmt->fetchColumn();
   }
 
+  // This function doesn't have transaction, make sure to cover it when use.
   private function updateImg(int $id, string | null $img_name): bool {
-    $this->conn->beginTransaction();
-
     try {
       $sql = "UPDATE products SET image_name = :image_name WHERE id = :id AND is_deleted = false";
 
       $stmt = $this->conn->prepare($sql);
       $stmt->bindValue(":image_name", $img_name, PDO::PARAM_STR);
       $stmt->bindValue(":id", $id, PDO::PARAM_INT);
-      $stmt->execute();
 
-      return $this->conn->commit();
+      return $stmt->execute();
 
-    } catch(PDOException $e) {
-      $this->conn->rollBack();
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
-      $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
     }
   }
@@ -223,6 +223,7 @@ class ProductGateway {
   private function isUnique(string $name, string $model): bool {
     $sql = "SELECT EXISTS (
       SELECT 1 FROM products WHERE name = :name AND model = :model AND is_deleted = false
+      LIMIT 1
     )";
 
     $stmt = $this->conn->prepare($sql);

@@ -78,7 +78,7 @@ class UserAddressGateway {
         phone_number,
         is_default
       ) VALUES (
-        :name
+        :name,
         :user_id,
         :street,
         :apartment_number,
@@ -106,9 +106,6 @@ class UserAddressGateway {
       $this->conn->commit();
       return $this->get($id);
 
-    } catch(PDOException $e) {
-      $this->conn->rollBack();
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
@@ -149,9 +146,6 @@ class UserAddressGateway {
       $this->conn->commit();
       return $this->get($current["id"]);
 
-    } catch(PDOException $e) {
-      $this->conn->rollBack();
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
@@ -172,9 +166,6 @@ class UserAddressGateway {
 
       return $this->conn->commit();
 
-    } catch(PDOException $e) {
-      $this->conn->rollBack();
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
@@ -214,6 +205,7 @@ class UserAddressGateway {
   public function isUserAddress(int $usr_id, int $address_id): bool {
     $sql = "SELECT EXISTS (
       SELECT 1 FROM user_addresses WHERE id = :address_id AND user_id = :user_id
+      LIMIT 1
     )";
 
     $stmt = $this->conn->prepare($sql);
@@ -227,6 +219,7 @@ class UserAddressGateway {
   private function hasConstrain(int $id): bool {
     $sql = "SELECT EXISTS (
       SELECT 1 FROM orders WHERE delivery_address_id = :id
+      LIMIT 1
     )";
 
     $stmt = $this->conn->prepare($sql);
@@ -249,8 +242,6 @@ class UserAddressGateway {
 
       return;
 
-    } catch(PDOException $e) {
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       throw $e; // Re-throw for centralized ErrorHandler
     }

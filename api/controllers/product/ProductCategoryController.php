@@ -25,7 +25,7 @@ class ProductCategoryController {
 
     switch($method) {
       case "GET":
-        $this->auths->verifyAction("READ_PRODUCT_CATEGORY");
+        // $this->auths->verifyAction("READ_PRODUCT_CATEGORY");
 
         echo json_encode([
           "success" => true,
@@ -74,7 +74,7 @@ class ProductCategoryController {
   private function processCollectionRequest(string $method, ?int $limit=null, ?int $offset=null): void {
     switch($method) {
       case "GET":
-        $this->auths->verifyAction("READ_PRODUCT_CATEGORY");
+        // $this->auths->verifyAction("READ_PRODUCT_CATEGORY");
 
         $data = $this->gateway->getAll($limit, $offset);
 
