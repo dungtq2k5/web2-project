@@ -32,8 +32,6 @@ class UserRoleGateway {
 
       return $stmt->rowCount();
 
-    } catch(PDOException $e) {
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       throw $e; // Re-throw for centralized ErrorHandler
     }
@@ -76,8 +74,6 @@ class UserRoleGateway {
 
       return $this->conn->exec("INSERT INTO user_roles (user_id, role_id) VALUES $sql_values");
 
-    } catch(PDOException $e) {
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       throw $e; // Re-throw for centralized ErrorHandler
     }

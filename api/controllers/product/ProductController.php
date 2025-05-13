@@ -38,7 +38,7 @@ class ProductController {
       case "PUT":
         $this->auths->verifyAction("UPDATE_PRODUCT");
 
-        $content_type = $_SERVER["CONTENT_TYPE"];
+        $content_type = $_SERVER["CONTENT_TYPE"] ?? null;
 
         if(strpos($content_type, "application/json") !== false) {         // JSON data
           $data = (array) json_decode(file_get_contents("php://input"));
@@ -103,7 +103,7 @@ class ProductController {
       case "POST":
         $this->auths->verifyAction("CREATE_PRODUCT");
 
-        $content_type = $_SERVER["CONTENT_TYPE"];
+        $content_type = $_SERVER["CONTENT_TYPE"] ?? null;
 
         if(strpos($content_type, "application/json") !== false) {         // JSON data
           $data = (array) json_decode(file_get_contents("php://input"));

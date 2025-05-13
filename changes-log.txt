@@ -1,16 +1,5 @@
 - Mod API:
-  + Optimize overall API.
-  + Mod roles API can CRUD with permissions_id field, instead of role_permissions controller.
-  + Mod roles API with new field "user_assigned".
-  + Fix minor bugs.
-  + Handle multiple CORS domains allowed.
-  + Return average_price_cents for Product APIs.
-  + Modify CORS header to allow multiple domains.
 
 - Mod DB:
-  + Add field "user_assigned" for roles table.
 
 - FrontEnd:
-  + Fix minor bugs.
-  + Optimize overall FrontEnd.
-  + Rename folders name for clarity.

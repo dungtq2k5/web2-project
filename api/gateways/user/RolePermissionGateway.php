@@ -18,8 +18,6 @@ class RolePermissionGateway {
 
       return $stmt->rowCount();
 
-    } catch(PDOException $e) {
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       throw $e; // Re-throw for centralized ErrorHandler
     }
@@ -55,7 +53,7 @@ class RolePermissionGateway {
 
   // This function doesn't have its own transaction make sure to cover when use it
   public function createMultiple(int $role_id, array $permissions_id): int {
-    if(count($permissions_id) === 0) return 0;
+    if(empty($permissions_id)) return 0;
 
     try {
       $sql_values = [];
@@ -67,8 +65,6 @@ class RolePermissionGateway {
 
       return $this->conn->exec("INSERT INTO role_permissions (role_id, permission_id) VALUES $sql_values");
 
-    } catch(PDOException $e) {
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       throw $e; // Re-throw for centralized ErrorHandler
     }

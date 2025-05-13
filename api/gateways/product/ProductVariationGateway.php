@@ -150,10 +150,7 @@ class ProductVariationGateway {
       $this->conn->commit();
       return $this->get($id);
 
-    } catch(PDOException $e) {
-      $this->conn->rollBack();
-      throw $e; // Re-throw for centralized ErrorHandler
-    } catch(Exception $e) {
+    }catch(Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
     }
@@ -232,9 +229,6 @@ class ProductVariationGateway {
       $this->conn->commit();
       return $this->get($current["id"]);
 
-    } catch(PDOException $e) {
-      $this->conn->rollBack();
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
@@ -259,9 +253,6 @@ class ProductVariationGateway {
 
       return $this->conn->commit();
 
-    } catch(PDOException $e) {
-      $this->conn->rollBack();
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
@@ -281,8 +272,6 @@ class ProductVariationGateway {
       $stmt->bindValue(":id", $id, PDO::PARAM_INT);
       return $stmt->execute();
 
-    } catch(PDOException $e) {
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       throw $e; // Re-throw for centralized ErrorHandler
     }
@@ -325,8 +314,6 @@ class ProductVariationGateway {
       $stmt->bindValue(":id", $id, PDO::PARAM_INT);
       return $stmt->execute();
 
-    } catch(PDOException $e) {
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       throw $e; // Re-throw for centralized ErrorHandler
     }

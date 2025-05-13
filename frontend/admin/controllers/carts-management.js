@@ -324,8 +324,9 @@ async function renderModCartForm(userId) {
             const item = $(e);
             const variationId = item.data("variation-id");
             const newQuant = parseInt(item.find(".js-mod-cart-form-item-quant").val());
+            const res = await updateUserCart(userId, variationId, newQuant);
 
-            if (!(await updateUserCart(userId, variationId, newQuant))) {
+            if (!res.success) {
               return false;
             }
           }
@@ -393,18 +394,22 @@ async function renderRemoveItemPopup(variationId, userId) {
       confirmBtn.prop("disabled", true);
       confirmBtn.text("Removing...");
 
-      if (await deleteUserCart(userId, variationId)) {
+      const res = await deleteUserCart(userId, variationId);
+
+      if (res.success) {
         crudCartMsg.text("* Item removed successfully!");
         setTimeout(() => {
           crudCartMsg.text("");
           closePopup(backdrop);
-          renderCartsData();
         }, DISPLAY_MSG_TIMEOUT);
-      } else {
-        backdrop.find("#remove-item-popup-msg").text("Failed to remove item. Please try again.");
-        confirmBtn.prop("disabled", false);
-        confirmBtn.text("Remove");
+        renderCartsData();
+        closePopup(backdrop);
+        return;
       }
+
+      backdrop.find("#remove-item-popup-msg").text("Failed to remove item. Please try again.");
+      confirmBtn.prop("disabled", false);
+      confirmBtn.text("Remove");
     });
 
   } catch (error) {

@@ -94,7 +94,7 @@ class UserGateway {
 
       $id = $this->conn->lastInsertId();
 
-      if($data["roles_id"]) {
+      if(isset($data["roles_id"])) {
         $this->user_role->createMultiple($id, $data["roles_id"]);
       } else {
         $this->user_role->createMultiple($id, [BUYER_ROLE_ID]); // Default when a user is created is a buyer
@@ -103,9 +103,6 @@ class UserGateway {
       $this->conn->commit();
       return $this->get($id, $permission_include);
 
-    } catch(PDOException $e) {
-      $this->conn->rollBack();
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
@@ -156,9 +153,6 @@ class UserGateway {
       $this->conn->commit();
       return $this->get($id);
 
-    } catch(PDOException $e) {
-      $this->conn->rollBack();
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
@@ -183,9 +177,6 @@ class UserGateway {
 
       return $this->conn->commit();
 
-    } catch(PDOException $e) {
-      $this->conn->rollBack();
-      throw $e; // Re-throw for centralized ErrorHandler
     } catch(Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler

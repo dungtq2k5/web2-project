@@ -1,4 +1,5 @@
 - REQUIREMENTS: https://docs.google.com/document/d/1LugWPMj7M0KiEYdBAGGXFCjnVA5WhkX2/edit?tab=t.0
+- LINK Postman for APIs testing: https://martian-sunset-879935.postman.co/workspace/New-Team-Workspace~c32f74a3-9dc2-415b-99d7-88e6b7edf9af/collection/32178309-b1c3dabc-49d7-439f-a418-b85cfc7f1825?action=share&creator=32178309
 
 - LEGENDS:
   ✅: done.
@@ -63,9 +64,7 @@ FRONTEND:
 
   - ✅ Roles and permissions.
 
-  - ❌ Handle signin/signout between admin and buyer.
   - ❌ Title logo, icon for website
-
 
 DATABASE:
   - ❌ Add indexing for db (base on query at gateways function).
