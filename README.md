@@ -2,6 +2,10 @@
 
 This project is a website dedicated to selling smartwatches, developed as a requirement for the Web2 subject at school. It features separate interfaces for buyers and administrators.
 
+## View the Project Live
+
+You can view the live version of this project at [Live Demo Link](https://smartwatch-store-demo.liveblog365.com/web2-project/frontend/buyer/index.php) and the admin dashboard at [Admin Dashboard Link](https://smartwatch-store-demo.liveblog365.com/web2-project/frontend/admin/index.php) (email: `admin@gmail.com`, password: `password123456789`) powered by [Free Host](https://profreehost.com/).
+
 ## Technologies Used
 
 - **Backend API:** PHP, utilizing Composer for package management.
