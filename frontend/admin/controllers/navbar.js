@@ -1,6 +1,5 @@
 import { getSigninUser, signout } from "../../models/auth.js";
 
-
 const user = getSigninUser();
 $("#signin-as").text(user ? user.full_name : "N/A");
 
@@ -12,7 +11,7 @@ signoutBtn.click(async () => {
 
   const res = await signout();
 
-  if(res.success) {
+  if (res.success) {
     console.log("signout success");
     window.location.href = "index.php?page=signin"; // Redirect to signin page
     return;
@@ -25,9 +24,11 @@ signoutBtn.click(async () => {
 
 const currentPage = window.location.href.split("?page=")[1];
 
-$("#nav-links").find("a").each((idx, link) => {
-  const href = $(link).attr("href").split("?page=")[1];
-  if (href === currentPage) {
-    $(link).addClass("link-info");
-  }
-});
+$("#nav-links")
+  .find("a")
+  .each((idx, link) => {
+    const href = $(link).attr("href").split("?page=")[1];
+    if (href === currentPage) {
+      $(link).addClass("link-info");
+    }
+  });

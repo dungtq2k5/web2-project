@@ -1,13 +1,26 @@
-<header id="header" class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+<header
+  id="header"
+  class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top"
+>
   <div class="container-fluid">
     <a class="navbar-brand fw-bold" href="./index.php?page=home">GARMIN</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarNav"
+      aria-controls="navbarNav"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-        <li class="nav-item" id="orders-link-li" style="display: none;">
-          <a class="nav-link" href="./index.php?page=orders"><i class="uil uil-receipt-alt"></i> My Orders</a>
+        <li class="nav-item" id="orders-link-li" style="display: none">
+          <a class="nav-link" href="./index.php?page=orders"
+            ><i class="uil uil-receipt-alt"></i> My Orders</a
+          >
         </li>
         <!-- Add more nav items here if needed -->
       </ul>
@@ -15,16 +28,30 @@
         <span class="navbar-text">
           <i class="uil uil-user-circle"></i> <span id="email">Guest</span>
         </span>
-        <a href="./index.php?page=signin" id="signin" class="btn btn-info">Sign In</a>
-        <a href="./index.php?page=signup" id="signup" class="btn btn-outline-info">Sign Up</a>
-        <a href="./index.php?page=cart" id="cart" class="btn btn-info position-relative">
+        <a href="./index.php?page=signin" id="signin" class="btn btn-info"
+          >Sign In</a
+        >
+        <a
+          href="./index.php?page=signup"
+          id="signup"
+          class="btn btn-outline-info"
+          >Sign Up</a
+        >
+        <a
+          href="./index.php?page=cart"
+          id="cart"
+          class="btn btn-info position-relative"
+        >
           <i class="uil uil-shopping-cart"></i> Cart
-          <span id="cart-quantity" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+          <span
+            id="cart-quantity"
+            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+          >
             0
             <span class="visually-hidden">items in cart</span>
           </span>
         </a>
-        <button id="signout" class="btn btn-danger" style="display: none;">
+        <button id="signout" class="btn btn-danger" style="display: none">
           <i class="uil uil-signout"></i> Sign Out
         </button>
       </div>

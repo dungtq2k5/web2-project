@@ -3,7 +3,8 @@
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
-class Auths  {
+class Auths
+{
   private ErrorHandler $error_handler;
   private PDO $conn;
   private Utils $utils;
@@ -58,9 +59,10 @@ class Auths  {
     $this->cookie["samesite"] = $cookie_samesite;
   }
 
-  public function verifyAction(string $action_code): array { // If valid return {user_id, buyer_only} for further validations
+  public function verifyAction(string $action_code): array
+  { // If valid return {user_id, buyer_only} for further validations
     $decoded = $this->verifyJWT();
-    if(!$decoded) {
+    if (!$decoded) {
       $this->error_handler->sendErrorResponse(401, "Unauthorized");
       die;
     }
@@ -82,7 +84,7 @@ class Auths  {
     $stmt->bindValue(":action_code", $action_code, PDO::PARAM_STR);
     $stmt->execute();
 
-    if(!(bool) $stmt->fetchColumn()) {
+    if (!(bool) $stmt->fetchColumn()) {
       $this->error_handler->sendErrorResponse(401, "Unauthorized");
       die;
     }
@@ -94,8 +96,9 @@ class Auths  {
       : ["user_id" => $usr_id, "buyer_only" => false];
   }
 
-  public function genJWT(array $usr): bool {
-    if($this->verifyJWT()) return false; // Handle re-login
+  public function genJWT(array $usr): bool
+  {
+    if ($this->verifyJWT()) return false; // Handle re-login
 
     $payload = [
       "iss" => "my_api_issuer",              // Issuer of the jwt
@@ -121,17 +124,19 @@ class Auths  {
     ]);
   }
 
-  public function verifyJWT(): stdClass | false {
-    if(!$this->jwt["token"]) return false;
+  public function verifyJWT(): stdClass | false
+  {
+    if (!$this->jwt["token"]) return false;
 
     try {
       return JWT::decode($this->jwt["token"], new Key($this->jwt["secret_key"], $this->jwt["hash_algor"]));
-    } catch(Exception $e) {
+    } catch (Exception $e) {
       return false; // Token is invalid
     }
   }
 
-  public function removeJWT(): bool {
+  public function removeJWT(): bool
+  {
     return setcookie($this->jwt["name"], "", [
       "expires" => time() - $this->jwt["exp"],  // Expire in the past
       "path" => $this->cookie["path"],          // Available path for FrontEnd to access jwt, default "/" is available all path
@@ -141,5 +146,4 @@ class Auths  {
       "samesite" => $this->cookie["samesite"],  // Prevent CSRF attacks
     ]);
   }
-
 }

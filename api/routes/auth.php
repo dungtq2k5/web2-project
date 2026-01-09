@@ -2,7 +2,7 @@
 
 $controller = new AuthController($db_conn, $auths);
 
-switch(true) {
+switch (true) {
   case $uri === SOURCE_URI . "/auths/signin":
     $controller->processRequest($method, "signin");
     break;

@@ -4,7 +4,7 @@ import {
   deleteUser,
   getUser,
   updateUser,
-  getFilterUsersList
+  getFilterUsersList,
 } from "../../models/users.js";
 import { getRolesList } from "../../models/roles.js";
 import {
@@ -14,7 +14,7 @@ import {
   isValidVNPhoneNumber,
   formatAddress,
   filterTextInputsInFormData,
-  convertUtcToLocalDatetime
+  convertUtcToLocalDatetime,
 } from "../../utils.js";
 import { closeForm, closePopup } from "./components.js";
 import { DISPLAY_MSG_TIMEOUT } from "../../settings.js";
@@ -29,7 +29,7 @@ const canUpdate = hasPermission("UPDATE_USER");
 const canDelete = hasPermission("DELETE_USER");
 
 export default function renderUsersManagePage() {
-  if(hasPermission("CREATE_USER")) {
+  if (hasPermission("CREATE_USER")) {
     $("#create-user-btn").click(() => {
       renderCreateUserForm();
     });
@@ -42,7 +42,7 @@ export default function renderUsersManagePage() {
   const searchBtn = searchForm.find("#search-user-form-search-btn");
   const clearBtn = searchForm.find("#search-user-form-clear-btn");
 
-  searchForm.submit(async e => {
+  searchForm.submit(async (e) => {
     e.preventDefault();
     searchBtn.prop("disabled", true);
     searchBtn.text("Searching...");
@@ -67,39 +67,55 @@ export default function renderUsersManagePage() {
   renderUsersData();
 }
 
-async function renderUsersData(usersList=null) {
-  tbody.html("<tr><td colspan='10' class='text-center'>Loading data...</td></tr>");
+async function renderUsersData(usersList = null) {
+  tbody.html(
+    "<tr><td colspan='10' class='text-center'>Loading data...</td></tr>"
+  );
 
   try {
-    const users = usersList || await getUsersList();
+    const users = usersList || (await getUsersList());
 
     tbody.html(() => {
       let dataHTML = "";
 
       users.forEach((user, idx) => {
         idx++;
-        const addressesHTML = user.addresses.map(address => (
-          `<li><address>${formatAddress(address)}</address></li>`
-        )).join("");
-        const rolesHTML = user.roles.map(role => (
-          `<li>${role.name}</li>`
-        )).join("");
+        const addressesHTML = user.addresses
+          .map(
+            (address) => `<li><address>${formatAddress(address)}</address></li>`
+          )
+          .join("");
+        const rolesHTML = user.roles
+          .map((role) => `<li>${role.name}</li>`)
+          .join("");
 
         dataHTML += `
           <tr class="align-middle">
             <td data-cell="n.o" class="text-center">${idx}</td>
             <td data-cell="id" class="text-center">${user.id}</td>
-            <td data-cell="full name" class="content__td--g">${user.full_name}</td>
+            <td data-cell="full name" class="content__td--g">${
+              user.full_name
+            }</td>
             <td data-cell="email" class="content__td--g">${user.email}</td>
-            <td data-cell="phone number" class="content__td--g">${user.phone_number}</td>
+            <td data-cell="phone number" class="content__td--g">${
+              user.phone_number
+            }</td>
             <td data-cell="addresses" class="content__td--g">
-              <ul class="list-unstyled mb-0">${addressesHTML || "<span class='text-muted'>none</span>"}</ul>
+              <ul class="list-unstyled mb-0">${
+                addressesHTML || "<span class='text-muted'>none</span>"
+              }</ul>
             </td>
             <td data-cell="roles" class="content__td--g">
-              <ul class="list-unstyled mb-0">${rolesHTML || "<span class='text-muted'>none</span>"}</ul>
+              <ul class="list-unstyled mb-0">${
+                rolesHTML || "<span class='text-muted'>none</span>"
+              }</ul>
             </td>
-            <td data-cell="created at" class="content__td--g">${convertUtcToLocalDatetime(user.created_at)}</td>
-            <td data-cell="updated at" class="content__td--g">${convertUtcToLocalDatetime(user.updated_at)}</td>
+            <td data-cell="created at" class="content__td--g">${convertUtcToLocalDatetime(
+              user.created_at
+            )}</td>
+            <td data-cell="updated at" class="content__td--g">${convertUtcToLocalDatetime(
+              user.updated_at
+            )}</td>
             <td
               data-cell="actions"
               class="text-center"
@@ -107,20 +123,35 @@ async function renderUsersData(usersList=null) {
               data-user-number="${idx}"
             >
               <div class="d-flex gap-2 btn-group-sm">
-                ${canUpdate ? "<button class='js-update-user-btn btn btn-info'><i class='uil uil-pen'></i></button>" : ""}
-                ${canDelete ? "<button class='js-delete-user-btn btn btn-danger'><i class='uil uil-trash'></i></button>" : ""}
-                ${!canUpdate && !canDelete ? "<span class='text-muted'>No actions</span>" : ""}
+                ${
+                  canUpdate
+                    ? "<button class='js-update-user-btn btn btn-info'><i class='uil uil-pen'></i></button>"
+                    : ""
+                }
+                ${
+                  canDelete
+                    ? "<button class='js-delete-user-btn btn btn-danger'><i class='uil uil-trash'></i></button>"
+                    : ""
+                }
+                ${
+                  !canUpdate && !canDelete
+                    ? "<span class='text-muted'>No actions</span>"
+                    : ""
+                }
               </div>
             </td>
           </tr>
         `;
       });
 
-      return dataHTML || "<tr><td colspan='10' class='text-center text-muted'>No data found!</td></tr>";
+      return (
+        dataHTML ||
+        "<tr><td colspan='10' class='text-center text-muted'>No data found!</td></tr>"
+      );
     });
 
-    if(canDelete) {
-      tbody.find(".js-delete-user-btn").click(e => {
+    if (canDelete) {
+      tbody.find(".js-delete-user-btn").click((e) => {
         const td = $(e.currentTarget).closest("td");
         const userId = td.data("user-id");
         const userNum = td.data("user-number");
@@ -129,8 +160,8 @@ async function renderUsersData(usersList=null) {
       });
     }
 
-    if(canUpdate) {
-      tbody.find(".js-update-user-btn").click(e => {
+    if (canUpdate) {
+      tbody.find(".js-update-user-btn").click((e) => {
         const td = $(e.currentTarget).closest("td");
         const userId = td.data("user-id");
         const userNum = td.data("user-number");
@@ -140,28 +171,35 @@ async function renderUsersData(usersList=null) {
     }
 
     resultCount.text(users.length);
-
-  } catch(error) {
+  } catch (error) {
     console.error(`Error: ${error.message}`);
-    tbody.html(`<tr><td colspan='10' class="p-3 text-center table-danger">Error loading data: ${error.message}</td></tr>`);
+    tbody.html(
+      `<tr><td colspan='10' class="p-3 text-center table-danger">Error loading data: ${error.message}</td></tr>`
+    );
   }
 }
 
 async function renderCreateUserForm() {
   disableBgScroll();
-  backdrop.html("<div class='d-flex justify-content-center align-items-center' style='height: 100vh;'><div class='spinner-border text-primary' role='status'><span class='visually-hidden'>Loading create user form...</span></div></div>");
+  backdrop.html(
+    "<div class='d-flex justify-content-center align-items-center' style='height: 100vh;'><div class='spinner-border text-primary' role='status'><span class='visually-hidden'>Loading create user form...</span></div></div>"
+  );
   backdrop.show();
 
   try {
     const roles = await getRolesList();
 
     backdrop.html(() => {
-      const rolesHTML = roles.map(role => (`
+      const rolesHTML = roles
+        .map(
+          (role) => `
         <li class="list-group-item">
           <input type="checkbox" id="${role.id}" class="form-check-input me-1">
           <label for="${role.id}" class="form-check-label">${role.name}</label>
         </li>
-      `)).join("");
+      `
+        )
+        .join("");
 
       return `
         <form class="form--g card p-4 shadow-lg" id="create-user-form" style="max-width: 600px; margin: 2rem auto;">
@@ -238,14 +276,16 @@ async function renderCreateUserForm() {
 
           <span id="submit-msg" class="text-danger d-block mt-3 text-center"></span>
         </form>
-      `
+      `;
     });
 
     const form = backdrop.find("#create-user-form");
 
-    form.find(".js-create-user-form-close-btn").click(() => closeForm(backdrop));
+    form
+      .find(".js-create-user-form-close-btn")
+      .click(() => closeForm(backdrop));
 
-    form.submit(async e => {
+    form.submit(async (e) => {
       e.preventDefault();
 
       const submitBtn = form.find("#create-user-form-submit-btn");
@@ -262,37 +302,37 @@ async function renderCreateUserForm() {
       const validateForm = () => {
         let allValid = true;
 
-        if(!formData.get("full_name")) {
+        if (!formData.get("full_name")) {
           fullnameMsg.text("* required");
           allValid = false;
         } else {
           fullnameMsg.text("");
         }
 
-        if(!formData.get("email")) {
+        if (!formData.get("email")) {
           emailMsg.text("* required");
           allValid = false;
-        } else if(!isValidEmail(formData.get("email"))) {
+        } else if (!isValidEmail(formData.get("email"))) {
           emailMsg.text("invalid email");
           allValid = false;
         } else {
           emailMsg.text("");
         }
 
-        if(!formData.get("phone_number")) {
+        if (!formData.get("phone_number")) {
           phoneNumberMsg.text("* required");
           allValid = false;
-        } else if(!isValidVNPhoneNumber(formData.get("phone_number"))) {
+        } else if (!isValidVNPhoneNumber(formData.get("phone_number"))) {
           phoneNumberMsg.text("invalid phone number");
           allValid = false;
         } else {
           phoneNumberMsg.text("");
         }
 
-        if(!formData.get("password")) {
+        if (!formData.get("password")) {
           passwordMsg.text("* required");
           allValid = false;
-        } else if(!isValidPassword(formData.get("password"))) {
+        } else if (!isValidPassword(formData.get("password"))) {
           passwordMsg.text("invalid password");
           allValid = false;
         } else {
@@ -300,17 +340,22 @@ async function renderCreateUserForm() {
         }
 
         return allValid;
-      }
+      };
 
-      if(validateForm()) {
-        const rolesId= [];
-        form.find("#create-user-form-roles input[type='checkbox']:checked").each((idx, e) => {
-          rolesId.push($(e).attr("id"));
-        });
+      if (validateForm()) {
+        const rolesId = [];
+        form
+          .find("#create-user-form-roles input[type='checkbox']:checked")
+          .each((idx, e) => {
+            rolesId.push($(e).attr("id"));
+          });
 
-        const res = await createUser({...Object.fromEntries(formData), roles_id: rolesId}); // FormData only accept string
+        const res = await createUser({
+          ...Object.fromEntries(formData),
+          roles_id: rolesId,
+        }); // FormData only accept string
 
-        if(res.success) {
+        if (res.success) {
           crudUserMsg.text("* new user was created");
           setTimeout(() => {
             crudUserMsg.text("");
@@ -326,10 +371,11 @@ async function renderCreateUserForm() {
       submitBtn.text("Create");
       submitBtn.prop("disabled", false);
     });
-
-  } catch(error) {
+  } catch (error) {
     console.error(`Error: ${error.message}`);
-    backdrop.html(`<div class="alert alert-danger m-3 p-4 text-center">Error loading form: ${error.message}</div>`);
+    backdrop.html(
+      `<div class="alert alert-danger m-3 p-4 text-center">Error loading form: ${error.message}</div>`
+    );
   }
 }
 
@@ -350,7 +396,9 @@ function renderDeleteUserPopup(number, id) {
     </div>
   `);
 
-  backdrop.find(".js-delete-user-popup-close-btn").click(() => closePopup(backdrop));
+  backdrop
+    .find(".js-delete-user-popup-close-btn")
+    .click(() => closePopup(backdrop));
 
   const submitBtn = backdrop.find("#delete-user-popup-submit-btn");
   submitBtn.click(async () => {
@@ -358,7 +406,7 @@ function renderDeleteUserPopup(number, id) {
     submitBtn.text("Deleting user...");
 
     const res = await deleteUser(id);
-    if(res.success) {
+    if (res.success) {
       crudUserMsg.text(`* user id ${id} - number ${number} was deleted`);
       setTimeout(() => {
         crudUserMsg.text("");
@@ -378,7 +426,9 @@ function renderDeleteUserPopup(number, id) {
 
 async function renderUpdateUserForm(number, id) {
   disableBgScroll();
-  backdrop.html("<div class='d-flex justify-content-center align-items-center' style='height: 100vh;'><div class='spinner-border text-primary' role='status'><span class='visually-hidden'>Loading update user form...</span></div></div>");
+  backdrop.html(
+    "<div class='d-flex justify-content-center align-items-center' style='height: 100vh;'><div class='spinner-border text-primary' role='status'><span class='visually-hidden'>Loading update user form...</span></div></div>"
+  );
   backdrop.show();
 
   try {
@@ -386,10 +436,13 @@ async function renderUpdateUserForm(number, id) {
     const roles = await getRolesList();
 
     backdrop.html(() => {
-      const rolesHTML = roles.map(role => {
-        const isChecked = user.roles.some(userRole => userRole.id == role.id);
+      const rolesHTML = roles
+        .map((role) => {
+          const isChecked = user.roles.some(
+            (userRole) => userRole.id == role.id
+          );
 
-        return `
+          return `
           <li class="list-group-item">
             <input
               type="checkbox"
@@ -397,10 +450,13 @@ async function renderUpdateUserForm(number, id) {
               class="form-check-input me-1"
               ${isChecked ? "checked" : ""}
             >
-            <label for="${role.id}" class="form-check-label">${role.name}</label>
+            <label for="${role.id}" class="form-check-label">${
+            role.name
+          }</label>
           </li>
-        `
-      }).join("");
+        `;
+        })
+        .join("");
 
       return `
         <form class="form--g card p-4 shadow-lg" id="update-user-form" style="max-width: 600px; margin: 2rem auto;">
@@ -483,14 +539,16 @@ async function renderUpdateUserForm(number, id) {
 
           <span id="submit-msg" class="text-danger d-block mt-3 text-center"></span>
         </form>
-      `
+      `;
     });
 
     const form = backdrop.find("#update-user-form");
 
-    form.find(".js-update-user-form-close-btn").click(() => closeForm(backdrop));
+    form
+      .find(".js-update-user-form-close-btn")
+      .click(() => closeForm(backdrop));
 
-    form.submit(async e => {
+    form.submit(async (e) => {
       e.preventDefault();
 
       const submitBtn = form.find("#update-user-form-submit-btn");
@@ -507,49 +565,54 @@ async function renderUpdateUserForm(number, id) {
       const validateForm = () => {
         let allValid = true;
 
-        if(!formData.get("full_name")) {
+        if (!formData.get("full_name")) {
           fullnameMsg.text("* required");
           allValid = false;
         } else fullnameMsg.text("");
 
-        if(!formData.get("email")) {
+        if (!formData.get("email")) {
           emailMsg.text("* required");
           allValid = false;
-        } else if(!isValidEmail(formData.get("email"))) {
+        } else if (!isValidEmail(formData.get("email"))) {
           emailMsg.text("invalid email");
           allValid = false;
         } else emailMsg.text("");
 
-        if(!formData.get("phone_number")) {
+        if (!formData.get("phone_number")) {
           phoneNumberMsg.text("* required");
           allValid = false;
-        } else if(!isValidVNPhoneNumber(formData.get("phone_number"))) {
+        } else if (!isValidVNPhoneNumber(formData.get("phone_number"))) {
           phoneNumberMsg.text("invalid phone number");
           allValid = false;
         } else phoneNumberMsg.text("");
 
-        if(formData.get("password") && !isValidPassword(formData.get("password"))) {
+        if (
+          formData.get("password") &&
+          !isValidPassword(formData.get("password"))
+        ) {
           passwordMsg.text("invalid password");
           allValid = false;
         } else passwordMsg.text("");
 
         return allValid;
-      }
+      };
 
-      if(validateForm()) {
-        const rolesId= [];
-        form.find("#update-user-form-roles input[type='checkbox']:checked").each((idx, e) => {
-          rolesId.push($(e).attr("id"));
+      if (validateForm()) {
+        const rolesId = [];
+        form
+          .find("#update-user-form-roles input[type='checkbox']:checked")
+          .each((idx, e) => {
+            rolesId.push($(e).attr("id"));
+          });
+
+        if (!formData.get("password")) formData.delete("password");
+
+        const res = await updateUser(id, {
+          ...Object.fromEntries(formData),
+          roles_id: rolesId,
         });
 
-        if(!formData.get("password")) formData.delete("password");
-
-        const res = await updateUser(
-          id,
-          {...Object.fromEntries(formData), roles_id: rolesId}
-        );
-
-        if(res.success) {
+        if (res.success) {
           crudUserMsg.text(`* user id ${id} - number ${number} was updated`);
           setTimeout(() => {
             crudUserMsg.text("");
@@ -565,10 +628,11 @@ async function renderUpdateUserForm(number, id) {
       submitBtn.text("Update");
       submitBtn.prop("disabled", false);
     });
-
-  } catch(error) {
+  } catch (error) {
     console.error(`Error: ${error.message}`);
-    backdrop.html(`<div class="alert alert-danger m-3 p-4 text-center">Error loading update user form: ${error.message}</div>`);
+    backdrop.html(
+      `<div class="alert alert-danger m-3 p-4 text-center">Error loading update user form: ${error.message}</div>`
+    );
   }
 }
 

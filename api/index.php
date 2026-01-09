@@ -10,7 +10,7 @@ $dotenv->load();
 
 $classMap = require_once "./classmap.php";
 spl_autoload_register(function ($class) use ($classMap): void {
-  if(isset($classMap[$class])){
+  if (isset($classMap[$class])) {
     require_once $classMap[$class];
   }
 });
@@ -21,7 +21,7 @@ set_exception_handler([$error_handler, "handleException"]);
 $allowed_origins = array_map('trim', explode(',', $_ENV["DOMAINS_FRONTEND"]));
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
 
-if(in_array($origin, $allowed_origins)) header("Access-Control-Allow-Origin: $origin");      // Allow CORS
+if (in_array($origin, $allowed_origins)) header("Access-Control-Allow-Origin: $origin");      // Allow CORS
 header("Access-Control-Allow-Credentials: true");                                            // Allow cookies
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");                     // Allowed request methods
 header("Access-Control-Allow-Headers: Content-Type, Authorization, X-HTTP-Method-Override"); // Allowed headers
@@ -29,7 +29,7 @@ header("Content-Type: application/json; charset=UTF-8");
 
 $method = $_SERVER["REQUEST_METHOD"];
 
-if($method === "OPTIONS") { // Handle preflight requests
+if ($method === "OPTIONS") { // Handle preflight requests
   http_response_code(200);
   exit;
 }
@@ -62,7 +62,7 @@ $auths = new Auths(
 $uri = preg_replace('/\/[0-9]+$/', '', $uri); // Remove {id} if exist
 define("SOURCE_URI", $_ENV["SOURCE_URI"]);
 
-switch(true) {
+switch (true) {
   case str_contains($uri, SOURCE_URI . "/products"):
     include_once "./routes/product.php";
     break;

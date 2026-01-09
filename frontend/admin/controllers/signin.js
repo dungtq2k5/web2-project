@@ -2,9 +2,8 @@ import { signin, getSigninUser } from "../../models/auth.js";
 import {
   filterTextInputsInFormData,
   isValidEmail,
-  isValidPassword
+  isValidPassword,
 } from "../../utils.js";
-
 
 function signinForm() {
   const form = $("#signin-form");
@@ -14,7 +13,7 @@ function signinForm() {
   const passwordMsg = form.find("#password-msg");
   const msg = form.find("#signin-form-msg");
 
-  form.submit(async e => {
+  form.submit(async (e) => {
     e.preventDefault();
     submitBtn.prop("disabled", true);
     submitBtn.text("Validating...");
@@ -24,36 +23,42 @@ function signinForm() {
     const validateForm = () => {
       let allValid = true;
 
-      if(!formData.get("email")) {
+      if (!formData.get("email")) {
         emailMsg.text("* required");
         allValid = false;
       } else {
         emailMsg.text("");
       }
 
-      if(!formData.get("password")) {
+      if (!formData.get("password")) {
         passwordMsg.text("* required");
         allValid = false;
-      } else{
+      } else {
         passwordMsg.text("");
       }
 
       return allValid;
-    }
+    };
 
-    if(validateForm()) {
+    if (validateForm()) {
       let success = true;
       let errorMsg = "Invalid credentials";
 
-      if(!isValidEmail(formData.get("email")) || !isValidPassword(formData.get("password"))) {
+      if (
+        !isValidEmail(formData.get("email")) ||
+        !isValidPassword(formData.get("password"))
+      ) {
         success = false;
       } else {
-        const res = await signin(formData.get("email"), formData.get("password"));
+        const res = await signin(
+          formData.get("email"),
+          formData.get("password")
+        );
         success = res.success;
         errorMsg = res.message;
       }
 
-      if(success) {
+      if (success) {
         console.log("Sign in success");
         console.log(getSigninUser());
         window.location.href = "index.php?page=users-management"; // Redirect to admin page

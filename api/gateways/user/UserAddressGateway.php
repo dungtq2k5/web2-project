@@ -1,15 +1,18 @@
 <?php
 
-class UserAddressGateway {
+class UserAddressGateway
+{
   private PDO $conn;
   private Utils $utils;
 
-  public function __construct(PDO $db_conn) {
+  public function __construct(PDO $db_conn)
+  {
     $this->conn = $db_conn;
     $this->utils = new Utils;
   }
 
-  public function getAll(?int $limit=null, ?int $offset=null): array {
+  public function getAll(?int $limit = null, ?int $offset = null): array
+  {
     $sql = "SELECT
       id,
       name,
@@ -23,23 +26,24 @@ class UserAddressGateway {
       is_default
       FROM user_addresses WHERE is_deleted = false";
 
-    if($limit !== null && $offset !== null) {
+    if ($limit !== null && $offset !== null) {
       $sql .= " LIMIT :limit OFFSET :offset";
-    } elseif($limit !== null) {
+    } elseif ($limit !== null) {
       $sql .= " LIMIT :limit";
-    } elseif($offset !== null) {
+    } elseif ($offset !== null) {
       $sql .= " LIMIT 18446744073709551615 OFFSET :offset";
     }
 
     $stmt = $this->conn->prepare($sql);
-    if($limit !== null) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
-    if($offset !== null) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
+    if ($limit !== null) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
+    if ($offset !== null) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
     $stmt->execute();
 
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
   }
 
-  public function get(int $id): array | false {
+  public function get(int $id): array | false
+  {
     $sql = "SELECT
       id,
       name,
@@ -60,12 +64,13 @@ class UserAddressGateway {
     return $stmt->fetch(PDO::FETCH_ASSOC);
   }
 
-  public function create(array $data): array | false {
+  public function create(array $data): array | false
+  {
     $this->conn->beginTransaction();
 
     try {
       $is_default = $this->utils->toBool($data["is_default"]);
-      if($is_default === true) $this->updateDefaultAddressToFalse($data["user_id"]); // Ensure user has only one default address
+      if ($is_default === true) $this->updateDefaultAddressToFalse($data["user_id"]); // Ensure user has only one default address
 
       $sql = "INSERT INTO user_addresses (
         name,
@@ -105,19 +110,19 @@ class UserAddressGateway {
 
       $this->conn->commit();
       return $this->get($id);
-
-    } catch(Exception $e) {
+    } catch (Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
     }
   }
 
-  public function update(array $current, array $new): array | false {
+  public function update(array $current, array $new): array | false
+  {
     $this->conn->beginTransaction();
 
     try {
       $is_default = isset($new["is_default"]) ? $this->utils->toBool($new["is_default"]) : $current["is_default"];
-      if($is_default === true) $this->updateDefaultAddressToFalse($current["user_id"]); // Ensure user has only one default address
+      if ($is_default === true) $this->updateDefaultAddressToFalse($current["user_id"]); // Ensure user has only one default address
 
       $sql = "UPDATE user_addresses SET
         name = :name,
@@ -145,14 +150,14 @@ class UserAddressGateway {
 
       $this->conn->commit();
       return $this->get($current["id"]);
-
-    } catch(Exception $e) {
+    } catch (Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
     }
   }
 
-  public function delete(int $id): bool {
+  public function delete(int $id): bool
+  {
     $this->conn->beginTransaction();
 
     try {
@@ -165,14 +170,14 @@ class UserAddressGateway {
       $stmt->execute();
 
       return $this->conn->commit();
-
-    } catch(Exception $e) {
+    } catch (Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
     }
   }
 
-  public function getByUserId(int $usr_id, ?int $limit=null, ?int $offset=null): array {
+  public function getByUserId(int $usr_id, ?int $limit = null, ?int $offset = null): array
+  {
     $sql = "SELECT
       id,
       name,
@@ -185,24 +190,25 @@ class UserAddressGateway {
       is_default
       FROM user_addresses WHERE user_id = :user_id AND is_deleted = false";
 
-    if($limit !== null && $offset !== null) {
+    if ($limit !== null && $offset !== null) {
       $sql .= " LIMIT :limit OFFSET :offset";
-    } elseif($limit !== null) {
+    } elseif ($limit !== null) {
       $sql .= " LIMIT :limit";
-    } elseif($offset !== null) {
+    } elseif ($offset !== null) {
       $sql .= " LIMIT 18446744073709551615 OFFSET :offset";
     }
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":user_id", $usr_id, PDO::PARAM_INT);
-    if($limit !== null) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
-    if($offset !== null) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
+    if ($limit !== null) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
+    if ($offset !== null) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
     $stmt->execute();
 
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
   }
 
-  public function isUserAddress(int $usr_id, int $address_id): bool {
+  public function isUserAddress(int $usr_id, int $address_id): bool
+  {
     $sql = "SELECT EXISTS (
       SELECT 1 FROM user_addresses WHERE id = :address_id AND user_id = :user_id
       LIMIT 1
@@ -216,7 +222,8 @@ class UserAddressGateway {
     return (bool) $stmt->fetchColumn();
   }
 
-  private function hasConstrain(int $id): bool {
+  private function hasConstrain(int $id): bool
+  {
     $sql = "SELECT EXISTS (
       SELECT 1 FROM orders WHERE delivery_address_id = :id
       LIMIT 1
@@ -230,7 +237,8 @@ class UserAddressGateway {
   }
 
   // Function doesn't have its own transaction so make sure cover it when use
-  private function updateDefaultAddressToFalse(int $usr_id): void {
+  private function updateDefaultAddressToFalse(int $usr_id): void
+  {
     try {
       $sql = "UPDATE user_addresses
         SET is_default = false
@@ -241,10 +249,8 @@ class UserAddressGateway {
       $stmt->execute();
 
       return;
-
-    } catch(Exception $e) {
+    } catch (Exception $e) {
       throw $e; // Re-throw for centralized ErrorHandler
     }
   }
-
 }

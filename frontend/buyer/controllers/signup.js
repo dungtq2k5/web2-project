@@ -2,10 +2,9 @@ import {
   filterTextInputsInFormData,
   isValidEmail,
   isValidPassword,
-  isValidVNPhoneNumber
+  isValidVNPhoneNumber,
 } from "../../utils.js";
 import { signup } from "../../models/auth.js";
-
 
 function signupForm() {
   const form = $("#signup-form");
@@ -17,47 +16,49 @@ function signupForm() {
   const phoneMsg = form.find("#phone-msg");
   const passwordMsg = form.find("#password-msg");
 
-  form.submit(async e => {
+  form.submit(async (e) => {
     e.preventDefault();
     submitBtn.prop("disabled", true);
-    submitBtn.html(`<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Validating...`);
+    submitBtn.html(
+      `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Validating...`
+    );
 
     const formData = filterTextInputsInFormData(new FormData(form[0]));
 
     const validateForm = () => {
       let allValid = true;
 
-      if(!formData.get("full_name")) {
+      if (!formData.get("full_name")) {
         fullNameMsg.text("* required");
         allValid = false;
       } else {
         fullNameMsg.text("");
       }
 
-      if(!formData.get("email")) {
+      if (!formData.get("email")) {
         emailMsg.text("* required");
         allValid = false;
-      } else if(!isValidEmail(formData.get("email"))) {
+      } else if (!isValidEmail(formData.get("email"))) {
         emailMsg.text("* invalid email");
         allValid = false;
       } else {
         emailMsg.text("");
       }
 
-      if(!formData.get("phone_number")) {
+      if (!formData.get("phone_number")) {
         phoneMsg.text("* required");
         allValid = false;
-      } else if(!isValidVNPhoneNumber(formData.get("phone_number"))) {
+      } else if (!isValidVNPhoneNumber(formData.get("phone_number"))) {
         phoneMsg.text("* invalid phone number");
         allValid = false;
       } else {
         phoneMsg.text("");
       }
 
-      if(!formData.get("password")) {
+      if (!formData.get("password")) {
         passwordMsg.text("* required");
         allValid = false;
-      } else if(!isValidPassword(formData.get("password"))) {
+      } else if (!isValidPassword(formData.get("password"))) {
         passwordMsg.text("* invalid password");
         allValid = false;
       } else {
@@ -65,14 +66,16 @@ function signupForm() {
       }
 
       return allValid;
-    }
+    };
 
-    if(validateForm()) {
+    if (validateForm()) {
       const res = await signup(Object.fromEntries(formData));
 
-      if(res.success) {
+      if (res.success) {
         console.log("Signup successful");
-        submitBtn.html(`<i class="uil uil-check-circle"></i> Success! Redirecting...`);
+        submitBtn.html(
+          `<i class="uil uil-check-circle"></i> Success! Redirecting...`
+        );
         window.location.href = "./index.php?page=signin";
         return;
       }

@@ -1,23 +1,18 @@
 import { CORE_ROLES_ID, ROLES_API_URL } from "../settings.js";
-import {
-  deleteData,
-  fetchData,
-  sendData,
-  updateData
-} from "../utils.js";
-
+import { deleteData, fetchData, sendData, updateData } from "../utils.js";
 
 let isFetch = false;
 let rolesList = [];
 
-async function fetchRoles(limit=null, offset=null) {
+async function fetchRoles(limit = null, offset = null) {
   const res = await fetchData(ROLES_API_URL, limit, offset);
   rolesList = res.data;
   isFetch = true;
 }
 
-export async function getRolesList(limit=null, offset=null) { // Return a copy
-  if(!isFetch) {
+export async function getRolesList(limit = null, offset = null) {
+  // Return a copy
+  if (!isFetch) {
     console.log("fetch roles API");
     await fetchRoles();
   }
@@ -28,17 +23,17 @@ export async function getRolesList(limit=null, offset=null) { // Return a copy
 }
 
 export async function createRole(role) {
-  if((await getRoleByName(role.name))) {
+  if (await getRoleByName(role.name)) {
     return {
       success: false,
-      message: `Role name '${role.name}' was already taken, please try another`
-    }
+      message: `Role name '${role.name}' was already taken, please try another`,
+    };
   }
 
   const res = await sendData(ROLES_API_URL, role);
 
-  if(res.success) {
-    if(!isFetch) {
+  if (res.success) {
+    if (!isFetch) {
       await fetchRoles();
     } else {
       rolesList.push(res.data);
@@ -49,21 +44,21 @@ export async function createRole(role) {
 }
 
 export async function deleteRole(id) {
-  if(CORE_ROLES_ID.includes(parseInt(id))) {
+  if (CORE_ROLES_ID.includes(parseInt(id))) {
     return {
       success: false,
-      message: "Cannot delete base roles"
-    }
+      message: "Cannot delete base roles",
+    };
   }
 
   const res = await deleteData(ROLES_API_URL, id);
 
-  if(res.success) {
-    if(!isFetch) {
+  if (res.success) {
+    if (!isFetch) {
       await fetchRoles();
     } else {
-      const idx = rolesList.findIndex(role => role.id == id);
-      if(idx !== -1) {
+      const idx = rolesList.findIndex((role) => role.id == id);
+      if (idx !== -1) {
         rolesList.splice(idx, 1);
       } else {
         console.warn(`Couldn't find role with an ID ${id} to delete`);
@@ -75,30 +70,30 @@ export async function deleteRole(id) {
 }
 
 export async function updateRole(id, role) {
-  if(CORE_ROLES_ID.includes(parseInt(id))) {
+  if (CORE_ROLES_ID.includes(parseInt(id))) {
     return {
       success: false,
-      message: "Cannot update base roles"
-    }
+      message: "Cannot update base roles",
+    };
   }
 
   const existRole = await getRoleByName(role.name);
-  if(existRole && existRole.id != id) {
+  if (existRole && existRole.id != id) {
     return {
       success: false,
-      message: `Role name '${role.name}' was already taken, please try another`
-    }
+      message: `Role name '${role.name}' was already taken, please try another`,
+    };
   }
 
   const res = await updateData(ROLES_API_URL, id, role);
 
-  if(res.success) {
-    if(!isFetch) {
+  if (res.success) {
+    if (!isFetch) {
       await fetchRoles();
     } else {
-      const idx = rolesList.findIndex(role => role.id == id);
-      if(idx !== -1) {
-        rolesList[idx] = {...rolesList[idx], ...res.data};
+      const idx = rolesList.findIndex((role) => role.id == id);
+      if (idx !== -1) {
+        rolesList[idx] = { ...rolesList[idx], ...res.data };
       } else {
         console.warn(`Couldn't find role with an ID ${id} to update`);
       }
@@ -109,15 +104,15 @@ export async function updateRole(id, role) {
 }
 
 export async function getRole(id) {
-  if(!id) return undefined;
+  if (!id) return undefined;
 
   const rolesList = await getRolesList();
-  return rolesList.find(role => role.id == id) || undefined;
+  return rolesList.find((role) => role.id == id) || undefined;
 }
 
 export async function getRoleByName(name) {
-  if(!name) return undefined;
+  if (!name) return undefined;
 
   const rolesList = await getRolesList();
-  return rolesList.find(role => role.name == name) || undefined;
+  return rolesList.find((role) => role.name == name) || undefined;
 }

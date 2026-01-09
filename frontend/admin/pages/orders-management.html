@@ -5,19 +5,29 @@
   </div>
 
   <div class="card mb-4">
-    <div class="card-header">
-      Search Orders
-    </div>
+    <div class="card-header">Search Orders</div>
     <div class="card-body">
       <form id="search-order-form">
         <div class="row g-3 mb-3">
           <div class="col-md-6">
-            <label for="search-order-from" class="form-label">Order From:</label>
-            <input name="order_from" id="search-order-from" type="datetime-local" class="form-control">
+            <label for="search-order-from" class="form-label"
+              >Order From:</label
+            >
+            <input
+              name="order_from"
+              id="search-order-from"
+              type="datetime-local"
+              class="form-control"
+            />
           </div>
           <div class="col-md-6">
             <label for="search-order-to" class="form-label">Order To:</label>
-            <input name="order_to" id="search-order-to" type="datetime-local" class="form-control">
+            <input
+              name="order_to"
+              id="search-order-to"
+              type="datetime-local"
+              class="form-control"
+            />
           </div>
         </div>
 
@@ -25,25 +35,51 @@
         <div class="row g-3 mb-3">
           <div class="col-md-3">
             <label for="search-city" class="form-label">City/Province:</label>
-            <input name="city_province" type="text" id="search-city" placeholder="Not filtered" class="form-control">
+            <input
+              name="city_province"
+              type="text"
+              id="search-city"
+              placeholder="Not filtered"
+              class="form-control"
+            />
           </div>
           <div class="col-md-3">
             <label for="search-district" class="form-label">District:</label>
-            <input name="district" type="text" id="search-district" placeholder="Not filtered" class="form-control">
+            <input
+              name="district"
+              type="text"
+              id="search-district"
+              placeholder="Not filtered"
+              class="form-control"
+            />
           </div>
           <div class="col-md-3">
             <label for="search-ward" class="form-label">Ward:</label>
-            <input name="ward" type="text" id="search-ward" placeholder="Not filtered" class="form-control">
+            <input
+              name="ward"
+              type="text"
+              id="search-ward"
+              placeholder="Not filtered"
+              class="form-control"
+            />
           </div>
           <div class="col-md-3">
             <label for="search-street" class="form-label">Street:</label>
-            <input name="street" type="text" id="search-street" placeholder="Not filtered" class="form-control">
+            <input
+              name="street"
+              type="text"
+              id="search-street"
+              placeholder="Not filtered"
+              class="form-control"
+            />
           </div>
         </div>
 
         <div class="row g-3 mb-3 align-items-end">
           <div class="col-md-6">
-            <label for="search-del-state" class="form-label">Delivery State:</label>
+            <label for="search-del-state" class="form-label"
+              >Delivery State:</label
+            >
             <select name="del_state" id="search-del-state" class="form-select">
               <option value="-1">Not filtered</option>
               <!-- Options will be populated by JS -->
@@ -51,15 +87,34 @@
           </div>
           <div class="col-md-6">
             <div class="form-check">
-              <input name="sort" type="checkbox" id="search-sort" class="form-check-input">
-              <label for="search-sort" class="form-check-label">Sort by Address</label>
+              <input
+                name="sort"
+                type="checkbox"
+                id="search-sort"
+                class="form-check-input"
+              />
+              <label for="search-sort" class="form-check-label"
+                >Sort by Address</label
+              >
             </div>
           </div>
         </div>
 
         <div class="d-flex justify-content-end btn-group-sm">
-          <button id="search-search-btn" type="submit" class="btn btn-dark me-2">Search</button>
-          <button id="search-clear-btn" type="reset" class="btn btn-outline-dark">Clear search</button>
+          <button
+            id="search-search-btn"
+            type="submit"
+            class="btn btn-dark me-2"
+          >
+            Search
+          </button>
+          <button
+            id="search-clear-btn"
+            type="reset"
+            class="btn btn-outline-dark"
+          >
+            Clear search
+          </button>
         </div>
       </form>
       <p class="mt-2 mb-0">Result: <span id="result-count">0</span></p>
@@ -83,12 +138,14 @@
         </tr>
       </thead>
       <tbody id="tbody">
-        <tr><td colspan="10" class="text-center">Loading...</td></tr>
+        <tr>
+          <td colspan="10" class="text-center">Loading...</td>
+        </tr>
       </tbody>
     </table>
   </div>
 </main>
 
-<div class="backdrop--g" id="backdrop" style="display: none;"></div>
+<div class="backdrop--g" id="backdrop" style="display: none"></div>
 
 <script type="module" src="./controllers/orders-management.js"></script>

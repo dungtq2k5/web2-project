@@ -1,16 +1,19 @@
 <?php
 
-class OrderDeliveryStateController {
+class OrderDeliveryStateController
+{
   private ErrorHandler $error_handler;
   private Utils $utils;
 
-  public function __construct(private OrderDeliveryStateGateway $gateway, private Auths $auths) {
+  public function __construct(private OrderDeliveryStateGateway $gateway, private Auths $auths)
+  {
     $this->error_handler = new ErrorHandler;
     $this->utils = new Utils;
   }
 
-  public function processRequest(string $method, ?int $id=null, ?int $limit=null, ?int $offset=null): void {
-    if($id) {
+  public function processRequest(string $method, ?int $id = null, ?int $limit = null, ?int $offset = null): void
+  {
+    if ($id) {
       $this->processResourceRequest($method, $id);
       return;
     }
@@ -18,7 +21,8 @@ class OrderDeliveryStateController {
     $this->processCollectionRequest($method, $limit, $offset);
   }
 
-  private function processResourceRequest(string $method, ?int $id=null): void {
+  private function processResourceRequest(string $method, ?int $id = null): void
+  {
     $delivery_state = $this->gateway->get($id);
     if (!$delivery_state) {
       $this->error_handler->sendErrorResponse(404, "Delivery state with an id '$id' not found");
@@ -40,7 +44,8 @@ class OrderDeliveryStateController {
         header("Allow: GET");
     }
   }
-  public function processCollectionRequest(string $method, ?int $limit=null, ?int $offset=null): void {
+  public function processCollectionRequest(string $method, ?int $limit = null, ?int $offset = null): void
+  {
     switch ($method) {
       case "GET":
         $this->auths->verifyAction("READ_ORDER_DELIVERY_STATE");
@@ -59,5 +64,4 @@ class OrderDeliveryStateController {
         header("Allow: GET");
     }
   }
-
 }

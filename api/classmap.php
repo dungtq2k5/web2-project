@@ -76,4 +76,3 @@ return [
   "Auths" => __DIR__ . "/Auths.php",
   "Utils" => __DIR__ . "/Utils.php"
 ];
-

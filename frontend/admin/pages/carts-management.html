@@ -8,16 +8,30 @@
     <div class="card-body">
       <form id="search-cart-form" class="row g-3 align-items-center">
         <div class="col-auto">
-          <label for="search-cart-form-input" class="col-form-label">Search Carts:</label>
+          <label for="search-cart-form-input" class="col-form-label"
+            >Search Carts:</label
+          >
         </div>
         <div class="col">
-          <input type="text" id="search-cart-form-input" class="form-control">
+          <input type="text" id="search-cart-form-input" class="form-control" />
         </div>
         <div class="col-auto">
-          <button id="search-cart-form-search-btn" type="submit" class="btn btn-dark btn-sm">Search</button>
+          <button
+            id="search-cart-form-search-btn"
+            type="submit"
+            class="btn btn-dark btn-sm"
+          >
+            Search
+          </button>
         </div>
         <div class="col-auto">
-          <button id="search-cart-form-clear-btn" type="reset" class="btn btn-outline-dark btn-sm">Clear search</button>
+          <button
+            id="search-cart-form-clear-btn"
+            type="reset"
+            class="btn btn-outline-dark btn-sm"
+          >
+            Clear search
+          </button>
         </div>
       </form>
       <p class="mt-2 mb-0">Result: <span id="result-count">0</span></p>
@@ -36,12 +50,14 @@
         </tr>
       </thead>
       <tbody id="tbody">
-        <tr><td colspan="5" class="text-center">Loading...</td></tr>
+        <tr>
+          <td colspan="5" class="text-center">Loading...</td>
+        </tr>
       </tbody>
     </table>
   </div>
 </main>
 
-<div class="backdrop--g" id="backdrop" style="display: none;"></div>
+<div class="backdrop--g" id="backdrop" style="display: none"></div>
 
 <script type="module" src="./controllers/carts-management.js"></script>

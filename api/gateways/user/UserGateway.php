@@ -1,6 +1,7 @@
 <?php
 
-class UserGateway {
+class UserGateway
+{
   private PDO $conn;
   private UserRoleGateway $user_role;
   private UserAddressGateway $user_address;
@@ -8,7 +9,8 @@ class UserGateway {
   private Utils $utils;
   private RolePermissionGateway $role_permission;
 
-  public function __construct(PDO $db_conn) {
+  public function __construct(PDO $db_conn)
+  {
     $this->conn = $db_conn;
     $this->user_role = new UserRoleGateway($db_conn);
     $this->user_address = new UserAddressGateway($db_conn);
@@ -17,24 +19,25 @@ class UserGateway {
     $this->role_permission = new RolePermissionGateway($db_conn);
   }
 
-  public function getAll(?int $limit=null, ?int $offset=null): array {
+  public function getAll(?int $limit = null, ?int $offset = null): array
+  {
     $sql = "SELECT * FROM users WHERE is_deleted = false";
 
-    if($limit !== null && $offset !== null) {
+    if ($limit !== null && $offset !== null) {
       $sql .= " LIMIT :limit OFFSET :offset";
-    } elseif($limit !== null) {
+    } elseif ($limit !== null) {
       $sql .= " LIMIT :limit";
-    } elseif($offset !== null) {
+    } elseif ($offset !== null) {
       $sql .= " LIMIT 18446744073709551615 OFFSET :offset";
     }
 
     $stmt = $this->conn->prepare($sql);
-    if($limit !== null) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
-    if($offset !== null) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
+    if ($limit !== null) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
+    if ($offset !== null) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
     $stmt->execute();
 
     $data = [];
-    while($user = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    while ($user = $stmt->fetch(PDO::FETCH_ASSOC)) {
       unset($user["password"]);
       unset($user["is_deleted"]);
       $user["addresses"] = $this->user_address->getByUserId($user["id"]);
@@ -46,21 +49,22 @@ class UserGateway {
     return $data;
   }
 
-  public function get(int $id, bool $permission_include=false): array | false {
+  public function get(int $id, bool $permission_include = false): array | false
+  {
     $sql = "SELECT * FROM users WHERE id = :id AND is_deleted = false";
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":id", $id, PDO::PARAM_INT);
     $stmt->execute();
 
-    if($user = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    if ($user = $stmt->fetch(PDO::FETCH_ASSOC)) {
       unset($user["is_deleted"]);
       $user["addresses"] = $this->user_address->getByUserId($id);
       $user["roles"] = $this->user_role->getByUserId($id);
       $user["cart"] = $this->cart->getByUserId($id);
 
-      if($permission_include) {
-        foreach($user["roles"] as &$role) {
+      if ($permission_include) {
+        foreach ($user["roles"] as &$role) {
           $role["permissions"] = array_column(
             $this->role_permission->getByRoleIdMinimal($role["id"]),
             "action_code"
@@ -74,11 +78,12 @@ class UserGateway {
     return false;
   }
 
-  public function create(array $data, bool $permission_include=false): array | false {
+  public function create(array $data, bool $permission_include = false): array | false
+  {
     $this->conn->beginTransaction();
 
     try {
-      if(!$this->isEmailUnique($data["email"])) { // Make sure unique constraints
+      if (!$this->isEmailUnique($data["email"])) { // Make sure unique constraints
         throw new Exception("Email '{$data['email']}' already exists, please choose another one", 409);
       }
 
@@ -94,7 +99,7 @@ class UserGateway {
 
       $id = $this->conn->lastInsertId();
 
-      if(isset($data["roles_id"])) {
+      if (isset($data["roles_id"])) {
         $this->user_role->createMultiple($id, $data["roles_id"]);
       } else {
         $this->user_role->createMultiple($id, [BUYER_ROLE_ID]); // Default when a user is created is a buyer
@@ -102,26 +107,26 @@ class UserGateway {
 
       $this->conn->commit();
       return $this->get($id, $permission_include);
-
-    } catch(Exception $e) {
+    } catch (Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
     }
   }
 
-  public function update(array $current, array $new): array | false {
+  public function update(array $current, array $new): array | false
+  {
     $this->conn->beginTransaction();
 
     try {
       $id = $current["id"];
 
-      if($id == ADMIN_ID) { // Cannot modify admin account
+      if ($id == ADMIN_ID) { // Cannot modify admin account
         throw new Exception("Forbidden: User cannot make any changes to base admin account", 403);
       }
 
-      $new_email = $new["email"];
+      $new_email = $new["email"] ?? null;
 
-      if( // Make sure unique constraints
+      if ( // Make sure unique constraints
         $new_email &&
         $new_email !== $current["email"] &&
         !$this->isEmailUnique($new_email)
@@ -139,11 +144,11 @@ class UserGateway {
       $stmt->bindValue(":full_name", $new["full_name"] ?? $current["full_name"], PDO::PARAM_STR);
       $stmt->bindValue(":email", $new_email ?? $current["email"], PDO::PARAM_STR);
       $stmt->bindValue(":phone_number", $new["phone_number"] ?? $current["phone_number"], PDO::PARAM_STR);
-      $stmt->bindValue(":password", $new["password"] ? password_hash($new["password"], PASSWORD_DEFAULT) : $current["password"], PDO::PARAM_STR);
+      $stmt->bindValue(":password", isset($new["password"]) ? password_hash($new["password"], PASSWORD_DEFAULT) : $current["password"], PDO::PARAM_STR);
       $stmt->bindValue(":id", $id, PDO::PARAM_INT);
       $stmt->execute();
 
-      if(
+      if (
         isset($new["roles_id"]) &&
         !$this->utils->compareArrays($new["roles_id"], array_column($current["roles"], "id"))
       ) {
@@ -152,18 +157,18 @@ class UserGateway {
 
       $this->conn->commit();
       return $this->get($id);
-
-    } catch(Exception $e) {
+    } catch (Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
     }
   }
 
-  public function delete(int $id): bool {
+  public function delete(int $id): bool
+  {
     $this->conn->beginTransaction();
 
     try {
-      if($id == ADMIN_ID) { // Cannot modify admin account
+      if ($id == ADMIN_ID) { // Cannot modify admin account
         throw new Exception("Forbidden: User cannot make any changes to base admin account", 403);
       }
 
@@ -176,14 +181,14 @@ class UserGateway {
       $stmt->execute();
 
       return $this->conn->commit();
-
-    } catch(Exception $e) {
+    } catch (Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
     }
   }
 
-  public function getByEmailPassword(string $email, string $pwd, bool $permission_include=false): array | false {
+  public function getByEmailPassword(string $email, string $pwd, bool $permission_include = false): array | false
+  {
     $sql = "SELECT id, password FROM users WHERE email = :email AND is_deleted = false";
 
     $stmt = $this->conn->prepare($sql);
@@ -191,14 +196,15 @@ class UserGateway {
     $stmt->execute();
 
     $usr = $stmt->fetch(PDO::FETCH_ASSOC);
-    if(!$usr || !password_verify($pwd, $usr["password"])) {
+    if (!$usr || !password_verify($pwd, $usr["password"])) {
       return false;
     }
 
     return $this->get($usr["id"], $permission_include);
   }
 
-  private function hasConstrain(int $id): bool {
+  private function hasConstrain(int $id): bool
+  {
     $sql = "SELECT EXISTS (
       (SELECT 1 FROM user_addresses WHERE user_id = :user_id LIMIT 1)
       UNION
@@ -218,7 +224,8 @@ class UserGateway {
     return (bool) $stmt->fetchColumn();
   }
 
-  private function isEmailUnique(string $email): bool {
+  private function isEmailUnique(string $email): bool
+  {
     $sql = "SELECT EXISTS (
       SELECT 1 FROM users WHERE email = :email AND is_deleted = false
       LIMIT 1
@@ -230,5 +237,4 @@ class UserGateway {
 
     return !(bool) $stmt->fetchColumn();
   }
-
 }

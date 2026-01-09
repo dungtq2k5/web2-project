@@ -1,6 +1,6 @@
 <?php
 
-switch(true) {
+switch (true) {
   case $uri === SOURCE_URI . "/providers":
     $gateway = new ProviderGateway($db_conn);
     $controller = new ProviderController($gateway, $auths);

@@ -1,6 +1,6 @@
 <?php
 
-switch(true) {
+switch (true) {
   case $uri === SOURCE_URI . "/carts";
     $user_id = isset($_GET["user_id"]) ? (int) $_GET["user_id"] : null;
     $product_variation_id = isset($_GET["product_variation_id"]) ? (int) $_GET["product_variation_id"] : null;

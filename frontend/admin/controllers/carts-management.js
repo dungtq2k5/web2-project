@@ -3,7 +3,7 @@ import {
   getUsersList,
   updateUserCart,
   deleteUserCart,
-  getFilterUsersList
+  getFilterUsersList,
 } from "../../models/users.js";
 import { getVariation } from "../../models/product/variations.js";
 import { getProduct } from "../../models/product/products.js";
@@ -11,16 +11,15 @@ import {
   renderUserDetailPopup,
   renderProductVariationDetailPopup,
   closeForm,
-  closePopup
+  closePopup,
 } from "./components.js";
 import { disableBgScroll } from "../../utils.js";
 import {
   DISPLAY_MSG_TIMEOUT,
   DEFAULT_IMG_PATH,
-  VARIATION_IMG_PATH
+  VARIATION_IMG_PATH,
 } from "../../settings.js";
 import { hasPermission } from "../../models/auth.js";
-
 
 const crudCartMsg = $("#crud-cart-msg");
 const backdrop = $("#backdrop");
@@ -33,12 +32,12 @@ const canDelete = hasPermission("DELETE_CART");
 const canReadUser = hasPermission("READ_USER");
 
 export default function renderUsersCartsManagePage() {
-  const searchForm  = $("#search-cart-form");
+  const searchForm = $("#search-cart-form");
   const searchInput = searchForm.find("#search-cart-form-input");
   const searchBtn = searchForm.find("#search-cart-form-search-btn");
   const clearBtn = searchForm.find("#search-cart-form-clear-btn");
 
-  searchForm.submit(async e => {
+  searchForm.submit(async (e) => {
     e.preventDefault();
     searchBtn.prop("disabled", true);
     searchBtn.text("Searching...");
@@ -63,25 +62,29 @@ export default function renderUsersCartsManagePage() {
   renderCartsData();
 }
 
-async function renderCartsData(usersList=null) {
-  tbody.html("<tr><td colspan='5' class='text-center p-3'>Loading data...</td></tr>");
+async function renderCartsData(usersList = null) {
+  tbody.html(
+    "<tr><td colspan='5' class='text-center p-3'>Loading data...</td></tr>"
+  );
 
   try {
-    const users = usersList || await getUsersList();
+    const users = usersList || (await getUsersList());
 
     let dataHTML = "";
 
-    for(const [idx, user] of users.entries()) {
+    for (const [idx, user] of users.entries()) {
       let cartItemsHTML = "";
       if (user.cart && user.cart.length > 0) {
-        for(const [, item] of user.cart.entries()) {
+        for (const [, item] of user.cart.entries()) {
           const variation = await getVariation(item.product_variation_id);
-          if(!variation) continue;
+          if (!variation) continue;
 
           const product = await getProduct(variation.product_id);
-          if(!product) continue;
+          if (!product) continue;
 
-          const variationImg = variation.image_name ? `${VARIATION_IMG_PATH}/${variation.image_name}` : DEFAULT_IMG_PATH;
+          const variationImg = variation.image_name
+            ? `${VARIATION_IMG_PATH}/${variation.image_name}`
+            : DEFAULT_IMG_PATH;
 
           cartItemsHTML += `
             <li class="d-flex align-items-center justify-content-between p-2 border-bottom">
@@ -89,7 +92,9 @@ async function renderCartsData(usersList=null) {
                 <img src="${variationImg}" class="img-thumbnail me-2" alt="product image" style="width: 60px; height: 60px; object-fit: cover;" loading="lazy">
                 <div>
                   <p class="mb-0 fw-bold">${product.name}</p>
-                  <small class="text-muted">${variation.price_cents} &#162; x ${item.quantity}</small>
+                  <small class="text-muted">${variation.price_cents} &#162; x ${
+            item.quantity
+          }</small>
                 </div>
               </div>
               <div
@@ -117,10 +122,9 @@ async function renderCartsData(usersList=null) {
         }
       }
 
-
       dataHTML += `
         <tr class="align-middle">
-          <td data-cell="n.o" class="text-center p-2">${idx+1}</td>
+          <td data-cell="n.o" class="text-center p-2">${idx + 1}</td>
           <td
             data-cell="user(buyer) id"
             class="p-2"
@@ -149,31 +153,34 @@ async function renderCartsData(usersList=null) {
           <td data-cell="actions" class="text-center p-2">
             ${
               cartItemsHTML && canUpdate
-              ? `<button
+                ? `<button
                   class="js-mod-cart-btn btn btn-info btn-sm"
                   data-user-id="${user.id}"
                 >
                   <i class='uil uil-pen'></i>
                 </button>`
-              : "No actions"
+                : "No actions"
             }
           </td>
         </tr>
       `;
     }
 
-    tbody.html(dataHTML || "<tr><td colspan='5' class='text-center p-3'>No data</td></tr>");
+    tbody.html(
+      dataHTML ||
+        "<tr><td colspan='5' class='text-center p-3'>No data</td></tr>"
+    );
 
-    if(canRead) {
-      tbody.find(".js-view-detail-item-btn").click(e => {
+    if (canRead) {
+      tbody.find(".js-view-detail-item-btn").click((e) => {
         const parent = $(e.currentTarget).parent();
         const variationId = parent.data("variation-id");
         renderProductVariationDetailPopup(variationId, backdrop);
       });
     }
 
-    if(canDelete) {
-      tbody.find(".js-remove-item-btn").click(e => {
+    if (canDelete) {
+      tbody.find(".js-remove-item-btn").click((e) => {
         const parent = $(e.currentTarget).parent();
         const variationId = parent.data("variation-id");
         const userId = parent.data("user-id");
@@ -181,16 +188,16 @@ async function renderCartsData(usersList=null) {
       });
     }
 
-    if(canUpdate) {
-      tbody.find(".js-mod-cart-btn").click(e => {
+    if (canUpdate) {
+      tbody.find(".js-mod-cart-btn").click((e) => {
         const userId = $(e.currentTarget).data("user-id");
         console.log(`modify user id ${userId} cart`);
         renderModCartForm(userId);
       });
     }
 
-    if(canReadUser) {
-      tbody.find(".js-view-detail-user-btn").click(e => {
+    if (canReadUser) {
+      tbody.find(".js-view-detail-user-btn").click((e) => {
         const userId = $(e.currentTarget).data("user-id");
         console.log(`view detail user id ${userId}`);
         renderUserDetailPopup(userId, backdrop);
@@ -198,27 +205,31 @@ async function renderCartsData(usersList=null) {
     }
 
     resultCount.text(users.length);
-
-
-  } catch(error) {
+  } catch (error) {
     console.error(`Error: ${error.message}`);
-    tbody.html(`<tr><td colspan='5' class='text-center p-3 table-danger">Error loading data: ${error.message}</td></tr>`);
+    tbody.html(
+      `<tr><td colspan='5' class='text-center p-3 table-danger">Error loading data: ${error.message}</td></tr>`
+    );
   }
 }
 
 async function renderModCartForm(userId) {
   disableBgScroll();
-  backdrop.html("<div class='d-flex justify-content-center align-items-center' style='height: 100vh;'><div class='spinner-border text-primary' role='status'><span class='visually-hidden'>Loading modify cart form...</span></div></div>");
+  backdrop.html(
+    "<div class='d-flex justify-content-center align-items-center' style='height: 100vh;'><div class='spinner-border text-primary' role='status'><span class='visually-hidden'>Loading modify cart form...</span></div></div>"
+  );
   backdrop.show();
 
   try {
     const user = await getUser(userId);
     let itemsHTML = `<ul class="list-group list-group-flush" id="mod-cart-form__items">`;
 
-    for(const [, item] of user.cart.entries()) {
+    for (const [, item] of user.cart.entries()) {
       const variation = await getVariation(item.product_variation_id);
-      const product  = await getProduct(variation.product_id);
-      const variationImg = variation.image_name ? `${VARIATION_IMG_PATH}/${variation.image_name}` : DEFAULT_IMG_PATH;
+      const product = await getProduct(variation.product_id);
+      const variationImg = variation.image_name
+        ? `${VARIATION_IMG_PATH}/${variation.image_name}`
+        : DEFAULT_IMG_PATH;
 
       itemsHTML += `
         <li
@@ -278,9 +289,11 @@ async function renderModCartForm(userId) {
 
     const form = backdrop.find("#mod-cart-form");
 
-    backdrop.find(".js-mod-cart-form-close-btn").click(() => closeForm(backdrop));
+    backdrop
+      .find(".js-mod-cart-form-close-btn")
+      .click(() => closeForm(backdrop));
 
-    form.submit(async e => {
+    form.submit(async (e) => {
       e.preventDefault();
 
       const submitBnt = form.find("#mod-cart-form-submit-btn");
@@ -292,22 +305,24 @@ async function renderModCartForm(userId) {
       const validateForm = async () => {
         let allValid = true;
 
-        for(const [, e] of items.entries()) {
+        for (const [, e] of items.entries()) {
           const item = $(e);
           const msg = item.find(".js-mod-cart-form-item-quant-msg");
           const newQuant = item.find(".js-mod-cart-form-item-quant").val(); // Return a string of number
 
-          if(!newQuant) {
+          if (!newQuant) {
             msg.text("* is required");
             allValid = false;
-          } else if(newQuant < 1) {
+          } else if (newQuant < 1) {
             msg.text("quantity can't be smaller than 1");
             allValid = false;
           } else {
             const variationId = item.data("variation-id");
             const variation = await getVariation(variationId);
-            if(newQuant > variation.stock_quantity) {
-              msg.text(`quantity can't be greater than stock quantity which is ${variation.stock_quantity}`);
+            if (newQuant > variation.stock_quantity) {
+              msg.text(
+                `quantity can't be greater than stock quantity which is ${variation.stock_quantity}`
+              );
               allValid = false;
             } else {
               msg.text("");
@@ -316,14 +331,16 @@ async function renderModCartForm(userId) {
         }
 
         return allValid;
-      }
+      };
 
-      if(await validateForm()) {
+      if (await validateForm()) {
         const allUpdated = async () => {
-          for(const [, e] of items.entries()) {
+          for (const [, e] of items.entries()) {
             const item = $(e);
             const variationId = item.data("variation-id");
-            const newQuant = parseInt(item.find(".js-mod-cart-form-item-quant").val());
+            const newQuant = parseInt(
+              item.find(".js-mod-cart-form-item-quant").val()
+            );
             const res = await updateUserCart(userId, variationId, newQuant);
 
             if (!res.success) {
@@ -331,23 +348,30 @@ async function renderModCartForm(userId) {
             }
           }
           return true;
-        }
+        };
 
         if (await allUpdated()) {
-          form.find("#mod-cart-form-msg").removeClass("text-danger").addClass("text-success").text("Cart updated successfully!");
+          form
+            .find("#mod-cart-form-msg")
+            .removeClass("text-danger")
+            .addClass("text-success")
+            .text("Cart updated successfully!");
           setTimeout(() => {
             closeForm(backdrop);
             renderCartsData();
           }, DISPLAY_MSG_TIMEOUT);
         } else {
-          form.find("#mod-cart-form-msg").removeClass("text-success").addClass("text-danger").text("Failed to update cart. Please try again.");
+          form
+            .find("#mod-cart-form-msg")
+            .removeClass("text-success")
+            .addClass("text-danger")
+            .text("Failed to update cart. Please try again.");
         }
       }
 
       submitBnt.prop("disabled", false);
       submitBnt.text("Modify");
     });
-
   } catch (error) {
     console.error(`Error rendering modify cart form: ${error.message}`);
     backdrop.html(
@@ -358,7 +382,9 @@ async function renderModCartForm(userId) {
 
 async function renderRemoveItemPopup(variationId, userId) {
   disableBgScroll();
-  backdrop.html("<div class='d-flex justify-content-center align-items-center' style='height: 100vh;'><div class='spinner-border text-primary' role='status'><span class='visually-hidden'>Loading...</span></div></div>");
+  backdrop.html(
+    "<div class='d-flex justify-content-center align-items-center' style='height: 100vh;'><div class='spinner-border text-primary' role='status'><span class='visually-hidden'>Loading...</span></div></div>"
+  );
   backdrop.show();
 
   try {
@@ -387,7 +413,9 @@ async function renderRemoveItemPopup(variationId, userId) {
       </div>
     `);
 
-    backdrop.find(".js-remove-item-popup-close-btn").click(() => closePopup(backdrop));
+    backdrop
+      .find(".js-remove-item-popup-close-btn")
+      .click(() => closePopup(backdrop));
 
     backdrop.find("#remove-item-confirm-btn").click(async () => {
       const confirmBtn = backdrop.find("#remove-item-confirm-btn");
@@ -407,11 +435,12 @@ async function renderRemoveItemPopup(variationId, userId) {
         return;
       }
 
-      backdrop.find("#remove-item-popup-msg").text("Failed to remove item. Please try again.");
+      backdrop
+        .find("#remove-item-popup-msg")
+        .text("Failed to remove item. Please try again.");
       confirmBtn.prop("disabled", false);
       confirmBtn.text("Remove");
     });
-
   } catch (error) {
     console.error(`Error rendering remove item popup: ${error.message}`);
     backdrop.html(

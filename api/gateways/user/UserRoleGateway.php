@@ -1,16 +1,19 @@
 <?php
 
-class UserRoleGateway {
+class UserRoleGateway
+{
   private PDO $conn;
   private RoleGateway $role;
 
-  public function __construct(PDO $db_conn) {
+  public function __construct(PDO $db_conn)
+  {
     $this->conn = $db_conn;
     $this->role = new RoleGateway($db_conn);
   }
 
   // This function doesn't have its own transaction make sure to cover when use it
-  public function deleteByUserId(int $usr_id): int {
+  public function deleteByUserId(int $usr_id): int
+  {
     try {
       // 1. Update user_assigned in roles table.
       $sql = "UPDATE roles SET user_assigned = CASE WHEN user_assigned > 0
@@ -31,13 +34,13 @@ class UserRoleGateway {
       $stmt->execute();
 
       return $stmt->rowCount();
-
-    } catch(Exception $e) {
+    } catch (Exception $e) {
       throw $e; // Re-throw for centralized ErrorHandler
     }
   }
 
-  public function getByUserId(int $usr_id): array {
+  public function getByUserId(int $usr_id): array
+  {
     $sql = "SELECT roles.id, roles.name FROM user_roles
       INNER JOIN roles ON user_roles.role_id = roles.id
       WHERE user_id = :user_id AND roles.is_deleted = false";
@@ -50,8 +53,9 @@ class UserRoleGateway {
   }
 
   // This function doesn't have its own transaction make sure to cover when use it
-  public function createMultiple(int $usr_id, array $roles_id): int { // roles_id is a list ids of role [1,2,3...]
-    if(count($roles_id) === 0) return 0;
+  public function createMultiple(int $usr_id, array $roles_id): int
+  { // roles_id is a list ids of role [1,2,3...]
+    if (count($roles_id) === 0) return 0;
 
     try {
       // 1. Update user_assigned in roles table.
@@ -67,20 +71,20 @@ class UserRoleGateway {
       // 2. Create user's roles.
       $sql_values = [];
 
-      foreach($roles_id as $role_id) {
+      foreach ($roles_id as $role_id) {
         $sql_values[] = "($usr_id, $role_id)";
       }
       $sql_values = implode(",", $sql_values); // Result is a string: (1,1),(1,2),...
 
       return $this->conn->exec("INSERT INTO user_roles (user_id, role_id) VALUES $sql_values");
-
-    } catch(Exception $e) {
+    } catch (Exception $e) {
       throw $e; // Re-throw for centralized ErrorHandler
     }
   }
 
   // This function doesn't have its own transaction make sure to cover when use it
-  public function updateMultiple(int $usr_id, array $new_roles_id): bool { // Delete all current roles -> create new roles
+  public function updateMultiple(int $usr_id, array $new_roles_id): bool
+  { // Delete all current roles -> create new roles
     $this->deleteByUserId($usr_id);
     return $this->createMultiple($usr_id, $new_roles_id);
   }

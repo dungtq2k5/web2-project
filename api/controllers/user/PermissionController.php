@@ -1,14 +1,17 @@
 <?php
 
-class PermissionController {
+class PermissionController
+{
   private ErrorHandler $error_handler;
 
-  public function __construct(private PermissionGateway $gateway, private Auths $auths) {
+  public function __construct(private PermissionGateway $gateway, private Auths $auths)
+  {
     $this->error_handler = new ErrorHandler;
   }
 
-  public function processRequest(string $method, ?int $id=null, ?int $limit=null, ?int $offset=null): void {
-    if($id) {
+  public function processRequest(string $method, ?int $id = null, ?int $limit = null, ?int $offset = null): void
+  {
+    if ($id) {
       $this->processResourceRequest($method, $id);
       return;
     }
@@ -16,14 +19,15 @@ class PermissionController {
     $this->processCollectionRequest($method, $limit, $offset);
   }
 
-  private function processResourceRequest(string $method, int $id): void {
+  private function processResourceRequest(string $method, int $id): void
+  {
     $permission = $this->gateway->get($id);
-    if(!$permission) {
+    if (!$permission) {
       $this->error_handler->sendErrorResponse(404, "Permission with an id '$id' not found");
       return;
     }
 
-    switch($method) {
+    switch ($method) {
       case "GET":
         $this->auths->verifyAction("READ_PERMISSION");
 
@@ -37,11 +41,11 @@ class PermissionController {
         $this->error_handler->sendErrorResponse(405, "only allow GET method");
         header("Allow: GET");
     }
-
   }
 
-  private function processCollectionRequest(string $method, ?int $limit=null, ?int $offset=null): void {
-    switch($method) {
+  private function processCollectionRequest(string $method, ?int $limit = null, ?int $offset = null): void
+  {
+    switch ($method) {
       case "GET":
         $this->auths->verifyAction("READ_PERMISSION");
 
@@ -59,5 +63,4 @@ class PermissionController {
         header("Allow: GET");
     }
   }
-
 }

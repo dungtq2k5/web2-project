@@ -21,16 +21,17 @@ To run this project locally, please follow these steps:
 1. Ensure XAMPP (or a similar AMP stack) and Composer are installed and configured on your system.
 2. Clone this repository into a new folder within your XAMPP `htdocs` directory (e.g., `xampp/htdocs/web2-project`).
 3. Navigate to the `api` directory in your terminal (`cd api`) and run `composer install` to install backend dependencies.
-4. In the `api` directory, create a `.env` file by copying the contents of `.env.example` and update it with your local database credentials and other environment-specific settings if needed.
-5. Open the XAMPP Control Panel and start the Apache and MySQL services.
-6. Import the database schema and mock data by executing the `init_db.sql` & `mock_data.sql` file in your MySQL administration tool (e.g., phpMyAdmin).
-7. Access the buyer interface by navigating to `index.php` in the `buyer` folder (e.g., `http://localhost/frontend/buyer/index.php`).
-8. Access the admin interface by navigating to `index.php` in the `admin` folder (e.g., `http://localhost/frontend/admin/index.php`).
-9. The default admin account credentials are:
+4. In the `api` directory, create a `.env` file by copying the contents of `.env.example`. Update your database credentials and modify the `SOURCE_URI` variable to match your project's root folder name (e.g., `web2-project/api`).
+5. Open `frontend/settings.js` in a text editor and update the `SOURCE_API_URL` variable to match your project root folder name (e.g., `http://127.0.0.1/web2-project/api`).
+6. Open the XAMPP Control Panel and start the Apache and MySQL services.
+7. Open your web browser and navigate to `http://localhost/phpmyadmin/` (auto-installed with XAMPP). Import the database schema and mock data by executing the contents of the `init_db.sql` & `mock_data.sql` files.
+8. Access the buyer interface by navigating to `index.php` in the `buyer` folder (e.g., `http://localhost/web2-project/frontend/buyer/index.php`).
+9. Access the admin interface by navigating to `index.php` in the `admin` folder (e.g., `http://localhost/web2-project/frontend/admin/index.php`).
+10. The default admin account credentials are:
     - **Email:** `admin@gmail.com`
     - **Password:** `password123456789`
     (These credentials can also be found in the `mock_data.sql` file).
-10. Explore the project!
+11. Explore the project!
 
 ## API Documentation
 

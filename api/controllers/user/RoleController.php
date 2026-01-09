@@ -1,16 +1,19 @@
 <?php
 
-class RoleController {
+class RoleController
+{
   private ErrorHandler $error_handler;
   private Utils $utils;
 
-  public function __construct(private RoleGateway $gateway, private Auths $auths) {
+  public function __construct(private RoleGateway $gateway, private Auths $auths)
+  {
     $this->error_handler = new ErrorHandler;
     $this->utils = new Utils;
   }
 
-  public function processRequest(string $method, ?int $id=null, ?int $limit=null, ?int $offset=null): void {
-    if($id) {
+  public function processRequest(string $method, ?int $id = null, ?int $limit = null, ?int $offset = null): void
+  {
+    if ($id) {
       $this->processResourceRequest($method, $id);
       return;
     }
@@ -18,14 +21,15 @@ class RoleController {
     $this->processCollectionRequest($method, $limit, $offset);
   }
 
-  private function processResourceRequest(string $method, int $id): void {
+  private function processResourceRequest(string $method, int $id): void
+  {
     $role = $this->gateway->get($id);
-    if(!$role) {
+    if (!$role) {
       $this->error_handler->sendErrorResponse(404, "Role with an id '$id' not found");
       return;
     }
 
-  switch($method) {
+    switch ($method) {
       case "GET":
         $this->auths->verifyAction("READ_ROLE");
 
@@ -41,7 +45,7 @@ class RoleController {
         $data = (array) json_decode(file_get_contents("php://input"));
 
         $errors = $this->getValidationErrors($data, false);
-        if(!empty($errors)) {
+        if (!empty($errors)) {
           $this->error_handler->sendErrorResponse(422, $errors);
           break;
         }
@@ -70,11 +74,11 @@ class RoleController {
         $this->error_handler->sendErrorResponse(405, "only allow GET, PUT, DELETE method");
         header("Allow: GET, PUT, DELETE");
     }
-
   }
 
-  private function processCollectionRequest(string $method, ?int $limit=null, ?int $offset=null): void {
-    switch($method) {
+  private function processCollectionRequest(string $method, ?int $limit = null, ?int $offset = null): void
+  {
+    switch ($method) {
       case "GET":
         $this->auths->verifyAction("READ_ROLE");
 
@@ -93,7 +97,7 @@ class RoleController {
         $data = (array) json_decode(file_get_contents("php://input"));
 
         $errors = $this->getValidationErrors($data);
-        if(!empty($errors)) {
+        if (!empty($errors)) {
           $this->error_handler->sendErrorResponse(422, $errors);
           break;
         }
@@ -114,16 +118,17 @@ class RoleController {
     }
   }
 
-  private function getValidationErrors(array $data, bool $new=true): array {
+  private function getValidationErrors(array $data, bool $new = true): array
+  {
     $errors = [];
 
-    if($new) { //check all fields for new
-      if(empty($data["name"])) $errors[] = "name is required";
+    if ($new) { //check all fields for new
+      if (empty($data["name"])) $errors[] = "name is required";
     } else { //check fields that exist
-      if(array_key_exists("name", $data) && empty($data["name"])) $errors[] = "name is empty";
+      if (array_key_exists("name", $data) && empty($data["name"])) $errors[] = "name is empty";
     }
 
-    if(array_key_exists("permissions_id", $data) && (
+    if (array_key_exists("permissions_id", $data) && (
       !is_array($data["permissions_id"]) ||
       !$this->utils->isListOfNumber($data["permissions_id"])
     )) $errors[] = "permissions_id is empty or not a list of number(s)";

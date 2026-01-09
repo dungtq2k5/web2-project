@@ -5,14 +5,14 @@
   </div>
 
   <div class="card mb-4">
-    <div class="card-header">
-      Search Variations
-    </div>
+    <div class="card-header">Search Variations</div>
     <div class="card-body">
       <form id="search-variation-form">
         <div class="row g-3 mb-3">
           <div class="col-md-4">
-            <label for="search-product-id" class="form-label">Product ID:</label>
+            <label for="search-product-id" class="form-label"
+              >Product ID:</label
+            >
             <input
               type="number"
               id="search-product-id"
@@ -20,19 +20,38 @@
               min="1"
               placeholder="No filter"
               class="form-control"
-            >
+            />
           </div>
           <div class="col-md-4">
             <label class="form-label">Price Range (¢):</label>
             <div class="input-group">
-              <input type="number" name="price_from" id="search-price-from" min="1" placeholder="From" class="form-control">
+              <input
+                type="number"
+                name="price_from"
+                id="search-price-from"
+                min="1"
+                placeholder="From"
+                class="form-control"
+              />
               <span class="input-group-text">-</span>
-              <input type="number" name="price_to" id="search-price-to" placeholder="To" class="form-control">
+              <input
+                type="number"
+                name="price_to"
+                id="search-price-to"
+                placeholder="To"
+                class="form-control"
+              />
             </div>
           </div>
-           <div class="col-md-4">
-            <label for="search-stop-selling" class="form-label">Stop Selling:</label>
-            <select name="stop_selling" id="search-stop-selling" class="form-select">
+          <div class="col-md-4">
+            <label for="search-stop-selling" class="form-label"
+              >Stop Selling:</label
+            >
+            <select
+              name="stop_selling"
+              id="search-stop-selling"
+              class="form-select"
+            >
               <option value="">No filter</option>
               <option value="true">True</option>
               <option value="false">False</option>
@@ -44,16 +63,34 @@
           <div class="col-md-6">
             <label class="form-label">Release Date Range:</label>
             <div class="input-group">
-              <input type="datetime-local" name="release_from" id="search-release-from" class="form-control">
-               <span class="input-group-text">to</span>
-              <input type="datetime-local" name="release_to" id="search-release-to" class="form-control">
+              <input
+                type="datetime-local"
+                name="release_from"
+                id="search-release-from"
+                class="form-control"
+              />
+              <span class="input-group-text">to</span>
+              <input
+                type="datetime-local"
+                name="release_to"
+                id="search-release-to"
+                class="form-control"
+              />
             </div>
           </div>
           <div class="col-md-6 d-flex justify-content-end gap-2 btn-group-sm">
-            <button id="search-variation-form-search-btn" type="submit" class="btn btn-dark">
+            <button
+              id="search-variation-form-search-btn"
+              type="submit"
+              class="btn btn-dark"
+            >
               Search
             </button>
-            <button id="search-variation-form-clear-btn" type="reset" class="btn btn-outline-dark">
+            <button
+              id="search-variation-form-clear-btn"
+              type="reset"
+              class="btn btn-outline-dark"
+            >
               Clear search
             </button>
           </div>
@@ -82,12 +119,14 @@
         </tr>
       </thead>
       <tbody id="tbody">
-        <tr><td colspan="12" class="text-center">Loading...</td></tr>
+        <tr>
+          <td colspan="12" class="text-center">Loading...</td>
+        </tr>
       </tbody>
     </table>
   </div>
 </main>
 
-<div class="backdrop--g" id="backdrop" style="display: none;"></div>
+<div class="backdrop--g" id="backdrop" style="display: none"></div>
 
 <script type="module" src="./controllers/variations-management.js"></script>

@@ -1,53 +1,58 @@
 <?php
 
-class CartGateway {
+class CartGateway
+{
   private PDO $conn;
   private ProductVariationGateway $variation;
 
-  public function __construct(PDO $db_conn) {
+  public function __construct(PDO $db_conn)
+  {
     $this->conn = $db_conn;
     $this->variation = new ProductVariationGateway($db_conn);
   }
 
-  public function getAll(?int $limit=null, ?int $offset=null): array {
+  public function getAll(?int $limit = null, ?int $offset = null): array
+  {
     $sql = "SELECT * FROM carts";
 
-    if($limit !== null && $offset !== null) {
+    if ($limit !== null && $offset !== null) {
       $sql .= " LIMIT :limit OFFSET :offset";
-    } elseif($limit !== null) {
+    } elseif ($limit !== null) {
       $sql .= " LIMIT :limit";
-    } elseif($offset !== null) {
+    } elseif ($offset !== null) {
       $sql .= " LIMIT 18446744073709551615 OFFSET :offset";
     }
 
     $stmt = $this->conn->prepare($sql);
-    if($limit !== null) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
-    if($offset !== null) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
+    if ($limit !== null) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
+    if ($offset !== null) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
     $stmt->execute();
 
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
   }
 
-  public function get(int $user_id, ?int $product_variation_id=null): array | false {
+  public function get(int $user_id, ?int $product_variation_id = null): array | false
+  {
     $sql = "SELECT * FROM carts WHERE user_id = :user_id";
 
-    if($product_variation_id) {
+    if ($product_variation_id) {
       $sql .= " AND product_variation_id = :product_variation_id";
     }
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":user_id", $user_id, PDO::PARAM_INT);
-    if($product_variation_id) $stmt->bindValue(":product_variation_id", $product_variation_id, PDO::PARAM_INT);
+    if ($product_variation_id) $stmt->bindValue(":product_variation_id", $product_variation_id, PDO::PARAM_INT);
     $stmt->execute();
 
-    if($data = $stmt->fetchAll(PDO::FETCH_ASSOC)) {
+    if ($data = $stmt->fetchAll(PDO::FETCH_ASSOC)) {
       return count($data) === 1 ? $data[0] : $data;
     }
 
     return false;
   }
 
-  public function create(array $data): array | false {
+  public function create(array $data): array | false
+  {
     $this->conn->beginTransaction();
 
     try {
@@ -56,11 +61,11 @@ class CartGateway {
       $quantity = $data["quantity"] ?? 1;
 
       $exist_cart = $this->get($user_id, $product_variation_id);
-      if($exist_cart) {
+      if ($exist_cart) {
         $quantity += $exist_cart["quantity"];
       }
 
-      if($quantity > $this->variation->getStock($product_variation_id)) {
+      if ($quantity > $this->variation->getStock($product_variation_id)) {
         throw new Exception("Quantity exceeds stock", 409);
       }
 
@@ -76,25 +81,25 @@ class CartGateway {
 
       $this->conn->commit();
       return $this->get($user_id, $product_variation_id);
-
-    } catch(Exception $e) {
+    } catch (Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
     }
   }
 
-  public function update(array $current, array $new): array | false {
+  public function update(array $current, array $new): array | false
+  {
     $this->conn->beginTransaction();
 
     try {
-      $new_quantity = $new["quantity"];
+      $new_quantity = $new["quantity"] ?? $current["quantity"];
 
-      if($new_quantity == $current["quantity"]) {
+      if ($new_quantity == $current["quantity"]) {
         throw new Exception("No changes detected, no update performed", 200);
       }
 
       $product_variation_id = $current["product_variation_id"];
-      if($new_quantity > $this->variation->getStock($product_variation_id)) {
+      if ($new_quantity > $this->variation->getStock($product_variation_id)) {
         throw new Exception("Quantity exceeds stock", 409);
       }
 
@@ -113,56 +118,55 @@ class CartGateway {
 
       $this->conn->commit();
       return $this->get($user_id, $product_variation_id);
-
-    } catch(Exception $e) {
+    } catch (Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
     }
   }
 
-  public function delete(int $user_id, ?int $product_variation_id=null): int {
+  public function delete(int $user_id, ?int $product_variation_id = null): int
+  {
     $this->conn->beginTransaction();
 
     try {
       $sql = "DELETE FROM carts WHERE user_id = :user_id";
 
-      if($product_variation_id) {
+      if ($product_variation_id) {
         $sql .= " AND product_variation_id = :product_variation_id";
       }
 
       $stmt = $this->conn->prepare($sql);
       $stmt->bindValue(":user_id", $user_id, PDO::PARAM_INT);
-      if($product_variation_id) $stmt->bindValue(":product_variation_id", $product_variation_id, PDO::PARAM_INT);
+      if ($product_variation_id) $stmt->bindValue(":product_variation_id", $product_variation_id, PDO::PARAM_INT);
       $stmt->execute();
 
       $this->conn->commit();
 
       return $stmt->rowCount();
-
-    } catch(Exception $e) {
+    } catch (Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
     }
   }
 
-  public function getByUserId(int $user_id, ?int $limit=null, ?int $offset=null): array {
+  public function getByUserId(int $user_id, ?int $limit = null, ?int $offset = null): array
+  {
     $sql = "SELECT * FROM carts WHERE user_id = :user_id";
 
-    if($limit !== null && $offset !== null) {
+    if ($limit !== null && $offset !== null) {
       $sql .= " LIMIT :limit OFFSET :offset";
-    } elseif($limit !== null) {
+    } elseif ($limit !== null) {
       $sql .= " LIMIT :limit";
-    } elseif($offset !== null) {
+    } elseif ($offset !== null) {
       $sql .= " LIMIT 18446744073709551615 OFFSET :offset";
     }
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":user_id", $user_id, PDO::PARAM_INT);
-    if($limit !== null) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
-    if($offset !== null) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
+    if ($limit !== null) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
+    if ($offset !== null) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
     $stmt->execute();
 
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
   }
-
 }

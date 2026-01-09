@@ -1,35 +1,39 @@
 <?php
 
-class OrderItemGateway {
+class OrderItemGateway
+{
 
   private PDO $conn;
   private ProductInstanceGateway $instance;
 
-  public function __construct(PDO $db_conn) {
+  public function __construct(PDO $db_conn)
+  {
     $this->conn = $db_conn;
     $this->instance = new ProductInstanceGateway($db_conn);
   }
 
-  public function getAll(?int $limit=null, ?int $offset=null): array {
+  public function getAll(?int $limit = null, ?int $offset = null): array
+  {
     $sql = "SELECT * FROM order_items";
 
-    if($limit !== null && $offset !== null) {
+    if ($limit !== null && $offset !== null) {
       $sql .= " LIMIT :limit OFFSET :offset";
-    } elseif($limit !== null) {
+    } elseif ($limit !== null) {
       $sql .= " LIMIT :limit";
-    } elseif($offset !== null) {
+    } elseif ($offset !== null) {
       $sql .= " LIMIT 18446744073709551615 OFFSET :offset";
     }
 
     $stmt = $this->conn->prepare($sql);
-    if($limit !== null) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
-    if($offset !== null) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
+    if ($limit !== null) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
+    if ($offset !== null) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
     $stmt->execute();
 
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
   }
 
-  public function get(string $id): array | false {
+  public function get(string $id): array | false
+  {
     $sql = "SELECT
       o_i.product_instance_sku,
       o_i.order_id,
@@ -49,7 +53,8 @@ class OrderItemGateway {
   // Create data in order_items table
   // Handle both stock_quantity and is_sold
   // This function doesn't have its own transaction make sure to cover when use it
-  public function create(int $order_id, array $items): void { // items is a list of {product_variation_id, quantity}
+  public function create(int $order_id, array $items): void
+  { // items is a list of {product_variation_id, quantity}
     try {
       // 1.Create a temporary table to hold skus, variation_id, price_cents
       $this->conn->exec("CREATE TEMPORARY TABLE temp_order_items (
@@ -75,7 +80,7 @@ class OrderItemGateway {
         FOR UPDATE
       ");
 
-      foreach($items as $item) {
+      foreach ($items as $item) {
         $variation_id = $item["product_variation_id"];
         $quantity = $item["quantity"];
 
@@ -84,7 +89,7 @@ class OrderItemGateway {
         $fetch_instances_stmt->execute();
 
         $count = 0;
-        while($row = $fetch_instances_stmt->fetch(PDO::FETCH_ASSOC)) {
+        while ($row = $fetch_instances_stmt->fetch(PDO::FETCH_ASSOC)) {
           $insert_temp_stmt->bindValue(":sku", $row["sku"]);
           $insert_temp_stmt->bindValue(":variation_id", $variation_id, PDO::PARAM_INT);
           $insert_temp_stmt->bindValue(":price_cents", $row["price_cents"], PDO::PARAM_INT);
@@ -92,7 +97,7 @@ class OrderItemGateway {
           $count++;
         }
 
-        if($count < $quantity) { // Check exceeded stock
+        if ($count < $quantity) { // Check exceeded stock
           throw new Exception("Not enough stock for product variation ID: $variation_id. Requested: $quantity, Available: $count");
         }
       }
@@ -122,7 +127,7 @@ class OrderItemGateway {
         GROUP BY product_variation_id
       ");
 
-      while($row = $aggregate_quantity_stmt->fetch(PDO::FETCH_ASSOC)) {
+      while ($row = $aggregate_quantity_stmt->fetch(PDO::FETCH_ASSOC)) {
         $update_variations_stmt->bindValue(":quantity_ordered", $row["total_ordered"], PDO::PARAM_INT);
         $update_variations_stmt->bindValue(":variation_id", $row["product_variation_id"], PDO::PARAM_INT);
         $update_variations_stmt->execute();
@@ -132,13 +137,13 @@ class OrderItemGateway {
       $this->conn->exec("DROP TEMPORARY TABLE IF EXISTS temp_order_items");
 
       return;
-
-    } catch(Exception $e) {
+    } catch (Exception $e) {
       throw $e; // Re-throw for centralized ErrorHandler
     }
   }
 
-  public function getByOrderId(int $id): array {
+  public function getByOrderId(int $id): array
+  {
     $sql = "SELECT
       instance.product_variation_id,
       COUNT(*) AS quantity,
@@ -154,7 +159,7 @@ class OrderItemGateway {
     $stmt->execute();
 
     $data = [];
-    while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
       $row["product_instances"] = $this->getByOrderIdAndProductVariationId($id, $row["product_variation_id"]);
       $data[] = $row;
     }
@@ -162,7 +167,8 @@ class OrderItemGateway {
     return $data;
   }
 
-  private function getByOrderIdAndProductVariationId(int $order_id, int $product_variation_id): array {
+  private function getByOrderIdAndProductVariationId(int $order_id, int $product_variation_id): array
+  {
     $sql = "SELECT
       item.product_instance_sku AS sku,
       instance.supplier_serial_number,
@@ -184,7 +190,8 @@ class OrderItemGateway {
   // Handle soft delete order_items -> update product_instances is_sold to false + update product_variations stock_quantity
   // Use this function with caution because can effect data consistency
   // This function doesn't have its own transaction make sure to cover when use it
-  public function deleteByOrderId(int $order_id): void {
+  public function deleteByOrderId(int $order_id): void
+  {
     try {
       $sql = "UPDATE product_instances p_i
         INNER JOIN order_items o_i ON p_i.sku = o_i.product_instance_sku
@@ -199,10 +206,8 @@ class OrderItemGateway {
       $stmt->execute();
 
       return;
-
-    } catch(Exception $e) {
+    } catch (Exception $e) {
       throw $e; // Re-throw for centralized ErrorHandler
     }
   }
-
 }

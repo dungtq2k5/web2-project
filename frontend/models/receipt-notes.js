@@ -1,18 +1,18 @@
 import { fetchData } from "../utils.js";
 import { RECEIPT_NOTES_API_URL } from "../settings.js";
 
-
 let isFetch = false;
 let receiptNotesList = [];
 
-async function fetchReceiptNotes(limit=null, offset=null) {
+async function fetchReceiptNotes(limit = null, offset = null) {
   const res = await fetchData(RECEIPT_NOTES_API_URL, limit, offset);
   receiptNotesList = res.data;
   isFetch = true;
 }
 
-export async function getReceiptNotesList(limit=null, offset=null) { // Return a copy
-  if(!isFetch) {
+export async function getReceiptNotesList(limit = null, offset = null) {
+  // Return a copy
+  if (!isFetch) {
     await fetchReceiptNotes();
     console.log("fetch goods receipt notes API");
   }
@@ -23,8 +23,8 @@ export async function getReceiptNotesList(limit=null, offset=null) { // Return a
 }
 
 export async function getReceiptNote(id) {
-  if(!id) return undefined;
+  if (!id) return undefined;
 
   const receiptNotesList = await getReceiptNotesList();
-  return receiptNotesList.find(receipt => receipt.id == id) || undefined;
+  return receiptNotesList.find((receipt) => receipt.id == id) || undefined;
 }

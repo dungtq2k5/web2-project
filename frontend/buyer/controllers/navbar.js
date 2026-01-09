@@ -29,7 +29,7 @@ async function renderHeader() {
   const user = getSigninUser();
   loginAs.html(user ? user.email : "Guest");
 
-  if(!user) {
+  if (!user) {
     signoutBtn.hide(); // Use hide() instead of remove() to keep the element in DOM for potential re-show
     cartBtn.hide();
     ordersLinkLi.hide();
@@ -42,13 +42,16 @@ async function renderHeader() {
     cartBtn.show();
     ordersLinkLi.show();
 
-    signoutBtn.off('click').on('click', async () => { // Use .off().on() to prevent multiple bindings
+    signoutBtn.off("click").on("click", async () => {
+      // Use .off().on() to prevent multiple bindings
       signoutBtn.prop("disabled", true);
-      signoutBtn.html(`<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Signing out...`);
+      signoutBtn.html(
+        `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Signing out...`
+      );
 
       const res = await signout();
 
-      if(res.success) {
+      if (res.success) {
         window.location.href = "./index.php?page=signin";
         return;
       }

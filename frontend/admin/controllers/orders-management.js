@@ -1,7 +1,7 @@
 import {
   getFilterOrdersList,
   getOrdersList,
-  updateOrder
+  updateOrder,
 } from "../../models/orders.js";
 import { getProduct } from "../../models/product/products.js";
 import { getVariation } from "../../models/product/variations.js";
@@ -9,13 +9,13 @@ import { getState, getStatesList } from "../../models/order-delivery-states.js";
 import {
   closeForm,
   renderProductVariationDetailPopup,
-  renderUserDetailPopup
+  renderUserDetailPopup,
 } from "./components.js";
 import {
   disableBgScroll,
   formatAddress,
   convertUtcToLocalDatetime,
-  filterTextInputsInFormData
+  filterTextInputsInFormData,
 } from "../../utils.js";
 import {
   PRODUCT_IMG_PATH,
@@ -26,10 +26,9 @@ import {
   ORDER_RETURNED_ID,
   ORDER_DELIVERED_ID,
   ORDER_CANCELLED_ID,
-  ORDER_SHIPPED_ID
+  ORDER_SHIPPED_ID,
 } from "../../settings.js";
 import { hasPermission } from "../../models/auth.js";
-
 
 const crudOrderMsg = $("#crud-order-msg");
 const backdrop = $("#backdrop");
@@ -52,9 +51,13 @@ async function renderSearchOrderForm() {
   const searchBtn = form.find("#search-search-btn");
 
   const delStates = await getStatesList();
-  const delStatesHTML = delStates.map(state => `
+  const delStatesHTML = delStates
+    .map(
+      (state) => `
     <option value="${state.id}">${state.name}</option>
-  `).join("");
+  `
+    )
+    .join("");
   form.find("#search-del-state").append(delStatesHTML);
 
   clearBtn.click(async () => {
@@ -67,7 +70,7 @@ async function renderSearchOrderForm() {
     clearBtn.prop("disabled", false);
   });
 
-  form.submit(async e => {
+  form.submit(async (e) => {
     e.preventDefault();
     searchBtn.prop("disabled", true);
     searchBtn.text("Searching...");
@@ -91,22 +94,26 @@ async function renderSearchOrderForm() {
   });
 }
 
-async function renderOrdersData(ordersList=null) {
-  tbody.html("<tr><td colspan='10' class=\"p-3 text-center\">Loading data...</td></tr>");
+async function renderOrdersData(ordersList = null) {
+  tbody.html(
+    "<tr><td colspan='10' class=\"p-3 text-center\">Loading data...</td></tr>"
+  );
 
   try {
-    const orders = ordersList || await getOrdersList();
+    const orders = ordersList || (await getOrdersList());
 
     let dataHTML = "";
 
-    for(const [idx, order] of orders.entries()) {
+    for (const [idx, order] of orders.entries()) {
       let itemsHTML = `<ul class="list-unstyled mb-0">`;
       const delState = await getState(order.delivery_state_id);
 
-      for(const [, item] of order.items.entries()) {
+      for (const [, item] of order.items.entries()) {
         const variation = await getVariation(item.product_variation_id);
         const product = await getProduct(variation.product_id);
-        const img = product.image_name ? `${PRODUCT_IMG_PATH}/${product.image_name}` : DEFAULT_IMG_PATH;
+        const img = product.image_name
+          ? `${PRODUCT_IMG_PATH}/${product.image_name}`
+          : DEFAULT_IMG_PATH;
 
         itemsHTML += `
           <li class="d-flex align-items-center justify-content-between p-2 border-bottom">
@@ -114,7 +121,9 @@ async function renderOrdersData(ordersList=null) {
               <img src="${img}" alt="Product Image" class="img-thumbnail me-2" style="width: 50px; height: 50px; object-fit: cover;" loading="lazy">
               <div>
                 <p class="mb-0 fw-bold small">${product.name}</p>
-                <small class="text-muted">${item.total_cents}&#162; x ${item.quantity}</small>
+                <small class="text-muted">${item.total_cents}&#162; x ${
+          item.quantity
+        }</small>
               </div>
             </div>
             ${
@@ -136,46 +145,59 @@ async function renderOrdersData(ordersList=null) {
       itemsHTML += `</ul>`;
 
       const orderDate = convertUtcToLocalDatetime(order.order_date);
-      const estimateReceivedDate = order.estimate_received_date ? convertUtcToLocalDatetime(order.estimate_received_date) : "<span class='text-muted'>N/A</span>";
-      const receivedDate = order.received_date ? convertUtcToLocalDatetime(order.received_date) : "<span class='text-muted'>N/A</span>";
+      const estimateReceivedDate = order.estimate_received_date
+        ? convertUtcToLocalDatetime(order.estimate_received_date)
+        : "<span class='text-muted'>N/A</span>";
+      const receivedDate = order.received_date
+        ? convertUtcToLocalDatetime(order.received_date)
+        : "<span class='text-muted'>N/A</span>";
 
       dataHTML += `
         <tr
           class="align-middle"
           data-order-id="${order.id}"
         >
-          <td data-cell="n.o" class="text-center p-2">${idx+1}</td>
+          <td data-cell="n.o" class="text-center p-2">${idx + 1}</td>
           <td data-cell="order id" class="p-2">${order.id}</td>
           <td data-cell="user id" class="p-2">
             <div class="d-flex align-items-center gap-1">
               ${order.user_id}
               ${
                 canReadUser
-                ? `<button
+                  ? `<button
                     data-user-id="${order.user_id}"
                     class="js-view-detail-user-btn btn btn-sm btn-outline-info"
                     title="View user details"
                   >
                     <i class="uil uil-eye"></i>
                   </button>`
-                : ""
+                  : ""
               }
             </div>
           </td>
           <td data-cell="items" class="p-2" style="min-width: 250px;">${itemsHTML}</td>
-          <td data-cell="total" class="text-end p-2">${order.total_cents}&#162;</td>
+          <td data-cell="total" class="text-end p-2">${
+            order.total_cents
+          }&#162;</td>
           <td data-cell="delivery info" class="p-2 small" style="min-width: 200px;">
-            <div><strong>To:</strong> <address class="d-inline">${formatAddress(order.delivery_address)}</address></div>
-            <div><strong>Phone:</strong> ${order.delivery_address.phone_number}</div>
-            <div><strong>State:</strong> <span class="badge bg-info">${delState.name}</span></div>
+            <div><strong>To:</strong> <address class="d-inline">${formatAddress(
+              order.delivery_address
+            )}</address></div>
+            <div><strong>Phone:</strong> ${
+              order.delivery_address.phone_number
+            }</div>
+            <div><strong>State:</strong> <span class="badge bg-info">${
+              delState.name
+            }</span></div>
           </td>
           <td data-cell="ordered date" class="p-2 small">${orderDate}</td>
           <td data-cell="estimate received date" class="p-2 small">${estimateReceivedDate}</td>
           <td data-cell="received date" class="p-2 small">${receivedDate}</td>
           <td data-cell="actions" class="text-center p-2">
-            ${canUpdate && ORDER_COMPLETED_STATES.includes(delState.id)
-              ? "<span class='text-muted'>No actions</span>"
-              : `
+            ${
+              canUpdate && ORDER_COMPLETED_STATES.includes(delState.id)
+                ? "<span class='text-muted'>No actions</span>"
+                : `
                 <button
                   class="js-update-btn btn btn-sm btn-warning"
                   data-del-state-id="${order.delivery_state_id}"
@@ -188,18 +210,21 @@ async function renderOrdersData(ordersList=null) {
       `;
     }
 
-    tbody.html(dataHTML || "<tr><td colspan='10' class=\"p-3 text-center\">No data found!</td></tr>");
+    tbody.html(
+      dataHTML ||
+        "<tr><td colspan='10' class=\"p-3 text-center\">No data found!</td></tr>"
+    );
 
-    if(canReadUser) {
-      tbody.find(".js-view-detail-user-btn").click(e => {
+    if (canReadUser) {
+      tbody.find(".js-view-detail-user-btn").click((e) => {
         const userId = $(e.currentTarget).data("user-id");
         console.log(`view detail user id ${userId}`);
         renderUserDetailPopup(userId, backdrop);
       });
     }
 
-    if(canReadOrder) {
-      tbody.find(".js-view-detail-item-btn").click(e => {
+    if (canReadOrder) {
+      tbody.find(".js-view-detail-item-btn").click((e) => {
         const currTarget = $(e.currentTarget);
         const tr = currTarget.closest("tr");
 
@@ -208,46 +233,59 @@ async function renderOrdersData(ordersList=null) {
 
         console.log(`view detail product variation id ${variationId}`);
         renderProductVariationDetailPopup(variationId, backdrop, orderId);
-      })
+      });
     }
 
-    if(canUpdate) {
-      tbody.find(".js-update-btn").click(e => {
+    if (canUpdate) {
+      tbody.find(".js-update-btn").click((e) => {
         const currTarget = $(e.currentTarget);
         const tr = currTarget.closest("tr");
 
         const orderId = tr.data("order-id");
         const delStateId = currTarget.data("del-state-id");
 
-        console.log(`update order id ${orderId} has delivery state id ${delStateId}`);
+        console.log(
+          `update order id ${orderId} has delivery state id ${delStateId}`
+        );
         renderUpdateDelStateForm(orderId, delStateId);
       });
     }
 
     resultCount.text(orders.length);
-
-  } catch(error) {
+  } catch (error) {
     console.error(`Error: ${error.message}`);
-    tbody.html(`<tr><td colspan='10' class="p-3 text-center table-danger">Error loading data: ${error.message}</td></tr>`);
+    tbody.html(
+      `<tr><td colspan='10' class="p-3 text-center table-danger">Error loading data: ${error.message}</td></tr>`
+    );
   }
 }
 
 async function renderUpdateDelStateForm(orderId, delStateId) {
   disableBgScroll();
-  backdrop.html("<div class='d-flex justify-content-center align-items-center' style='height: 100vh;'><div class='spinner-border text-primary' role='status'><span class='visually-hidden'>Loading update delivery state form...</span></div></div>");
+  backdrop.html(
+    "<div class='d-flex justify-content-center align-items-center' style='height: 100vh;'><div class='spinner-border text-primary' role='status'><span class='visually-hidden'>Loading update delivery state form...</span></div></div>"
+  );
   backdrop.show();
 
   try {
     const delStates = await getStatesList();
 
     backdrop.html(() => {
-      const statesHTML = delStates.map(state => (
-        `<option
+      const statesHTML = delStates
+        .map(
+          (state) =>
+            `<option
           value="${state.id}"
           ${state.id == delStateId ? "selected" : ""}
-          ${ORDER_COMPLETED_STATES.includes(parseInt(delStateId)) && state.id != delStateId ? "disabled" : ""}
+          ${
+            ORDER_COMPLETED_STATES.includes(parseInt(delStateId)) &&
+            state.id != delStateId
+              ? "disabled"
+              : ""
+          }
         >${state.name}</option>` // Disable states if current is completed and not the same
-      )).join("");
+        )
+        .join("");
 
       return `
         <div class="card shadow-lg m-3 m-md-5 mx-auto" style="max-width: 500px;">
@@ -281,9 +319,11 @@ async function renderUpdateDelStateForm(orderId, delStateId) {
     const form = backdrop.find("#update-del-state-form");
 
     // Attach event handlers to all close buttons including the one in the header
-    backdrop.find(".js-update-del-state-form-close-btn").click(() => closeForm(backdrop));
+    backdrop
+      .find(".js-update-del-state-form-close-btn")
+      .click(() => closeForm(backdrop));
 
-    form.submit(async e => {
+    form.submit(async (e) => {
       e.preventDefault();
 
       const submitBtn = form.find("#update-del-state-form-submit-btn");
@@ -294,31 +334,39 @@ async function renderUpdateDelStateForm(orderId, delStateId) {
       const stateMsg = form.find("#update-del-state-form-submit-msg");
 
       const validateForm = () => {
-        if(ORDER_COMPLETED_STATES.includes(delStateId)) {
+        if (ORDER_COMPLETED_STATES.includes(delStateId)) {
           stateMsg.text("Error: cannot update completed order");
           return false;
-        } else if(stateId == delStateId)  {
+        } else if (stateId == delStateId) {
           stateMsg.text("Error: no changes made, no need to update");
           return false;
-        } else if(stateId < delStateId) {
+        } else if (stateId < delStateId) {
           stateMsg.text("Error: cannot update to previous delivery state");
           return false;
-        } else if([ORDER_RECEIVED_ID, ORDER_RETURNED_ID].includes(stateId) && delStateId != ORDER_DELIVERED_ID) {
-          stateMsg.text("Error: cannot update to received or returned state without being at delivered state");
+        } else if (
+          [ORDER_RECEIVED_ID, ORDER_RETURNED_ID].includes(stateId) &&
+          delStateId != ORDER_DELIVERED_ID
+        ) {
+          stateMsg.text(
+            "Error: cannot update to received or returned state without being at delivered state"
+          );
           return false;
-        } else if(stateId == ORDER_CANCELLED_ID && delStateId >= ORDER_SHIPPED_ID) {
+        } else if (
+          stateId == ORDER_CANCELLED_ID &&
+          delStateId >= ORDER_SHIPPED_ID
+        ) {
           stateMsg.text("Error: cannot cancel order that has been shipped");
           return false;
         }
 
         stateMsg.text("");
         return true;
-      }
+      };
 
-      if(validateForm()) {
-        const res = await updateOrder(orderId, {delivery_state_id: stateId});
+      if (validateForm()) {
+        const res = await updateOrder(orderId, { delivery_state_id: stateId });
 
-        if(res.success) {
+        if (res.success) {
           crudOrderMsg.text(`* order id ${orderId} was updated`);
           setTimeout(() => {
             crudOrderMsg.text("");
@@ -334,10 +382,11 @@ async function renderUpdateDelStateForm(orderId, delStateId) {
       submitBtn.text("update");
       submitBtn.prop("disabled", false);
     });
-
-  } catch(error) {
+  } catch (error) {
     console.error(`Error: ${error.message}`);
-    backdrop.html(`<div class="alert alert-danger m-3">Error loading update order form: ${error.message}</div>`);
+    backdrop.html(
+      `<div class="alert alert-danger m-3">Error loading update order form: ${error.message}</div>`
+    );
   }
 }
 

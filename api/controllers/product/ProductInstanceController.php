@@ -1,16 +1,19 @@
 <?php
 
-class ProductInstanceController {
+class ProductInstanceController
+{
   private ErrorHandler $error_handler;
   private Utils $utils;
 
-  public function __construct(private ProductInstanceGateway $gateway, private Auths $auths) {
+  public function __construct(private ProductInstanceGateway $gateway, private Auths $auths)
+  {
     $this->error_handler = new ErrorHandler;
     $this->utils = new Utils;
   }
 
-  public function processRequest(string $method, ?string $sku=null, ?int $limit=null, ?int $offset=null): void {
-    if($sku) {
+  public function processRequest(string $method, ?string $sku = null, ?int $limit = null, ?int $offset = null): void
+  {
+    if ($sku) {
       $this->processResourceRequest($method, $sku);
       return;
     }
@@ -18,14 +21,15 @@ class ProductInstanceController {
     $this->processCollectionRequest($method, $limit, $offset);
   }
 
-  private function processResourceRequest(string $method, string $sku): void {
+  private function processResourceRequest(string $method, string $sku): void
+  {
     $instance = $this->gateway->get($sku);
-    if(!$instance) {
+    if (!$instance) {
       $this->error_handler->sendErrorResponse(404, "Product instance with sku '$sku' not found");
       return;
     }
 
-    switch($method) {
+    switch ($method) {
       case "GET":
         $this->auths->verifyAction("READ_PRODUCT_INSTANCE");
 
@@ -41,7 +45,7 @@ class ProductInstanceController {
         $data = (array) json_decode(file_get_contents("php://input"));
 
         $errors = $this->getValidationErrors($data, false);
-        if(!empty($errors)) {
+        if (!empty($errors)) {
           $this->error_handler->sendErrorResponse(422, $errors);
           break;
         }
@@ -72,8 +76,9 @@ class ProductInstanceController {
     }
   }
 
-  private function processCollectionRequest(string $method, ?int $limit=null, ?int $offset=null): void {
-    switch($method) {
+  private function processCollectionRequest(string $method, ?int $limit = null, ?int $offset = null): void
+  {
+    switch ($method) {
       case "GET":
         $this->auths->verifyAction("READ_PRODUCT_INSTANCE");
 
@@ -92,7 +97,7 @@ class ProductInstanceController {
         $data = (array) json_decode(file_get_contents("php://input"));
 
         $errors = $this->getValidationErrors($data);
-        if(!empty($errors)) {
+        if (!empty($errors)) {
           $this->error_handler->sendErrorResponse(422, $errors);
           break;
         }
@@ -113,44 +118,43 @@ class ProductInstanceController {
     }
   }
 
-  private function getValidationErrors(array $data, bool $new=true): array {
+  private function getValidationErrors(array $data, bool $new = true): array
+  {
     $errors = [];
 
-    if($new) { // New instance
-      if(
+    if ($new) { // New instance
+      if (
         empty($data["product_variation_id"]) ||
         !is_numeric($data["product_variation_id"])
       ) $errors[] = "product_variation_id is required with integer value";
-      if(
+      if (
         empty($data["supplier_serial_number"]) ||
         !$this->utils->isValidSerialNum($data["supplier_serial_number"])
       ) $errors[] = "supplier_serial_number is required with valid format";
-
     } else { // Update instance
-      if(
+      if (
         array_key_exists("supplier_serial_number", $data) &&
         (empty($data["supplier_serial_number"]) || !$this->utils->isValidSerialNum($data["supplier_serial_number"]))
       ) $errors[] = "supplier_serial_number is empty or not valid format";
     }
 
-    if(
+    if (
       array_key_exists("supplier_imei_number", $data) &&
       !$this->utils->isInterpretableNull($data["supplier_imei_number"]) && // Allow nullable
       (empty($data["supplier_imei_number"]) || !$this->utils->isValidIMEI($data["supplier_imei_number"]))
     ) $errors[] = "supplier_imei_number is empty or not valid format or not null";
 
-    if(
+    if (
       array_key_exists("goods_receipt_note_id", $data) &&
       !$this->utils->isInterpretableNull($data["goods_receipt_note_id"]) && // Allow nullable
       !is_numeric($data["goods_receipt_note_id"])
     ) $errors[] = "goods_receipt_note_id must be an integer or null";
 
-    if(
+    if (
       array_key_exists("is_sold", $data) &&
       !$this->utils->isInterpretableBool($data["is_sold"]) // Allow nullable
     ) $errors[] = "is_sold must be a boolean value";
 
     return $errors;
   }
-
 }

@@ -3,12 +3,12 @@ import {
   getFilterVariationsList,
   getVariation,
   getVariationsList,
-  updateVariation
+  updateVariation,
 } from "../../models/product/variations.js";
 import {
   DEFAULT_IMG_PATH,
   DISPLAY_MSG_TIMEOUT,
-  VARIATION_IMG_PATH
+  VARIATION_IMG_PATH,
 } from "../../settings.js";
 import {
   disableBgScroll,
@@ -20,13 +20,12 @@ import {
   toBoolean,
   isValidSerialNum,
   isValidIMEI,
-  convertUtcToLocalDatetime
+  convertUtcToLocalDatetime,
 } from "../../utils.js";
 import { getOSList } from "../../models/product/os.js";
 import { closeForm, closePopup } from "./components.js";
 import { createInstance } from "../../models/product/instances.js";
 import { hasPermission } from "../../models/auth.js";
-
 
 const crudVariationMsg = $("#crud-variation-msg");
 const backdrop = $("#backdrop");
@@ -52,7 +51,7 @@ function renderSearchVariationForm() {
     clearBtn.prop("disabled", false);
   });
 
-  form.submit(async e => {
+  form.submit(async (e) => {
     e.preventDefault();
     searchBtn.prop("disabled", true);
     searchBtn.text("Searching...");
@@ -64,7 +63,9 @@ function renderSearchVariationForm() {
       formData.get("price_to") || null,
       formData.get("release_from") || null,
       formData.get("release_to") || null,
-      formData.get("stop_selling") ? toBoolean(formData.get("stop_selling")) : null
+      formData.get("stop_selling")
+        ? toBoolean(formData.get("stop_selling"))
+        : null
     );
     await renderVariationsData(filteredVariationsList);
 
@@ -73,18 +74,22 @@ function renderSearchVariationForm() {
   });
 }
 
-async function renderVariationsData(variationsList=null) {
-  tbody.html("<tr><td colspan='12' class='text-center'>Loading data...</td></tr>");
+async function renderVariationsData(variationsList = null) {
+  tbody.html(
+    "<tr><td colspan='12' class='text-center'>Loading data...</td></tr>"
+  );
 
   try {
-    const variations = variationsList || await getVariationsList();
+    const variations = variationsList || (await getVariationsList());
 
     tbody.html(() => {
       let dataHTML = "";
 
       variations.forEach((variation, idx) => {
         idx++;
-        const img = variation.image_name ? `${VARIATION_IMG_PATH}/${variation.image_name}` : DEFAULT_IMG_PATH;
+        const img = variation.image_name
+          ? `${VARIATION_IMG_PATH}/${variation.image_name}`
+          : DEFAULT_IMG_PATH;
 
         dataHTML += `
           <tr
@@ -97,34 +102,70 @@ async function renderVariationsData(variationsList=null) {
             <td data-cell="image" class="text-center">
               <img src="${img}" class="content__img img-thumbnail" alt="smartwatch" loading="lazy" style="max-width: 75px;">
             </td>
-            <td data-cell="product id" class="text-center">${variation.product_id}</td>
+            <td data-cell="product id" class="text-center">${
+              variation.product_id
+            }</td>
             <td data-cell="watch specs" class="content__td--g">
               <ul class="content__specs content__specs--watch list-unstyled mb-0 small">
-                <li><strong>Watch size:</strong> ${variation.watch_size_mm} mm</li>
-                <li><strong>Display size:</strong> ${variation.display_size_mm} mm</li>
-                <li><strong>Display type:</strong> ${variation.display_type}</li>
-                <li><strong>Resolution:</strong> ${variation.resolution_h_px} px <i class="uil uil-times"></i> ${variation.resolution_w_px} px</li>
-                <li><strong>Memory:</strong> ${variation.ram_bytes} bytes <i class="uil uil-times"></i> ${variation.rom_bytes} bytes</li>
+                <li><strong>Watch size:</strong> ${
+                  variation.watch_size_mm
+                } mm</li>
+                <li><strong>Display size:</strong> ${
+                  variation.display_size_mm
+                } mm</li>
+                <li><strong>Display type:</strong> ${
+                  variation.display_type
+                }</li>
+                <li><strong>Resolution:</strong> ${
+                  variation.resolution_h_px
+                } px <i class="uil uil-times"></i> ${
+          variation.resolution_w_px
+        } px</li>
+                <li><strong>Memory:</strong> ${
+                  variation.ram_bytes
+                } bytes <i class="uil uil-times"></i> ${
+          variation.rom_bytes
+        } bytes</li>
                 <li><strong>OS:</strong> ${variation.os.name}</li>
-                <li><strong>Connectivity:</strong> ${variation.connectivity}</li>
-                <li><strong>Battery:</strong> ${variation.battery_life_mah} mah</li>
-                <li><strong>Water resistance:</strong> ${variation.water_resistance_value} ${variation.water_resistance_unit}</li>
+                <li><strong>Connectivity:</strong> ${
+                  variation.connectivity
+                }</li>
+                <li><strong>Battery:</strong> ${
+                  variation.battery_life_mah
+                } mah</li>
+                <li><strong>Water resistance:</strong> ${
+                  variation.water_resistance_value
+                } ${variation.water_resistance_unit}</li>
                 <li><strong>Sensor:</strong> ${variation.sensor}</li>
-                <li><strong>Case material:</strong> ${variation.case_material}</li>
-                <li><strong>Total weight (+band):</strong> ${variation.weight_milligrams} mg</li>
-                <li><strong>Color:</strong> <input type="color" class="form-control form-control-color form-control-sm d-inline-block" style="width: 30px; height: 20px;" value="${variation.watch_color}" disabled></li>
+                <li><strong>Case material:</strong> ${
+                  variation.case_material
+                }</li>
+                <li><strong>Total weight (+band):</strong> ${
+                  variation.weight_milligrams
+                } mg</li>
+                <li><strong>Color:</strong> <input type="color" class="form-control form-control-color form-control-sm d-inline-block" style="width: 30px; height: 20px;" value="${
+                  variation.watch_color
+                }" disabled></li>
               </ul>
             </td>
             <td data-cell="band specs" class="content__td--g">
               <ul class="content__specs content__specs--band list-unstyled mb-0 small">
                 <li><strong>Material:</strong> ${variation.band_material}</li>
                 <li><strong>Size:</strong> ${variation.band_size_mm} mm</li>
-                <li><strong>Color:</strong> <input type="color" class="form-control form-control-color form-control-sm d-inline-block" style="width: 30px; height: 20px;" value="${variation.band_color}" disabled></li>
+                <li><strong>Color:</strong> <input type="color" class="form-control form-control-color form-control-sm d-inline-block" style="width: 30px; height: 20px;" value="${
+                  variation.band_color
+                }" disabled></li>
               </ul>
             </td>
-            <td data-cell="release at" class="content__td--g">${convertUtcToLocalDatetime(variation.release_date)}</td>
-            <td data-cell="base price" class="text-end">${variation.base_price_cents}</td>
-            <td data-cell="sell price" class="text-end">${variation.price_cents}</td>
+            <td data-cell="release at" class="content__td--g">${convertUtcToLocalDatetime(
+              variation.release_date
+            )}</td>
+            <td data-cell="base price" class="text-end">${
+              variation.base_price_cents
+            }</td>
+            <td data-cell="sell price" class="text-end">${
+              variation.price_cents
+            }</td>
             <td data-cell="stock">
               <div class="d-flex justify-content-center align-items-center gap-2">
                 ${variation.stock_quantity}
@@ -140,7 +181,11 @@ async function renderVariationsData(variationsList=null) {
               </div>
             </td>
             <td data-cell="stop selling" class="text-center">
-              ${variation.stop_selling ? "<span class='badge bg-danger'>Yes</span>" : "<span class='badge bg-success'>No</span>"}
+              ${
+                variation.stop_selling == 1
+                  ? "<span class='badge bg-danger'>Yes</span>"
+                  : "<span class='badge bg-success'>No</span>"
+              }
             </td>
             <td data-cell="actions">
               <div class="d-flex justify-content-center gap-2 btn-group-sm">
@@ -152,7 +197,7 @@ async function renderVariationsData(variationsList=null) {
                         <i class='uil uil-pen'></i>
                       </button>`
                     : ""
-              }
+                }
                 ${
                   canDelete
                     ? `<button
@@ -162,18 +207,25 @@ async function renderVariationsData(variationsList=null) {
                       </button>`
                     : ""
                 }
-                ${!canUpdate && !canDelete ? "<span class='text-muted'>No actions</span>" : ""}
+                ${
+                  !canUpdate && !canDelete
+                    ? "<span class='text-muted'>No actions</span>"
+                    : ""
+                }
               </div>
             </td>
           </tr>
         `;
       });
 
-      return dataHTML || "<tr><td colspan='12' class='text-center text-muted'>No data found!</td></tr>";
+      return (
+        dataHTML ||
+        "<tr><td colspan='12' class='text-center text-muted'>No data found!</td></tr>"
+      );
     });
 
-    if(canCreateInstance) {
-      tbody.find(".js-add-instance-btn").click(e => {
+    if (canCreateInstance) {
+      tbody.find(".js-add-instance-btn").click((e) => {
         const tr = $(e.currentTarget).closest("tr");
         const variationNum = tr.data("number");
         const variationId = tr.data("variation-id");
@@ -183,8 +235,8 @@ async function renderVariationsData(variationsList=null) {
       });
     }
 
-    if(canUpdate) {
-      tbody.find(".js-update-variation-btn").click(e => {
+    if (canUpdate) {
+      tbody.find(".js-update-variation-btn").click((e) => {
         const tr = $(e.currentTarget).closest("tr");
         const variationNum = tr.data("number");
         const variationId = tr.data("variation-id");
@@ -194,8 +246,8 @@ async function renderVariationsData(variationsList=null) {
       });
     }
 
-    if(canDelete) {
-      tbody.find(".js-delete-variation-btn").click(e => {
+    if (canDelete) {
+      tbody.find(".js-delete-variation-btn").click((e) => {
         const tr = $(e.currentTarget).closest("tr");
         const variationNum = tr.data("number");
         const variationId = tr.data("variation-id");
@@ -206,31 +258,38 @@ async function renderVariationsData(variationsList=null) {
     }
 
     resultCount.text(variations.length);
-
-  } catch(error) {
+  } catch (error) {
     console.error(`Error: ${error.message}`);
-    tbody.html(`<tr><td colspan='12' class="p-3 text-center table-danger">Error loading data: ${error.message}</td></tr>`);
+    tbody.html(
+      `<tr><td colspan='12' class="p-3 text-center table-danger">Error loading data: ${error.message}</td></tr>`
+    );
   }
 }
 
 async function renderUpdateVariationForm(number, id) {
- disableBgScroll();
- backdrop.html("<div class='d-flex justify-content-center align-items-center' style='height: 100vh;'><div class='spinner-border text-primary' role='status'><span class='visually-hidden'>Loading update variation form...</span></div></div>");
- backdrop.show();
+  disableBgScroll();
+  backdrop.html(
+    "<div class='d-flex justify-content-center align-items-center' style='height: 100vh;'><div class='spinner-border text-primary' role='status'><span class='visually-hidden'>Loading update variation form...</span></div></div>"
+  );
+  backdrop.show();
 
   try {
     const variation = await getVariation(id);
     const os = await getOSList();
-    const img = variation.image_name && `${VARIATION_IMG_PATH}/${variation.image_name}`;
+    const img =
+      variation.image_name && `${VARIATION_IMG_PATH}/${variation.image_name}`;
 
-    const osHTML = os.map(osItem => (
-      `<option
+    const osHTML = os
+      .map(
+        (osItem) =>
+          `<option
         value="${osItem.id}"
         ${osItem.id == variation.os.id && "selected"}
       >${osItem.name}</option>`
-    )).join("");
+      )
+      .join("");
 
-      backdrop.html(`
+    backdrop.html(`
         <form
           class="form--g update-variation-form card p-4 shadow-lg" id="update-variation-form"
           style="max-width: 900px; margin: 2rem auto; max-height: 80vh; overflow-y: auto;
@@ -550,7 +609,7 @@ async function renderUpdateVariationForm(number, id) {
               name="stop_selling"
               id="stop-selling"
               class="form-check-input"
-              ${variation.stop_selling && "checked"}
+              ${variation.stop_selling == 1 && "checked"}
               >
               <label for="stop-selling" class="form-check-label">Stop selling</label>
             </div>
@@ -574,14 +633,16 @@ async function renderUpdateVariationForm(number, id) {
 
     const form = backdrop.find("#update-variation-form");
 
-    form.find(".js-update-variation-form-close-btn").click(() => closeForm(backdrop));
+    form
+      .find(".js-update-variation-form-close-btn")
+      .click(() => closeForm(backdrop));
 
     let isRemoveImg = false;
     const inputImg = form.find("#img");
     const imgDisplay = form.find("#update-variation-form-img-display");
     const removeImgBtn = form.find("#update-variation-form-img-remove-btn");
 
-    inputImg.change(async e => {
+    inputImg.change(async (e) => {
       removeImgBtn.show();
       isRemoveImg = false;
       imgDisplay.prop("src", await readFileAsDataURL(e.target.files[0]));
@@ -594,7 +655,7 @@ async function renderUpdateVariationForm(number, id) {
       imgDisplay.prop("src", DEFAULT_IMG_PATH);
     });
 
-    form.submit(async e => {
+    form.submit(async (e) => {
       e.preventDefault();
 
       const submitBtn = form.find("#update-variation-form-submit-btn");
@@ -612,7 +673,7 @@ async function renderUpdateVariationForm(number, id) {
       const resolutionMsg = form.find("#resolution-msg");
       const memoryMsg = form.find("#memory-msg");
       const connectivityMsg = form.find("#connectivity-msg");
-      const batteryMsg = form.find("#battery-msg")
+      const batteryMsg = form.find("#battery-msg");
       const waterResistanceMsg = form.find("#resistance-msg");
       const sensorMsg = form.find("#sensor-msg");
       const caseMaterialMsg = form.find("#case-material-msg");
@@ -624,9 +685,9 @@ async function renderUpdateVariationForm(number, id) {
       const validateForm = async () => {
         let allValid = true;
 
-        if(formData.get("image")["name"]) {
+        if (formData.get("image")["name"]) {
           const errors = await isValidImg(formData.get("image"));
-          if(errors.length !== 0) {
+          if (errors.length !== 0) {
             fileMsg.text(errors);
             allValid = false;
           } else fileMsg.text("");
@@ -634,137 +695,158 @@ async function renderUpdateVariationForm(number, id) {
           fileMsg.text("");
         }
 
-        if(!formData.get("watch_size_mm")) {
+        if (!formData.get("watch_size_mm")) {
           watchSizeMsg.text("* required");
           allValid = false;
-        } else if(formData.get("watch_size_mm") < 0) {
+        } else if (formData.get("watch_size_mm") < 0) {
           watchSizeMsg.text("* can't be smaller than 0");
           allValid = false;
         } else watchSizeMsg.text("");
 
-        if(!formData.get("price_cents")) {
+        if (!formData.get("price_cents")) {
           sellPriceMsg.text("* required");
           allValid = false;
-        } else if(formData.get("price_cents") < 0) {
+        } else if (formData.get("price_cents") < 0) {
           sellPriceMsg.text("* can't be smaller than 0");
           allValid = false;
         } else sellPriceMsg.text("");
 
-        if(!formData.get("base_price_cents")) {
+        if (!formData.get("base_price_cents")) {
           basePriceMsg.text("* required");
           allValid = false;
-        } else if(formData.get("base_price_cents") < 0) {
+        } else if (formData.get("base_price_cents") < 0) {
           basePriceMsg.text("* can't be smaller than 0");
           allValid = false;
         } else basePriceMsg.text("");
 
-        if(!formData.get("display_size_mm")) {
+        if (!formData.get("display_size_mm")) {
           displaySizeMsg.text("* required");
           allValid = false;
-        } else if(formData.get("display_size_mm") < 0) {
+        } else if (formData.get("display_size_mm") < 0) {
           displaySizeMsg.text("* can't be smaller than 0");
           allValid = false;
         } else displaySizeMsg.text("");
 
-        if(!formData.get("display_type")) {
+        if (!formData.get("display_type")) {
           displayTypeMsg.text("* required");
           allValid = false;
         } else displayTypeMsg.text("");
 
-        if(!formData.get("resolution_h_px") || !formData.get("resolution_w_px")) {
+        if (
+          !formData.get("resolution_h_px") ||
+          !formData.get("resolution_w_px")
+        ) {
           resolutionMsg.text("* required");
           allValid = false;
-        } else if(formData.get("resolution_h_px") < 0 || formData.get("resolution_w_px") < 0) {
+        } else if (
+          formData.get("resolution_h_px") < 0 ||
+          formData.get("resolution_w_px") < 0
+        ) {
           resolutionMsg.text("* can't be smaller than 0");
           allValid = false;
         } else resolutionMsg.text("");
 
-        if(!formData.get("ram_bytes") || !formData.get("rom_bytes")) {
+        if (!formData.get("ram_bytes") || !formData.get("rom_bytes")) {
           memoryMsg.text("* required");
           allValid = false;
-        } else if(formData.get("ram_bytes") < 0 || formData.get("rom_bytes") < 0) {
+        } else if (
+          formData.get("ram_bytes") < 0 ||
+          formData.get("rom_bytes") < 0
+        ) {
           memoryMsg.text("* can't be smaller than 0");
           allValid = false;
         } else memoryMsg.text("");
 
-        if(!formData.get("connectivity")) {
+        if (!formData.get("connectivity")) {
           connectivityMsg.text("* required");
           allValid = false;
         } else connectivityMsg.text("");
 
-        if(!formData.get("battery_life_mah")) {
+        if (!formData.get("battery_life_mah")) {
           batteryMsg.text("* required");
           allValid = false;
-        } else if(formData.get("battery_life_mah") < 0) {
+        } else if (formData.get("battery_life_mah") < 0) {
           batteryMsg.text("* can't be smaller than 0");
           allValid = false;
         } else batteryMsg.text("");
 
-        if(!formData.get("water_resistance_value") || !formData.get("water_resistance_unit")) {
+        if (
+          !formData.get("water_resistance_value") ||
+          !formData.get("water_resistance_unit")
+        ) {
           waterResistanceMsg.text("* required");
           allValid = false;
         } else waterResistanceMsg.text("");
 
-        if(!formData.get("sensor")) {
+        if (!formData.get("sensor")) {
           sensorMsg.text("* required");
           allValid = false;
         } else sensorMsg.text("");
 
-        if(!formData.get("case_material")) {
+        if (!formData.get("case_material")) {
           caseMaterialMsg.text("* required");
           allValid = false;
         } else caseMaterialMsg.text("");
 
-        if(!formData.get("band_material")) {
+        if (!formData.get("band_material")) {
           bandMaterialMsg.text("* required");
           allValid = false;
         } else bandMaterialMsg.text("");
 
-        if(!formData.get("band_size_mm")) {
+        if (!formData.get("band_size_mm")) {
           bandSizeMsg.text("* required");
           allValid = false;
-        } else if(formData.get("band_size_mm") < 0) {
+        } else if (formData.get("band_size_mm") < 0) {
           bandSizeMsg.text("* can't be smaller than 0");
           allValid = false;
         } else bandSizeMsg.text("");
 
-        if(!formData.get("weight_milligrams")) {
+        if (!formData.get("weight_milligrams")) {
           weightMsg.text("* required");
           allValid = false;
-        } else if(formData.get("weight_milligrams") < 0) {
+        } else if (formData.get("weight_milligrams") < 0) {
           weightMsg.text("* can't be smaller than 0");
           allValid = false;
         } else weightMsg.text("");
 
-        if(!formData.get("release_date")) {
+        if (!formData.get("release_date")) {
           releaseDateMsg.text("* required");
           allValid = false;
-        } else if(!isDateInPast(formData.get("release_date"))) {
-          releaseDateMsg.text("* can't be greater than or equal to current date");
+        } else if (!isDateInPast(formData.get("release_date"))) {
+          releaseDateMsg.text(
+            "* can't be greater than or equal to current date"
+          );
           allValid = false;
         } else releaseDateMsg.text("");
 
         return allValid;
-      }
+      };
 
-      if(await validateForm()) {
-        if(isRemoveImg) {
+      if (await validateForm()) {
+        if (isRemoveImg) {
           formData.set("image", "null");
-        } else if(!formData.get("image")["name"]) {
+        } else if (!formData.get("image")["name"]) {
           formData.delete("image");
         }
-        formData.set("release_date", convertToMySQLDatetime(formData.get("release_date")));
-        if(formData.get("stop_selling")) {
+        formData.set(
+          "release_date",
+          convertToMySQLDatetime(formData.get("release_date"))
+        );
+        if (formData.get("stop_selling")) {
           formData.set("stop_selling", true);
         } else formData.delete("stop_selling");
 
         const res = await updateVariation(
           id,
-          (formData.get("image") && formData.get("image") !== "null") ? formData : Object.fromEntries(formData)
+          formData.get("image") && formData.get("image") !== "null"
+            ? formData
+            : Object.fromEntries(formData)
         );
 
-        if(res.success) {
-          crudVariationMsg.text(`* variation id ${id} - number ${number} was updated`);
+        if (res.success) {
+          crudVariationMsg.text(
+            `* variation id ${id} - number ${number} was updated`
+          );
           setTimeout(() => {
             crudVariationMsg.text("");
           }, DISPLAY_MSG_TIMEOUT);
@@ -779,9 +861,11 @@ async function renderUpdateVariationForm(number, id) {
       submitBtn.text("Update");
       submitBtn.prop("disabled", false);
     });
-  } catch(error) {
+  } catch (error) {
     console.error(`Error: ${error.message}`);
-    backdrop.html(`<div class="alert alert-danger m-3 p-4 text-center">Error loading update variation form: ${error.message}</div>`);
+    backdrop.html(
+      `<div class="alert alert-danger m-3 p-4 text-center">Error loading update variation form: ${error.message}</div>`
+    );
   }
 }
 
@@ -806,7 +890,9 @@ async function renderDelVariationPopup(number, id) {
     </div>
   `);
 
-  backdrop.find(".js-delete-variation-popup-close-btn").click(() => {closePopup(backdrop)});
+  backdrop.find(".js-delete-variation-popup-close-btn").click(() => {
+    closePopup(backdrop);
+  });
 
   const submitBtn = backdrop.find("#delete-variation-popup-submit-btn");
   submitBtn.click(async () => {
@@ -815,8 +901,10 @@ async function renderDelVariationPopup(number, id) {
 
     const res = await deleteVariation(id);
 
-    if(res.success) {
-      crudVariationMsg.text(`* variation id ${id} - number ${number} was deleted`);
+    if (res.success) {
+      crudVariationMsg.text(
+        `* variation id ${id} - number ${number} was deleted`
+      );
       setTimeout(() => {
         crudVariationMsg.text("");
       }, DISPLAY_MSG_TIMEOUT);
@@ -835,7 +923,9 @@ async function renderDelVariationPopup(number, id) {
 
 function renderAddInstanceForm(variationNumber, variationId) {
   disableBgScroll();
-  backdrop.html("<div class='d-flex justify-content-center align-items-center' style='height: 100vh;'><div class='spinner-border text-primary' role='status'><span class='visually-hidden'>Loading add instance form...</span></div></div>");
+  backdrop.html(
+    "<div class='d-flex justify-content-center align-items-center' style='height: 100vh;'><div class='spinner-border text-primary' role='status'><span class='visually-hidden'>Loading add instance form...</span></div></div>"
+  );
   backdrop.show();
 
   try {
@@ -887,9 +977,11 @@ function renderAddInstanceForm(variationNumber, variationId) {
 
     const form = backdrop.find("#add-instance-form");
 
-    form.find(".js-add-instance-form-close-btn").click(() => closeForm(backdrop));
+    form
+      .find(".js-add-instance-form-close-btn")
+      .click(() => closeForm(backdrop));
 
-    form.submit(async e => {
+    form.submit(async (e) => {
       e.preventDefault();
 
       const submitBtn = form.find("#add-instance-form-submit-btn");
@@ -905,10 +997,10 @@ function renderAddInstanceForm(variationNumber, variationId) {
         let allValid = true;
 
         const serialNum = formData.get("supplier_serial_number");
-        if(!serialNum) {
+        if (!serialNum) {
           serialNumMsg.text("* required");
           allValid = false;
-        } else if(!isValidSerialNum(serialNum)) {
+        } else if (!isValidSerialNum(serialNum)) {
           serialNumMsg.text("* invalid serial number");
           allValid = false;
         } else {
@@ -916,8 +1008,8 @@ function renderAddInstanceForm(variationNumber, variationId) {
         }
 
         const imeiNum = formData.get("supplier_imei_number");
-        if(imeiNum) {
-          if(!isValidIMEI(imeiNum)) {
+        if (imeiNum) {
+          if (!isValidIMEI(imeiNum)) {
             imeiNumMsg.text("* invalid IMEI number");
             allValid = false;
           } else {
@@ -928,14 +1020,15 @@ function renderAddInstanceForm(variationNumber, variationId) {
         }
 
         return allValid;
-      }
+      };
 
-      if(await validateForm()) {
+      if (await validateForm()) {
         formData.append("product_variation_id", variationId);
 
-        if(!formData.get("supplier_imei_number")) formData.delete("supplier_imei_number");
+        if (!formData.get("supplier_imei_number"))
+          formData.delete("supplier_imei_number");
 
-        if(formData.get("is_sold")) {
+        if (formData.get("is_sold")) {
           formData.set("is_sold", true);
         } else {
           formData.delete("is_sold");
@@ -943,8 +1036,10 @@ function renderAddInstanceForm(variationNumber, variationId) {
 
         const res = await createInstance(Object.fromEntries(formData));
 
-        if(res.success) {
-          crudVariationMsg.text(`* new instance sku '${res.data.sku}' was added to variation id '${variationId}'`);
+        if (res.success) {
+          crudVariationMsg.text(
+            `* new instance sku '${res.data.sku}' was added to variation id '${variationId}'`
+          );
           setTimeout(() => {
             crudVariationMsg.text("");
           }, DISPLAY_MSG_TIMEOUT);
@@ -958,14 +1053,13 @@ function renderAddInstanceForm(variationNumber, variationId) {
 
       submitBtn.text("Add");
       submitBtn.prop("disabled", false);
-
     });
-
-  } catch(error) {
+  } catch (error) {
     console.error(`Error: ${error.message}`);
-    backdrop.html(`<div class="alert alert-danger m-3 p-4 text-center">Error loading add instance form: ${error.message}</div>`);
+    backdrop.html(
+      `<div class="alert alert-danger m-3 p-4 text-center">Error loading add instance form: ${error.message}</div>`
+    );
   }
-
 }
 
 renderSearchVariationForm();

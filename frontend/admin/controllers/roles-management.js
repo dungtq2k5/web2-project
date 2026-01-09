@@ -3,12 +3,9 @@ import {
   createRole,
   deleteRole,
   getRole,
-  updateRole
+  updateRole,
 } from "../../models/roles.js";
-import {
-  disableBgScroll,
-  filterTextInputsInFormData
-} from "../../utils.js";
+import { disableBgScroll, filterTextInputsInFormData } from "../../utils.js";
 import { getPermissionsList } from "../../models/permissions.js";
 import { closeForm, closePopup } from "./components.js";
 import { DISPLAY_MSG_TIMEOUT } from "../../settings.js";
@@ -31,13 +28,17 @@ if (hasPermission("CREATE_ROLE")) {
 }
 
 async function renderRolesData(rolesList = null) {
-  tbody.html("<tr><td colspan='5' class='p-3 text-center'>Loading data...</td></tr>");
+  tbody.html(
+    "<tr><td colspan='5' class='p-3 text-center'>Loading data...</td></tr>"
+  );
 
   try {
-    const roles = rolesList || await getRolesList();
+    const roles = rolesList || (await getRolesList());
 
-    const dataHTML = roles.map((role, idx) => (
-      `<tr
+    const dataHTML = roles
+      .map(
+        (role, idx) =>
+          `<tr
         class="align-middle"
         data-number="${idx + 1}"
         data-role-id="${role.id}"
@@ -45,7 +46,9 @@ async function renderRolesData(rolesList = null) {
         <td data-cell="n.o" class="text-center p-2">${idx + 1}</td>
         <td data-cell="id" class="text-center p-2">${role.id}</td>
         <td data-cell="name" class="p-2">${role.name}</td>
-        <td data-cell="user assigned" class="text-center p-2">${role.user_assigned}</td>
+        <td data-cell="user assigned" class="text-center p-2">${
+          role.user_assigned
+        }</td>
         <td data-cell="actions" class="text-center p-2" style="min-width: 150px;">
           <div class="d-flex justify-content-center btn-group-sm gap-2">
             ${
@@ -66,16 +69,24 @@ async function renderRolesData(rolesList = null) {
                   </button>`
                 : ""
             }
-            ${!canUpdate && !canDelete ? `<span class="text-muted">No actions</span>` : ""}
+            ${
+              !canUpdate && !canDelete
+                ? `<span class="text-muted">No actions</span>`
+                : ""
+            }
           </div>
         </td>
       </tr>`
-    )).join("");
+      )
+      .join("");
 
-    tbody.html(dataHTML || "<tr><td colspan='5' class='p-3 text-center'>No data found!</td></tr>");
+    tbody.html(
+      dataHTML ||
+        "<tr><td colspan='5' class='p-3 text-center'>No data found!</td></tr>"
+    );
 
-    if(canUpdate) {
-      tbody.find(".js-update-role-btn").click(e => {
+    if (canUpdate) {
+      tbody.find(".js-update-role-btn").click((e) => {
         const row = $(e.currentTarget).closest("tr");
         const roleId = row.data("role-id");
         const roleNum = row.data("number");
@@ -85,9 +96,9 @@ async function renderRolesData(rolesList = null) {
       });
     }
 
-    if(canDelete) {
-      tbody.find(".js-delete-role-btn").click(e => {
-        const tr = $(e.currentTarget).closest('tr');
+    if (canDelete) {
+      tbody.find(".js-delete-role-btn").click((e) => {
+        const tr = $(e.currentTarget).closest("tr");
         const roleId = tr.data("role-id");
         const roleNum = tr.data("number");
 
@@ -97,25 +108,31 @@ async function renderRolesData(rolesList = null) {
     }
 
     resultCount.text(roles.length);
-
   } catch (error) {
     console.error(`Error: ${error.message}`);
-    tbody.html(`<tr><td colspan='5' class="p-3 text-center table-danger">Error loading data: ${error.message}</td></tr>`);
+    tbody.html(
+      `<tr><td colspan='5' class="p-3 text-center table-danger">Error loading data: ${error.message}</td></tr>`
+    );
   }
 }
 
 async function renderUpdateRoleForm(number, id) {
   disableBgScroll();
-  backdrop.html("<div class='d-flex justify-content-center align-items-center' style='height: 100vh;'><div class='spinner-border text-primary' role='status'><span class='visually-hidden'>Loading update role form...</span></div></div>");
+  backdrop.html(
+    "<div class='d-flex justify-content-center align-items-center' style='height: 100vh;'><div class='spinner-border text-primary' role='status'><span class='visually-hidden'>Loading update role form...</span></div></div>"
+  );
   backdrop.show();
 
   try {
     const role = await getRole(id);
     const permissions = await getPermissionsList();
 
-    const permissionsHTML = permissions.map(permission => {
-      const isChecked = role.permissions.some(rp => rp.id === permission.id);
-      return `
+    const permissionsHTML = permissions
+      .map((permission) => {
+        const isChecked = role.permissions.some(
+          (rp) => rp.id === permission.id
+        );
+        return `
         <div class="form-check col-md-6 col-lg-4 mb-2">
           <input
             class="form-check-input"
@@ -125,12 +142,15 @@ async function renderUpdateRoleForm(number, id) {
             name="permission_ids[]"
             ${isChecked ? "checked" : ""}
           >
-          <label class="form-check-label small" for="permission-${permission.id}">
+          <label class="form-check-label small" for="permission-${
+            permission.id
+          }">
             ${permission.action_name}
           </label>
         </div>
       `;
-    }).join("");
+      })
+      .join("");
 
     backdrop.html(`
       <div class="card shadow-lg m-3 m-md-5 mx-auto" style="max-width: 800px;">
@@ -157,7 +177,10 @@ async function renderUpdateRoleForm(number, id) {
             <fieldset class="mb-3">
               <legend class="h6">Assign Permissions</legend>
               <div class="row p-2 border rounded">
-                ${permissionsHTML || '<p class="text-muted text-center">No permissions available.</p>'}
+                ${
+                  permissionsHTML ||
+                  '<p class="text-muted text-center">No permissions available.</p>'
+                }
               </div>
             </fieldset>
 
@@ -177,9 +200,11 @@ async function renderUpdateRoleForm(number, id) {
 
     const form = backdrop.find("#update-role-form");
 
-    backdrop.find(".js-update-role-form-close-btn").click(() => closeForm(backdrop));
+    backdrop
+      .find(".js-update-role-form-close-btn")
+      .click(() => closeForm(backdrop));
 
-    form.submit(async e => {
+    form.submit(async (e) => {
       e.preventDefault();
 
       const submitBtn = form.find("#update-role-form-submit-btn");
@@ -206,10 +231,10 @@ async function renderUpdateRoleForm(number, id) {
           permissionsId.push($(e).val());
         });
 
-        const res = await updateRole(
-          id,
-          { ...Object.fromEntries(formData), permissions_id: permissionsId }
-        );
+        const res = await updateRole(id, {
+          ...Object.fromEntries(formData),
+          permissions_id: permissionsId,
+        });
 
         if (res.success) {
           crudRoleMsg.text(`* role id ${id} - number ${number} was updated`);
@@ -227,10 +252,11 @@ async function renderUpdateRoleForm(number, id) {
       submitBtn.text("Update");
       submitBtn.prop("disabled", false);
     });
-
   } catch (error) {
     console.error(`Error: ${error.message}`);
-    backdrop.html(`<div class="alert alert-danger m-3">Error loading role data: ${error.message}</div>`);
+    backdrop.html(
+      `<div class="alert alert-danger m-3">Error loading role data: ${error.message}</div>`
+    );
   }
 }
 
@@ -260,7 +286,9 @@ function renderDeleteRolePopup(number, id) {
 
   backdrop.show();
 
-  backdrop.find(".js-delete-role-popup-close-btn").click(() => closePopup(backdrop));
+  backdrop
+    .find(".js-delete-role-popup-close-btn")
+    .click(() => closePopup(backdrop));
 
   const submitBtn = backdrop.find("#delete-role-popup-submit-btn");
   submitBtn.click(async () => {
@@ -269,7 +297,7 @@ function renderDeleteRolePopup(number, id) {
 
     const res = await deleteRole(id);
 
-    if(res.success) {
+    if (res.success) {
       crudRoleMsg.text(`* role id ${id} - number ${number} was deleted`);
       setTimeout(() => {
         crudRoleMsg.text("");
@@ -287,14 +315,18 @@ function renderDeleteRolePopup(number, id) {
 
 async function renderCreateRoleForm() {
   disableBgScroll();
-  backdrop.html("<div class='d-flex justify-content-center align-items-center' style='height: 100vh;'><div class='spinner-border text-primary' role='status'><span class='visually-hidden'>Loading create role form...</span></div></div>");
+  backdrop.html(
+    "<div class='d-flex justify-content-center align-items-center' style='height: 100vh;'><div class='spinner-border text-primary' role='status'><span class='visually-hidden'>Loading create role form...</span></div></div>"
+  );
   backdrop.show();
 
   try {
     const permissions = await getPermissionsList();
 
-    const permissionsHTML = permissions.map(permission => (
-      `
+    const permissionsHTML = permissions
+      .map(
+        (permission) =>
+          `
         <div class="form-check col-md-6 col-lg-4 mb-2">
           <input
             class="form-check-input"
@@ -308,7 +340,8 @@ async function renderCreateRoleForm() {
           </label>
         </div>
       `
-    )).join("");
+      )
+      .join("");
 
     backdrop.html(`
       <div class="card shadow-lg m-3 m-md-5 mx-auto" style="max-width: 800px;">
@@ -334,7 +367,10 @@ async function renderCreateRoleForm() {
             <fieldset class="mb-3">
               <legend class="h6">Assign Permissions</legend>
               <div class="row p-2 border rounded">
-                ${permissionsHTML || '<p class="text-muted text-center">No permissions available.</p>'}
+                ${
+                  permissionsHTML ||
+                  '<p class="text-muted text-center">No permissions available.</p>'
+                }
               </div>
             </fieldset>
 
@@ -354,9 +390,11 @@ async function renderCreateRoleForm() {
 
     const form = backdrop.find("#create-role-form");
 
-    backdrop.find(".js-create-role-form-close-btn").click(() => closeForm(backdrop));
+    backdrop
+      .find(".js-create-role-form-close-btn")
+      .click(() => closeForm(backdrop));
 
-    form.submit(async e => {
+    form.submit(async (e) => {
       e.preventDefault();
 
       const submitBtn = form.find("#create-role-form-submit-btn");
@@ -377,13 +415,16 @@ async function renderCreateRoleForm() {
         return true;
       };
 
-      if(validateForm()) {
+      if (validateForm()) {
         const permissionsId = [];
         form.find("input[name='permission_ids[]']:checked").each((idx, e) => {
           permissionsId.push($(e).val());
         });
 
-        const res = await createRole({ ...Object.fromEntries(formData), permissions_id: permissionsId });
+        const res = await createRole({
+          ...Object.fromEntries(formData),
+          permissions_id: permissionsId,
+        });
 
         if (res.success) {
           crudRoleMsg.text("* new role was created");
@@ -401,10 +442,11 @@ async function renderCreateRoleForm() {
       submitBtn.text("Create");
       submitBtn.prop("disabled", false);
     });
-
   } catch (error) {
     console.error(`Error: ${error.message}`);
-    backdrop.html(`<div class="alert alert-danger m-3">Error loading create role form: ${error.message}</div>`);
+    backdrop.html(
+      `<div class="alert alert-danger m-3">Error loading create role form: ${error.message}</div>`
+    );
   }
 }
 

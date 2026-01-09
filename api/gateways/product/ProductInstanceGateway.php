@@ -1,6 +1,7 @@
 <?php
 
-class ProductInstanceGateway {
+class ProductInstanceGateway
+{
   private PDO $conn;
   private Utils $utils;
   private ProductGateway $product;
@@ -8,7 +9,8 @@ class ProductInstanceGateway {
   private ProductCategoryGateway $category;
   private ProductBrandGateway $brand;
 
-  public function __construct(PDO $db_conn) {
+  public function __construct(PDO $db_conn)
+  {
     $this->conn = $db_conn;
     $this->utils = new Utils;
     $this->product = new ProductGateway($db_conn);
@@ -17,7 +19,8 @@ class ProductInstanceGateway {
     $this->brand = new ProductBrandGateway($db_conn);
   }
 
-  public function getAll(?int $limit=null, ?int $offset=null): array{
+  public function getAll(?int $limit = null, ?int $offset = null): array
+  {
     $sql = "SELECT
       sku,
       supplier_serial_number,
@@ -27,23 +30,24 @@ class ProductInstanceGateway {
       is_sold
       FROM product_instances WHERE is_deleted = false";
 
-    if($limit !== null && $offset !== null) {
+    if ($limit !== null && $offset !== null) {
       $sql .= " LIMIT :limit OFFSET :offset";
-    } elseif($limit !== null) {
+    } elseif ($limit !== null) {
       $sql .= " LIMIT :limit";
-    } elseif($offset !== null) {
+    } elseif ($offset !== null) {
       $sql .= " LIMIT 18446744073709551615 OFFSET :offset";
     }
 
     $stmt = $this->conn->prepare($sql);
-    if($limit !== null) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
-    if($offset !== null) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
+    if ($limit !== null) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
+    if ($offset !== null) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
     $stmt->execute();
 
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
   }
 
-  public function get(string $sku): array | false {
+  public function get(string $sku): array | false
+  {
     $sql = "SELECT
       sku,
       supplier_serial_number,
@@ -60,19 +64,20 @@ class ProductInstanceGateway {
     return $stmt->fetch(PDO::FETCH_ASSOC);
   }
 
-  public function create(array $data): array | false {
+  public function create(array $data): array | false
+  {
     $this->conn->beginTransaction();
 
     try {
       $variation_id = $data["product_variation_id"];
       $variation = $this->variation->get($variation_id);
-      if(!$variation) {
+      if (!$variation) {
         $error_msg = "Product variation id '$variation_id' does not exist.";
         throw new Exception($error_msg, 400);
       }
 
       $serial_number = $data["supplier_serial_number"];
-      if(!$this->isUniqueSerialNumber($serial_number)) { // Make sure serial number is unique
+      if (!$this->isUniqueSerialNumber($serial_number)) { // Make sure serial number is unique
         $error_msg = "Supplier serial number '$serial_number' already exists.";
         throw new Exception($error_msg, 409);
       }
@@ -80,7 +85,7 @@ class ProductInstanceGateway {
       $imei_number = array_key_exists("supplier_imei_number", $data) // Not use isset because of nullable value
         ? $this->utils->toNull($data["supplier_imei_number"])
         : null;
-      if($imei_number && !$this->isUniqueIMEINumber($imei_number)) { // Make sure imei number is unique if provided
+      if ($imei_number && !$this->isUniqueIMEINumber($imei_number)) { // Make sure imei number is unique if provided
         $error_msg = "Supplier IMEI number '$imei_number' already exists.";
         throw new Exception($error_msg, 409);
       }
@@ -128,24 +133,24 @@ class ProductInstanceGateway {
       $stmt->bindValue(":is_sold", $is_sold, PDO::PARAM_BOOL);
       $stmt->execute();
 
-      if($is_sold === false) $this->variation->updateStock($variation_id, 1); // Only update stock when create with is_sold = false
+      if ($is_sold === false) $this->variation->updateStock($variation_id, 1); // Only update stock when create with is_sold = false
 
       $this->conn->commit();
       return $this->get($sku);
-
-    } catch(Exception $e) {
+    } catch (Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
     }
   }
 
-  public function update(array $current, array $new): array | false {
+  public function update(array $current, array $new): array | false
+  {
     $this->conn->beginTransaction();
 
     try {
-      $new_serial_number = $new["supplier_serial_number"];
+      $new_serial_number = $new["supplier_serial_number"] ?? null;
 
-      if( // Make sure serial number is unique
+      if ( // Make sure serial number is unique
         $new_serial_number &&
         $new_serial_number !== $current["supplier_serial_number"] &&
         !$this->isUniqueSerialNumber($new_serial_number)
@@ -159,7 +164,7 @@ class ProductInstanceGateway {
         ? $this->utils->toNull($new["supplier_imei_number"])
         : $current["supplier_imei_number"];
 
-      if( // Make sure imei number is unique
+      if ( // Make sure imei number is unique
         $imei_number &&
         $imei_number !== $current["supplier_imei_number"] &&
         !$this->isUniqueIMEINumber($imei_number)
@@ -168,7 +173,7 @@ class ProductInstanceGateway {
         throw new Exception($error_msg, 409);
       }
 
-      if( // Cannot update is_sold from true to false when item is in order
+      if ( // Cannot update is_sold from true to false when item is in order
         isset($new["is_sold"]) &&
         $this->utils->toBool($new["is_sold"]) === false &&
         $this->hasConstrain($current["sku"])
@@ -197,25 +202,25 @@ class ProductInstanceGateway {
       $stmt->bindValue(":sku", $current["sku"], PDO::PARAM_STR);
       $stmt->execute();
 
-      if(isset($new["is_sold"])) {
+      if (isset($new["is_sold"])) {
         $is_sold = $this->utils->toBool($new["is_sold"]);
         // is_sold from false to true -> stock--
         // is_sold from true to false -> stock++
-        if($is_sold !== $current["is_sold"]) {
+        if ($is_sold !== $current["is_sold"]) {
           $this->variation->updateStock($current["product_variation_id"], $current["is_sold"] - $is_sold);
         }
       }
 
       $this->conn->commit();
       return $this->get($current["sku"]);
-
-    } catch(Exception $e) {
+    } catch (Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
     }
   }
 
-  public function delete(array $instances): bool {
+  public function delete(array $instances): bool
+  {
     $this->conn->beginTransaction();
 
     try {
@@ -227,19 +232,19 @@ class ProductInstanceGateway {
       $stmt->bindValue(":sku", $instances["sku"], PDO::PARAM_STR);
       $stmt->execute();
 
-      if($instances["is_sold"] == false) {  // Only update stock when is_sold = false
+      if ($instances["is_sold"] == false) {  // Only update stock when is_sold = false
         $this->variation->updateStock($instances["product_variation_id"], -1);
       }
 
       return $this->conn->commit();
-
-    } catch(Exception $e) {
+    } catch (Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
     }
   }
 
-  private function hasConstrain(string $sku): bool {
+  private function hasConstrain(string $sku): bool
+  {
     $sql = "SELECT EXISTS (
       SELECT 1 FROM order_items WHERE product_instance_sku = :sku
       LIMIT 1
@@ -252,7 +257,8 @@ class ProductInstanceGateway {
     return (bool) $stmt->fetchColumn();
   }
 
-  private function isUniqueSerialNumber(string $serial_number): bool {
+  private function isUniqueSerialNumber(string $serial_number): bool
+  {
     $sql = "SELECT EXISTS (
       SELECT 1 FROM product_instances WHERE supplier_serial_number = :serial_number AND is_deleted = false
       LIMIT 1
@@ -265,7 +271,8 @@ class ProductInstanceGateway {
     return !(bool) $stmt->fetchColumn();
   }
 
-  private function isUniqueIMEINumber(string $imei_number): bool {
+  private function isUniqueIMEINumber(string $imei_number): bool
+  {
     $sql = "SELECT EXISTS (
       SELECT 1 FROM product_instances WHERE supplier_imei_number = :imei_number AND is_deleted = false
       LIMIT 1
@@ -277,5 +284,4 @@ class ProductInstanceGateway {
 
     return !(bool) $stmt->fetchColumn();
   }
-
 }

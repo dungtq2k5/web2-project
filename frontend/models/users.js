@@ -1,28 +1,29 @@
 import { ADMIN_ID, USERS_API_URL } from "../settings.js";
-import { updateCart, deleteCart } from "./carts.js"
+import { updateCart, deleteCart } from "./carts.js";
 import {
   deleteData,
   fetchData,
   sendData,
   updateData,
-  removeOddSpace
+  removeOddSpace,
 } from "../utils.js";
 import { getVariation } from "./product/variations.js";
 import { getProduct } from "./product/products.js";
 import { getSigninUser } from "./auth.js";
 
-
 let isFetch = false; // Make sure when render data
 let usersList = [];
 
-async function fetchUsers(limit=null, offset=null) {
+async function fetchUsers(limit = null, offset = null) {
   const res = await fetchData(USERS_API_URL, limit, offset);
   usersList = res.data;
   isFetch = true;
 }
 
-export async function getUsersList(limit=null, offset=null) { // Return a copy
-  if(!isFetch) { // first call not fetch -> fetch
+export async function getUsersList(limit = null, offset = null) {
+  // Return a copy
+  if (!isFetch) {
+    // first call not fetch -> fetch
     await fetchUsers();
     console.log("fetch users API");
   }
@@ -33,22 +34,27 @@ export async function getUsersList(limit=null, offset=null) { // Return a copy
 }
 
 export async function getUser(id) {
-  if(!id) return undefined;
+  if (!id) return undefined;
 
   const usersList = await getUsersList();
-  return usersList.find(user => user.id == id) || undefined;
+  return usersList.find((user) => user.id == id) || undefined;
 }
 
 /**
  * filter users base on almost all fields
  * @param {boolean} widerSearch filter more than basic info of user
  */
-export async function getFilterUsersList(valSearch, widerSearch=false, limit=null, offset=null) {
+export async function getFilterUsersList(
+  valSearch,
+  widerSearch = false,
+  limit = null,
+  offset = null
+) {
   const usersList = await getUsersList();
   const formattedValSearch = removeOddSpace(valSearch.toLowerCase());
 
   const filteredUsersList = [];
-  for(const user of usersList) {
+  for (const user of usersList) {
     let isInclude =
       String(user.id).includes(formattedValSearch) ||
       user.full_name.toLowerCase().includes(formattedValSearch) ||
@@ -56,11 +62,11 @@ export async function getFilterUsersList(valSearch, widerSearch=false, limit=nul
       user.phone_number.toLowerCase().includes(formattedValSearch) ||
       includeRoles(formattedValSearch, user.roles);
 
-    if(widerSearch && !isInclude) {
+    if (widerSearch && !isInclude) {
       isInclude = await includeCart(formattedValSearch, user.cart);
     }
 
-    if(isInclude) filteredUsersList.push(user);
+    if (isInclude) filteredUsersList.push(user);
   }
 
   const start = offset || 0;
@@ -68,12 +74,14 @@ export async function getFilterUsersList(valSearch, widerSearch=false, limit=nul
   return filteredUsersList.slice(start, end);
 }
 
-function includeRoles(valSearch, userRoles) { //support for getFilterUsersList
-  return userRoles.some(role => role.name.toLowerCase().includes(valSearch));
+function includeRoles(valSearch, userRoles) {
+  //support for getFilterUsersList
+  return userRoles.some((role) => role.name.toLowerCase().includes(valSearch));
 }
 
-async function includeCart(valSearch, userCart) { //support for getFilterUsersList
-  for(const item of userCart) {
+async function includeCart(valSearch, userCart) {
+  //support for getFilterUsersList
+  for (const item of userCart) {
     const variation = await getVariation(item.product_variation_id);
     const product = await getProduct(variation.product_id);
 
@@ -89,19 +97,21 @@ async function includeCart(valSearch, userCart) { //support for getFilterUsersLi
 }
 
 export async function createUser(user) {
-  if(await getByEmail(user.email)) {
+  if (await getByEmail(user.email)) {
     return {
       success: false,
-      message: `User email '${user.email}' was already taken, please try another`
-    }
+      message: `User email '${user.email}' was already taken, please try another`,
+    };
   }
 
   const res = await sendData(USERS_API_URL, user);
 
-  if(res.success) {
-    if(!isFetch) { //first call function && not fetch
+  if (res.success) {
+    if (!isFetch) {
+      //first call function && not fetch
       await fetchUsers();
-    } else { //already fetch -> update list
+    } else {
+      //already fetch -> update list
       usersList.push(res.data);
     }
   }
@@ -110,28 +120,28 @@ export async function createUser(user) {
 }
 
 export async function deleteUser(id) {
-  if(id == ADMIN_ID) {
+  if (id == ADMIN_ID) {
     return {
       success: false,
-      message: "Cannot delete base admin"
-    }
+      message: "Cannot delete base admin",
+    };
   }
 
-  if(id == (await getSigninUser()).id) {
+  if (id == (await getSigninUser()).id) {
     return {
       success: false,
-      message: "Cannot delete your own account"
-    }
+      message: "Cannot delete your own account",
+    };
   }
 
   const res = await deleteData(USERS_API_URL, id);
 
-  if(res.success) {
-    if(!isFetch) {
+  if (res.success) {
+    if (!isFetch) {
       await fetchUsers();
     } else {
-      const idx = usersList.findIndex(user => user.id == id);
-      if(idx !== -1) {
+      const idx = usersList.findIndex((user) => user.id == id);
+      if (idx !== -1) {
         usersList.splice(idx, 1);
       } else {
         console.warn(`Couldn't find user with an ID ${userId} to delete`);
@@ -143,37 +153,37 @@ export async function deleteUser(id) {
 }
 
 export async function updateUser(id, user) {
-  if(id == ADMIN_ID) {
+  if (id == ADMIN_ID) {
     return {
       success: false,
-      message: "Cannot update base admin"
-    }
+      message: "Cannot update base admin",
+    };
   }
 
-  if(id == (await getSigninUser()).id) {
+  if (id == (await getSigninUser()).id) {
     return {
       success: false,
-      message: "Cannot update your own account"
-    }
+      message: "Cannot update your own account",
+    };
   }
 
   const existUser = await getByEmail(user.email);
-  if(existUser && existUser.id != id) {
+  if (existUser && existUser.id != id) {
     return {
       success: false,
-      message: `User email '${user.email}' was already taken, please try another`
-    }
+      message: `User email '${user.email}' was already taken, please try another`,
+    };
   }
 
   const res = await updateData(USERS_API_URL, id, user);
 
-  if(res.success) {
-    if(!isFetch) {
+  if (res.success) {
+    if (!isFetch) {
       await fetchUsers();
     } else {
-      const idx = usersList.findIndex(user => user.id == id);
-      if(idx !== -1) {
-        usersList[idx] = {...usersList[idx], ...res.data};
+      const idx = usersList.findIndex((user) => user.id == id);
+      if (idx !== -1) {
+        usersList[idx] = { ...usersList[idx], ...res.data };
       } else {
         console.warn(`Couldn't find user with an ID ${id} to update`);
       }
@@ -186,15 +196,17 @@ export async function updateUser(id, user) {
 export async function updateUserCart(cart) {
   const res = await updateCart(cart);
 
-  if(res.success) {
-    if(!isFetch) {
+  if (res.success) {
+    if (!isFetch) {
       await fetchUsers();
     } else {
       const userId = cart.user_id;
-      const idx = usersList.findIndex(user => user.id == userId);
-      if(idx !== -1) {
+      const idx = usersList.findIndex((user) => user.id == userId);
+      if (idx !== -1) {
         const updatedUser = await getUser(userId);
-        const cartItem = updatedUser.cart.find(item => item.product_variation_id == cart.product_variation_id);
+        const cartItem = updatedUser.cart.find(
+          (item) => item.product_variation_id == cart.product_variation_id
+        );
         cartItem.quantity = cart.quantity;
 
         usersList[idx] = updatedUser;
@@ -210,17 +222,20 @@ export async function updateUserCart(cart) {
 export async function deleteUserCart(userId, productVariationId) {
   const res = await deleteCart(userId, productVariationId);
 
-  if(res.success) {
-    if(!isFetch) {
+  if (res.success) {
+    if (!isFetch) {
       await fetchUsers();
     } else {
-      const idx = usersList.findIndex(user => user.id == userId);
-      if(idx !== -1) {
+      const idx = usersList.findIndex((user) => user.id == userId);
+      if (idx !== -1) {
         const user = usersList[idx];
-        user.cart = user.cart.filter(item => item.product_variation_id != productVariationId);
-
+        user.cart = user.cart.filter(
+          (item) => item.product_variation_id != productVariationId
+        );
       } else {
-        console.warn(`Couldn't find user with an ID ${userId} to delete user cart`);
+        console.warn(
+          `Couldn't find user with an ID ${userId} to delete user cart`
+        );
       }
     }
   }
@@ -229,8 +244,8 @@ export async function deleteUserCart(userId, productVariationId) {
 }
 
 async function getByEmail(email) {
-  if(!email) return undefined;
+  if (!email) return undefined;
 
   const users = await getUsersList();
-  return users.find(user => user.email === email) || undefined;
+  return users.find((user) => user.email === email) || undefined;
 }

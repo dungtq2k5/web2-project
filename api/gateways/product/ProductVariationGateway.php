@@ -1,35 +1,38 @@
 <?php
 
-class ProductVariationGateway {
+class ProductVariationGateway
+{
   private PDO $conn;
   private ProductOSGateway $os;
   private Utils $utils;
   private string $upload_dir = "../uploads/variations"; // Relative to index.php
 
-  public function __construct(PDO $db_conn) {
+  public function __construct(PDO $db_conn)
+  {
     $this->conn = $db_conn;
     $this->os = new ProductOSGateway($db_conn);
     $this->utils = new Utils;
   }
 
-  public function getAll(?int $limit=null, ?int $offset=null): array {
+  public function getAll(?int $limit = null, ?int $offset = null): array
+  {
     $sql = "SELECT * FROM product_variations WHERE is_deleted = false";
 
-    if($limit !== null && $offset !== null) {
+    if ($limit !== null && $offset !== null) {
       $sql .= " LIMIT :limit OFFSET :offset";
-    } elseif($limit !== null) {
+    } elseif ($limit !== null) {
       $sql .= " LIMIT :limit";
-    } elseif($offset !== null) {
+    } elseif ($offset !== null) {
       $sql .= " LIMIT 18446744073709551615 OFFSET :offset";
     }
 
     $stmt = $this->conn->prepare($sql);
-    if($limit !== null) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
-    if($offset !== null) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
+    if ($limit !== null) $stmt->bindValue(":limit", $limit, PDO::PARAM_INT);
+    if ($offset !== null) $stmt->bindValue(":offset", $offset, PDO::PARAM_INT);
     $stmt->execute();
 
     $data = [];
-    while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
       unset($row["is_deleted"]);
       $row["os"] = $this->os->get((int) $row["os_id"]);
       unset($row["os_id"]);
@@ -39,14 +42,15 @@ class ProductVariationGateway {
     return $data;
   }
 
-  public function get(int $id): array | false {
+  public function get(int $id): array | false
+  {
     $sql = "SELECT * FROM product_variations WHERE id = :id AND is_deleted = false";
 
     $stmt = $this->conn->prepare($sql);
     $stmt->bindValue(":id", $id, PDO::PARAM_INT);
     $stmt->execute();
 
-    if($data = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    if ($data = $stmt->fetch(PDO::FETCH_ASSOC)) {
       unset($data["is_deleted"]);
       $data["os"] = $this->os->get($data["os_id"]);
       unset($data["os_id"]);
@@ -57,7 +61,8 @@ class ProductVariationGateway {
     return false;
   }
 
-  public function create(array $data): array | false {
+  public function create(array $data): array | false
+  {
     $this->conn->beginTransaction();
 
     try {
@@ -142,21 +147,21 @@ class ProductVariationGateway {
 
       $id = $this->conn->lastInsertId();
 
-      if(array_key_exists("image", $data) && $this->utils->toNull($data["image"]) !== null) {
+      if (array_key_exists("image", $data) && $this->utils->toNull($data["image"]) !== null) {
         $img_name = $this->utils->saveFile($data["image"], $this->upload_dir);
         $this->updateImg($id, $img_name);
       }
 
       $this->conn->commit();
       return $this->get($id);
-
-    }catch(Exception $e) {
+    } catch (Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
     }
   }
 
-  public function update(array $current, array $new): array | false {
+  public function update(array $current, array $new): array | false
+  {
     $this->conn->beginTransaction();
 
     try {
@@ -216,26 +221,26 @@ class ProductVariationGateway {
       $stmt->bindValue(":id", $current["id"], PDO::PARAM_INT);
       $stmt->execute();
 
-      if(array_key_exists("image", $new)) { // Only update image if provided
-        if($this->utils->toNull($new["image"]) === null) {
+      if (array_key_exists("image", $new)) { // Only update image if provided
+        if ($this->utils->toNull($new["image"]) === null) {
           $this->updateImg($current["id"], null);
         } else {
           $img_name = $this->utils->saveFile($new["image"], $this->upload_dir);
           $this->updateImg($current["id"], $img_name);
         }
-        if($current["image_name"]) $this->utils->removeFile($current["image_name"], $this->upload_dir);
+        if ($current["image_name"]) $this->utils->removeFile($current["image_name"], $this->upload_dir);
       }
 
       $this->conn->commit();
       return $this->get($current["id"]);
-
-    } catch(Exception $e) {
+    } catch (Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
     }
   }
 
-  public function delete(int $id): bool {
+  public function delete(int $id): bool
+  {
     $this->conn->beginTransaction();
 
     try {
@@ -249,18 +254,18 @@ class ProductVariationGateway {
       $stmt->bindValue(":id", $id, PDO::PARAM_INT);
       $stmt->execute();
 
-      if($img_name) $this->utils->removeFile($img_name, $this->upload_dir);
+      if ($img_name) $this->utils->removeFile($img_name, $this->upload_dir);
 
       return $this->conn->commit();
-
-    } catch(Exception $e) {
+    } catch (Exception $e) {
       $this->conn->rollBack();
       throw $e; // Re-throw for centralized ErrorHandler
     }
   }
 
   // This function doesn't have own transaction, make sure cover it when use.
-  public function updateStock(int $id, int $amount): bool {
+  public function updateStock(int $id, int $amount): bool
+  {
     try {
       $sql = "UPDATE product_variations
         SET stock_quantity = stock_quantity + :amount
@@ -271,13 +276,13 @@ class ProductVariationGateway {
       $stmt->bindValue(":amount", $amount, PDO::PARAM_INT);
       $stmt->bindValue(":id", $id, PDO::PARAM_INT);
       return $stmt->execute();
-
-    } catch(Exception $e) {
+    } catch (Exception $e) {
       throw $e; // Re-throw for centralized ErrorHandler
     }
   }
 
-  public function getStock(int $id): int {
+  public function getStock(int $id): int
+  {
     $sql = "SELECT stock_quantity
       FROM product_variations
       WHERE id = :id AND is_deleted = false
@@ -290,7 +295,8 @@ class ProductVariationGateway {
     return (int) $stmt->fetch(PDO::FETCH_ASSOC)["stock_quantity"];
   }
 
-  private function hasConstrain(int $id): bool {
+  private function hasConstrain(int $id): bool
+  {
     $sql = "SELECT EXISTS (
       (SELECT 1 FROM carts WHERE product_variation_id = :product_variation_id LIMIT 1)
       UNION
@@ -305,7 +311,8 @@ class ProductVariationGateway {
   }
 
   // This function doesn't have own transaction, make sure cover it when use.
-  private function updateImg(int $id, string | null $img_name): bool {
+  private function updateImg(int $id, string | null $img_name): bool
+  {
     try {
       $sql = "UPDATE product_variations SET image_name = :image_name WHERE id = :id AND is_deleted = false";
 
@@ -313,10 +320,8 @@ class ProductVariationGateway {
       $stmt->bindValue(":image_name", $img_name, PDO::PARAM_STR);
       $stmt->bindValue(":id", $id, PDO::PARAM_INT);
       return $stmt->execute();
-
-    } catch(Exception $e) {
+    } catch (Exception $e) {
       throw $e; // Re-throw for centralized ErrorHandler
     }
   }
-
 }

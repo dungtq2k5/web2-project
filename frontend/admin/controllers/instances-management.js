@@ -4,23 +4,22 @@ import {
   getInstancesList,
   updateInstance,
   deleteInstance,
-  getFilterInstancesList
+  getFilterInstancesList,
 } from "../../models/product/instances.js";
 import { getVariation } from "../../models/product/variations.js";
 import {
   DEFAULT_IMG_PATH,
   VARIATION_IMG_PATH,
-  DISPLAY_MSG_TIMEOUT
- } from "../../settings.js";
+  DISPLAY_MSG_TIMEOUT,
+} from "../../settings.js";
 import {
   disableBgScroll,
   filterTextInputsInFormData,
   toBoolean,
   isValidSerialNum,
-  isValidIMEI
+  isValidIMEI,
 } from "../../utils.js";
 import { closeForm, closePopup } from "./components.js";
-
 
 const crudInstanceMsg = $("#crud-instance-msg");
 const backdrop = $("#backdrop");
@@ -45,7 +44,7 @@ function renderSearchInstancesForm() {
     clearBtn.prop("disabled", false);
   });
 
-  form.submit(async e => {
+  form.submit(async (e) => {
     e.preventDefault();
     searchBtn.prop("disabled", true);
     searchBtn.text("Searching...");
@@ -64,29 +63,30 @@ function renderSearchInstancesForm() {
   });
 }
 
-async function renderInstancesData(instancesList=null) {
-  tbody.html("<tr><td colspan='9' class='p-3 text-center'>Loading data...</td></tr>");
+async function renderInstancesData(instancesList = null) {
+  tbody.html(
+    "<tr><td colspan='9' class='p-3 text-center'>Loading data...</td></tr>"
+  );
 
   try {
-    const instances = instancesList || await getInstancesList();
+    const instances = instancesList || (await getInstancesList());
 
     let dataHTML = "";
 
-    for(const [idx, instance] of instances.entries()) {
+    for (const [idx, instance] of instances.entries()) {
       const variation = await getVariation(instance.product_variation_id);
-      const variationImg = variation && variation.image_name
-        ? `${VARIATION_IMG_PATH}/${variation.image_name}`
-        : DEFAULT_IMG_PATH
-      ;
-
+      const variationImg =
+        variation && variation.image_name
+          ? `${VARIATION_IMG_PATH}/${variation.image_name}`
+          : DEFAULT_IMG_PATH;
       dataHTML += `
         <tr
           class="align-middle"
-          data-instance-number="${idx+1}"
+          data-instance-number="${idx + 1}"
           data-instance-sku="${instance.sku}"
           data-variation-id="${instance.product_variation_id}"
         >
-          <td data-cell="n.o" class="text-center p-2">${idx+1}</td>
+          <td data-cell="n.o" class="text-center p-2">${idx + 1}</td>
           <td data-cell="sku" class="p-2">${instance.sku}</td>
           <td data-cell="image" class="text-center p-1">
             <img
@@ -99,13 +99,23 @@ async function renderInstancesData(instancesList=null) {
               style="object-fit: cover;"
             >
           </td>
-          <td data-cell="variation id" class="p-2 text-center">${instance.product_variation_id}</td>
-          <td data-cell="serial-number" class="p-2">${instance.supplier_serial_number}</td>
-          <td data-cell="IMEI-number" class="p-2">${instance.supplier_imei_number || "<span class='text-muted'>N/A</span>"}</td>
-          <td data-cell="receipt note id" class="p-2 text-center">${instance.goods_receipt_note_id || "<span class='text-muted'>N/A</span>"}</td>
+          <td data-cell="variation id" class="p-2 text-center">${
+            instance.product_variation_id
+          }</td>
+          <td data-cell="serial-number" class="p-2">${
+            instance.supplier_serial_number
+          }</td>
+          <td data-cell="IMEI-number" class="p-2">${
+            instance.supplier_imei_number ||
+            "<span class='text-muted'>N/A</span>"
+          }</td>
+          <td data-cell="receipt note id" class="p-2 text-center">${
+            instance.goods_receipt_note_id ||
+            "<span class='text-muted'>N/A</span>"
+          }</td>
           <td data-cell="is sold" class="text-center p-2">
             ${
-              instance.is_sold
+              instance.is_sold == 1
                 ? "<span class='badge bg-success'>Sold</span>"
                 : "<span class='badge bg-secondary'>Available</span>"
             }
@@ -132,17 +142,24 @@ async function renderInstancesData(instancesList=null) {
                     </button>`
                   : ""
               }
-              ${!canUpdate && !canDelete ? "<span class='text-muted'>No actions</span>" : ""}
+              ${
+                !canUpdate && !canDelete
+                  ? "<span class='text-muted'>No actions</span>"
+                  : ""
+              }
             </div>
           </td>
         </tr>
       `;
     }
 
-    tbody.html(dataHTML || "<tr><td colspan='9' class='p-3 text-center'>No data found!</td></tr>");
+    tbody.html(
+      dataHTML ||
+        "<tr><td colspan='9' class='p-3 text-center'>No data found!</td></tr>"
+    );
 
-    if(canUpdate) {
-      tbody.find(".js-update-instance-btn").click(e => {
+    if (canUpdate) {
+      tbody.find(".js-update-instance-btn").click((e) => {
         const tr = $(e.currentTarget).closest("tr");
         const instanceNum = tr.data("instance-number");
         const instanceSku = tr.data("instance-sku");
@@ -152,8 +169,8 @@ async function renderInstancesData(instancesList=null) {
       });
     }
 
-    if(canDelete) {
-      tbody.find(".js-delete-instance-btn").click(e => {
+    if (canDelete) {
+      tbody.find(".js-delete-instance-btn").click((e) => {
         const tr = $(e.currentTarget).closest("tr");
         const instanceNum = tr.data("instance-number");
         const instanceSku = tr.data("instance-sku");
@@ -165,16 +182,19 @@ async function renderInstancesData(instancesList=null) {
     }
 
     resultCount.text(instances.length);
-
-  } catch(error) {
+  } catch (error) {
     console.error(`Error: ${error.message}`);
-    tbody.html(`<tr><td colspan='9' class="p-3 text-center table-danger">Error loading data: ${error.message}</td></tr>`);
+    tbody.html(
+      `<tr><td colspan='9' class="p-3 text-center table-danger">Error loading data: ${error.message}</td></tr>`
+    );
   }
 }
 
 async function renderUpdateInstanceForm(number, sku) {
   disableBgScroll();
-  backdrop.html("<div class='d-flex justify-content-center align-items-center' style='height: 100vh;'><div class='spinner-border text-primary' role='status'><span class='visually-hidden'>Loading update instance form...</span></div></div>");
+  backdrop.html(
+    "<div class='d-flex justify-content-center align-items-center' style='height: 100vh;'><div class='spinner-border text-primary' role='status'><span class='visually-hidden'>Loading update instance form...</span></div></div>"
+  );
   backdrop.show();
 
   try {
@@ -209,7 +229,7 @@ async function renderUpdateInstanceForm(number, sku) {
                 id="imei-number"
                 class="form-control"
                 placeholder="Enter IMEI or leave blank"
-                value="${instance.supplier_imei_number || ''}"
+                value="${instance.supplier_imei_number || ""}"
               >
               <small id="imei-number-msg" class="text-danger"></small>
             </div>
@@ -223,7 +243,7 @@ async function renderUpdateInstanceForm(number, sku) {
                 class="form-control"
                 min="1"
                 placeholder="Enter note ID or leave blank"
-                value="${instance.goods_receipt_note_id || ''}"
+                value="${instance.goods_receipt_note_id || ""}"
               >
               <small id="receipt-note-id-msg" class="text-danger"></small>
             </div>
@@ -234,7 +254,7 @@ async function renderUpdateInstanceForm(number, sku) {
                 name="is_sold"
                 id="is-sold"
                 class="form-check-input"
-                ${instance.is_sold ? "checked" : ""}
+                ${instance.is_sold == 1 ? "checked" : ""}
               >
               <label for="is-sold" class="form-check-label">Is Sold</label>
             </div>
@@ -254,9 +274,11 @@ async function renderUpdateInstanceForm(number, sku) {
 
     const form = backdrop.find("#update-instance-form");
 
-    backdrop.find(".js-update-instance-form-close-btn").click(() => {closeForm(backdrop)});
+    backdrop.find(".js-update-instance-form-close-btn").click(() => {
+      closeForm(backdrop);
+    });
 
-    form.submit(async e => {
+    form.submit(async (e) => {
       e.preventDefault();
 
       const submitBtn = form.find("#update-instance-form-submit-btn");
@@ -273,10 +295,10 @@ async function renderUpdateInstanceForm(number, sku) {
         let allValid = true;
 
         const serialNum = formData.get("supplier_serial_number");
-        if(!serialNum) {
+        if (!serialNum) {
           serialNumMsg.text("* required");
           allValid = false;
-        } else if(!isValidSerialNum(serialNum)) {
+        } else if (!isValidSerialNum(serialNum)) {
           serialNumMsg.text("* invalid serial number");
           allValid = false;
         } else {
@@ -284,7 +306,7 @@ async function renderUpdateInstanceForm(number, sku) {
         }
 
         const imeiNum = formData.get("supplier_imei_number");
-        if(imeiNum && !isValidIMEI(imeiNum)) {
+        if (imeiNum && !isValidIMEI(imeiNum)) {
           imeiNumMsg.text("* invalid IMEI number");
           allValid = false;
         } else {
@@ -292,14 +314,20 @@ async function renderUpdateInstanceForm(number, sku) {
         }
 
         return allValid;
-      }
+      };
 
-      if(await validateForm()) {
-        formData.set("supplier_imei_number", formData.get("supplier_imei_number") || null);
-        formData.set("goods_receipt_note_id", formData.get("goods_receipt_note_id") || null);
+      if (await validateForm()) {
+        formData.set(
+          "supplier_imei_number",
+          formData.get("supplier_imei_number") || null
+        );
+        formData.set(
+          "goods_receipt_note_id",
+          formData.get("goods_receipt_note_id") || null
+        );
 
         const isSold = formData.get("is_sold") ? true : false;
-        if(isSold != instance.is_sold) {
+        if (isSold != instance.is_sold) {
           formData.set("is_sold", isSold);
         } else {
           formData.delete("is_sold");
@@ -307,8 +335,10 @@ async function renderUpdateInstanceForm(number, sku) {
 
         const res = await updateInstance(sku, Object.fromEntries(formData));
 
-        if(res.success) {
-          crudInstanceMsg.text(`* instance sku ${sku} - number ${number} was updated`);
+        if (res.success) {
+          crudInstanceMsg.text(
+            `* instance sku ${sku} - number ${number} was updated`
+          );
           setTimeout(() => {
             crudInstanceMsg.text("");
           }, DISPLAY_MSG_TIMEOUT);
@@ -323,10 +353,11 @@ async function renderUpdateInstanceForm(number, sku) {
       submitBtn.text("Update");
       submitBtn.prop("disabled", false);
     });
-
-  } catch(error) {
+  } catch (error) {
     console.error(`Error: ${error.message}`);
-    backdrop.html(`<div class="alert alert-danger m-3">Error loading instance data: ${error.message}</div>`);
+    backdrop.html(
+      `<div class="alert alert-danger m-3">Error loading instance data: ${error.message}</div>`
+    );
   }
 }
 
@@ -354,7 +385,9 @@ async function renderDelInstancePopup(number, sku, variationId) {
     </div>
   `);
 
-  backdrop.find(".js-delete-instance-popup-close-btn").click(() => {closePopup(backdrop)});
+  backdrop.find(".js-delete-instance-popup-close-btn").click(() => {
+    closePopup(backdrop);
+  });
 
   const submitBtn = backdrop.find("#delete-instance-popup-submit-btn");
   submitBtn.click(async () => {
@@ -363,8 +396,10 @@ async function renderDelInstancePopup(number, sku, variationId) {
 
     const res = await deleteInstance(sku, variationId);
 
-    if(res.success) {
-      crudInstanceMsg.text(`* instance sku ${sku} - number ${number} was deleted`);
+    if (res.success) {
+      crudInstanceMsg.text(
+        `* instance sku ${sku} - number ${number} was deleted`
+      );
       setTimeout(() => {
         crudInstanceMsg.text("");
       }, DISPLAY_MSG_TIMEOUT);

@@ -1,6 +1,6 @@
 <?php
 
-switch(true) {
+switch (true) {
   case $uri === SOURCE_URI . "/products":
     $gateway = new ProductGateway($db_conn);
     $controller = new ProductController($gateway, $auths);
@@ -28,7 +28,7 @@ switch(true) {
 
   case strpos($uri, SOURCE_URI . "/products/instances") === 0:
     $utils = new Utils;
-    $sku = $utils->isValidProductSKU(end($uri_parts)) ? end($uri_parts) : null;
+    $sku = (isset($uri_parts) && $utils->isValidProductSKU(end($uri_parts))) ? end($uri_parts) : null;
     $gateway = new ProductInstanceGateway($db_conn);
     $controller = new ProductInstanceController($gateway, $auths);
     $controller->processRequest($method, $sku, $limit, $offset);

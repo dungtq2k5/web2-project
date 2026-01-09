@@ -1,2 +1,10 @@
 RewriteEngine On
-RewriteRule . index.php
+
+# 1. Do not redirect if the request is for a real file (like index.php)
+RewriteCond %{REQUEST_FILENAME} !-f
+
+# 2. Do not redirect if the request is for a real directory
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# 3. Route everything else to index.php, keeping query strings (QSA)
+RewriteRule ^ index.php [QSA,L]

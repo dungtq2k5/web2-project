@@ -1,18 +1,18 @@
 import { PERMISSIONS_API_URL } from "../settings.js";
 import { fetchData } from "../utils.js";
 
-
 let isFetch = false;
 let permissionsList = [];
 
-async function fetchPermissions(limit=null, offset=null) {
-    const res = await fetchData(PERMISSIONS_API_URL, limit, offset);
-    permissionsList = res.data;
-    isFetch = true;
+async function fetchPermissions(limit = null, offset = null) {
+  const res = await fetchData(PERMISSIONS_API_URL, limit, offset);
+  permissionsList = res.data;
+  isFetch = true;
 }
 
-export async function getPermissionsList(limit=null, offset=null) { // Return a copy
-  if(!isFetch) {
+export async function getPermissionsList(limit = null, offset = null) {
+  // Return a copy
+  if (!isFetch) {
     console.log("fetch permissions API");
     await fetchPermissions();
   }

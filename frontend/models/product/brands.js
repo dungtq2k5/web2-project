@@ -1,23 +1,18 @@
 import { PRODUCTS_BRANDS_API_URL } from "../../settings.js";
-import {
-  deleteData,
-  fetchData,
-  sendData,
-  updateData
-} from "../../utils.js";
-
+import { deleteData, fetchData, sendData, updateData } from "../../utils.js";
 
 let isFetch = false;
 let brandsList = [];
 
-async function fetchBrands(limit=null, offset=null) {
+async function fetchBrands(limit = null, offset = null) {
   const res = await fetchData(PRODUCTS_BRANDS_API_URL, limit, offset);
   brandsList = res.data;
   isFetch = true;
 }
 
-export async function getBrandsList(limit=null, offset=null) { // Return a copy
-  if(!isFetch) {
+export async function getBrandsList(limit = null, offset = null) {
+  // Return a copy
+  if (!isFetch) {
     console.log("Fetch products' brands API");
     await fetchBrands();
   }
@@ -28,24 +23,24 @@ export async function getBrandsList(limit=null, offset=null) { // Return a copy
 }
 
 export async function getBrand(id) {
-  if(!id) return undefined;
+  if (!id) return undefined;
 
   const brandsList = await getBrandsList();
-  return brandsList.find(brand => brand.id == id) || undefined;
+  return brandsList.find((brand) => brand.id == id) || undefined;
 }
 
 export async function createBrand(brand) {
-  if(await getByName(brand.name)) {
+  if (await getByName(brand.name)) {
     return {
       success: false,
-      message: `Brand name '${brand.name}' was already taken, please try another`
-    }
+      message: `Brand name '${brand.name}' was already taken, please try another`,
+    };
   }
 
   const res = await sendData(PRODUCTS_BRANDS_API_URL, brand);
 
-  if(res.success) {
-    if(!isFetch) {
+  if (res.success) {
+    if (!isFetch) {
       await fetchBrands();
     } else {
       brandsList.push(res.data);
@@ -58,12 +53,12 @@ export async function createBrand(brand) {
 export async function deleteBrand(id) {
   const res = await deleteData(PRODUCTS_BRANDS_API_URL, id);
 
-  if(res.success) {
-    if(!isFetch) {
+  if (res.success) {
+    if (!isFetch) {
       await fetchBrands();
     } else {
-      const idx = brandsList.findIndex(brand => brand.id == id);
-      if(idx != -1) {
+      const idx = brandsList.findIndex((brand) => brand.id == id);
+      if (idx != -1) {
         brandsList.splice(idx, 1);
       } else {
         console.warn(`Couldn't find brand with an ID ${id} to delete`);
@@ -76,22 +71,22 @@ export async function deleteBrand(id) {
 
 export async function updateBrand(id, brand) {
   const existBrand = await getByName(brand.name);
-  if(existBrand && existBrand.id != id) {
+  if (existBrand && existBrand.id != id) {
     return {
       success: false,
-      message: `Brand name '${brand.name}' was already taken, please try another`
-    }
+      message: `Brand name '${brand.name}' was already taken, please try another`,
+    };
   }
 
   const res = await updateData(PRODUCTS_BRANDS_API_URL, id, brand);
 
-  if(res.success) {
-    if(!isFetch) {
+  if (res.success) {
+    if (!isFetch) {
       await fetchBrands();
     } else {
-      const idx = brandsList.findIndex(brand => brand.id == id);
-      if(idx !== -1) {
-        brandsList[idx] = {...brandsList[idx], ...res.data};
+      const idx = brandsList.findIndex((brand) => brand.id == id);
+      if (idx !== -1) {
+        brandsList[idx] = { ...brandsList[idx], ...res.data };
       } else {
         console.warn(`Couldn't find brand with an ID ${id} to update`);
       }
@@ -102,8 +97,8 @@ export async function updateBrand(id, brand) {
 }
 
 async function getByName(name) {
-  if(!name) return undefined;
+  if (!name) return undefined;
 
   const brands = await getBrandsList();
-  return brands.find(brand => brand.name === name) || undefined;
+  return brands.find((brand) => brand.name === name) || undefined;
 }
