@@ -45,7 +45,3 @@ The API functionality and endpoints can be explored via the following Postman co
 ## Contributing
 
 Contributions to this project are welcome! If you have suggestions for improvements or encounter any issues, please feel free to submit a pull request or open an issue on the repository. More detailed contribution guidelines may be added as the project evolves.
-
-## License
-
-This project is currently unlicensed. Consider adding an open-source license like the MIT License if you wish to share it more broadly.
